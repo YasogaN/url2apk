@@ -69,7 +69,6 @@ let currentUrl: URL | null = null;
 let nameTouched = false;
 let iconImage: HTMLImageElement | null = null;
 let iconSource: IconSource = "letter";
-let identityToken = 0;
 let identity: Identity | null = null;
 let template: Uint8Array | null = null;
 let passwordResolver: ((value: string | null) => void) | null = null;
@@ -132,15 +131,7 @@ async function syncIdentity(): Promise<void> {
   }
 
   const name = currentName();
-  const versionCode = formatVersionCode(versionInput.valueAsNumber);
-  const token = ++identityToken;
-  const packageValue = await packageName(
-    normalized.url,
-    `${name}\n${versionCode}`,
-  );
-  if (token !== identityToken) {
-    return;
-  }
+  const packageValue = packageName(normalized.url);
 
   for (const element of packageValues) {
     element.textContent = packageValue;
@@ -261,10 +252,7 @@ async function build(): Promise<void> {
 
   const name = currentName();
   const versionCode = formatVersionCode(versionInput.valueAsNumber);
-  const packageValue = await packageName(
-    normalized.url,
-    `${name}\n${versionCode}`,
-  );
+  const packageValue = packageName(normalized.url);
 
   buildButton.disabled = true;
   try {

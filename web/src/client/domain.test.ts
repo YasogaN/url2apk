@@ -56,20 +56,36 @@ describe("initials", () => {
 });
 
 describe("packageName", () => {
-  it("builds a stable 34 character package", async () => {
-    const url = new URL("https://example.com/");
-    const first = await packageName(url, "Example");
-    const second = await packageName(url, "Example");
-    expect(first).toBe(second);
-    expect(first).toMatch(/^com\.urltoapk\.a[0-9a-f]{20}$/);
-    expect(first).toHaveLength(34);
+  it.each([
+    ["https://example.com/", "com.example"],
+    ["https://www.example.com/", "com.example.www"],
+    ["https://news.ycombinator.com/", "com.ycombinator.news"],
+    ["https://www.bbc.co.uk/", "uk.co.bbc.www"],
+    ["https://my-app.example.com/", "com.example.my_app"],
+    ["https://123.example.com/", "com.example.a123"],
+    ["https://class.example.com/", "com.example.class_"],
+    ["https://--.example.com/", "com.example.site"],
+    ["https://_foo_.example.com/", "com.example.foo"],
+    ["https://localhost/", "app.localhost"],
+    ["https://192.168.1.1/", "a1.a1.a168.a192"],
+    ["https://example.com./", "com.example"],
+    ["https://xn--bcher-kva.example.com/", "com.example.xn__bcher_kva"],
+  ])("maps %s to %s", (raw, expected) => {
+    expect(packageName(new URL(raw))).toBe(expected);
   });
 
-  it("changes when the identity changes", async () => {
+  it("truncates long hosts to the template slot", () => {
+    const long = `${"a".repeat(200)}.example.com`;
+    const value = packageName(new URL(`https://${long}/`));
+    expect(value.length).toBeLessThanOrEqual(127);
+    expect(value.startsWith("com.example.")).toBe(true);
+    expect(value.endsWith(".")).toBe(false);
+    expect(value.endsWith("_")).toBe(false);
+  });
+
+  it("is stable for the same url", () => {
     const url = new URL("https://example.com/");
-    const first = await packageName(url, "One");
-    const second = await packageName(url, "Two");
-    expect(first).not.toBe(second);
+    expect(packageName(url)).toBe(packageName(url));
   });
 });
 

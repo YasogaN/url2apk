@@ -6,7 +6,7 @@ import { createIdentity, importIdentity, type Identity } from "./keys";
 import { readZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
-const PACKAGE = `com.urltoapk.a${"1".repeat(20)}`;
+const PACKAGE = "com.example.testapp";
 const AAPT2 =
   process.env.AAPT2 ?? "/home/blocky/android-sdk/build-tools/36.0.0/aapt2";
 const APKSIGNER =

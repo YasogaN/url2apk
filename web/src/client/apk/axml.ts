@@ -22,7 +22,7 @@ export type ManifestPatch = {
   versionCode: number;
 };
 
-export const PACKAGE_SENTINEL = `com.urltoapk.a${"0".repeat(20)}`;
+export const PACKAGE_SENTINEL = `com.urltoapk.slot.${"a".repeat(109)}`;
 export const LABEL_SENTINEL = `__URLTOAPK_LABEL__${"~".repeat(110)}`;
 
 const XML_CHUNK = 0x0003;
@@ -127,9 +127,19 @@ function replaceString(
     writeLengthPrefix(bytes, entry, codeUnits);
     return;
   }
-  const fitted = fitUtf16(newValue, entry.codeUnits);
-  writeUtf16(bytes, entry.dataOffset, fitted);
-  writeLengthPrefix(bytes, entry, fitted.length);
+  const units = toUtf16Units(newValue);
+  if (units.length > entry.codeUnits) {
+    throw new Error("Replacement string does not fit its template slot.");
+  }
+  writeUtf16(bytes, entry.dataOffset, units);
+  if (units.length < entry.codeUnits) {
+    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).setUint16(
+      entry.dataOffset + units.length * 2,
+      0,
+      true,
+    );
+  }
+  writeLengthPrefix(bytes, entry, units.length);
 }
 
 function writeLengthPrefix(
@@ -203,23 +213,6 @@ function readUtf8Length(
   return { value: first, size: 1 };
 }
 
-function fitUtf16(value: string, maxCodeUnits: number): number[] {
-  const out: number[] = [];
-  for (const character of value) {
-    const units = character.length;
-    if (out.length + units > maxCodeUnits) {
-      break;
-    }
-    for (let index = 0; index < units; index++) {
-      out.push(character.charCodeAt(index));
-    }
-  }
-  while (out.length < maxCodeUnits) {
-    out.push(0x20);
-  }
-  return out;
-}
-
 function fitUtf8(value: string, maxBytes: number): Uint8Array {
   const encoder = new TextEncoder();
   const parts: Uint8Array[] = [];
@@ -235,6 +228,14 @@ function fitUtf8(value: string, maxBytes: number): Uint8Array {
   const padding = new Uint8Array(maxBytes - used);
   padding.fill(0x20);
   return concat(...parts, padding);
+}
+
+function toUtf16Units(value: string): number[] {
+  const units: number[] = [];
+  for (let index = 0; index < value.length; index++) {
+    units.push(value.charCodeAt(index));
+  }
+  return units;
 }
 
 function writeUtf16(bytes: Uint8Array, offset: number, units: number[]): void {

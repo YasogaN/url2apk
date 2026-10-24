@@ -6,7 +6,7 @@ import { patchPackageName } from "./arsc";
 import { readZip, writeZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
-const PACKAGE = `com.urltoapk.a${"1".repeat(20)}`;
+const PACKAGE = "com.example.testapp";
 
 function patchedApk(): Uint8Array {
   const archive = readZip(new Uint8Array(readFileSync(TEMPLATE)));

@@ -3,6 +3,9 @@ import { patchPackageName } from "./arsc";
 import { signApk, type SigningMaterial } from "./sign";
 import { readZip, writeZip, type PendingEntry } from "./zip";
 
+const PACKAGE_NAME = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/;
+const PACKAGE_MAX_LENGTH = 127;
+
 export const ICON_PATHS = [
   "res/drawable-nodpi-v4/ic_launcher_background.png",
   "res/drawable-nodpi-v4/ic_launcher_foreground.png",
@@ -31,7 +34,10 @@ export type BuildInput = {
 };
 
 export async function buildApk(input: BuildInput): Promise<Uint8Array> {
-  if (!/^com\.urltoapk\.a[0-9a-f]{20}$/.test(input.packageName)) {
+  if (
+    input.packageName.length > PACKAGE_MAX_LENGTH ||
+    !PACKAGE_NAME.test(input.packageName)
+  ) {
     throw new Error("That package name does not fit the template.");
   }
   if (

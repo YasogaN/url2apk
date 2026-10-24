@@ -21,7 +21,7 @@ The only server-side feature is the optional favicon lookup; the template is fet
 3. The ZIP is rebuilt with `resources.arsc` stored and 4-byte aligned, then signed with APK Signature Scheme v2.
 4. The signing key is generated locally with WebCrypto (RSA-2048 by default; the key helper also accepts RSA-4096) and a self-signed certificate. The live private key is imported as non-extractable and stored in IndexedDB. The portable copy is a password-encrypted `.p1x` backup (PBKDF2-SHA256 + AES-GCM).
 
-The template relies on fixed slots rather than aapt2 at runtime: a 34-character package sentinel, a 128-code-unit label literal and a literal `versionCode`. The patcher clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
+The template relies on fixed slots rather than aapt2 at runtime: a 127-character package slot, a 128-code-unit label slot and a literal `versionCode`. The browser replaces the package with the reversed host (`example.com` -> `com.example`, `news.ycombinator.com` -> `com.ycombinator.news`) and the label with the chosen name. The patcher shortens the strings in place, NUL-terminates them, clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
 
 ## Status
 
@@ -72,13 +72,13 @@ The web app is a standard Cloudflare Worker with static assets. `pnpm deploy` bu
 
 The template is deliberately a normal Gradle release build, not a hand-patched APK. Its fixed slots are:
 
-- package `com.urltoapk.a` followed by 20 zeros (34 characters),
+- package `com.urltoapk.slot.` followed by 109 `a` characters (127 characters),
 - a 128-character `android:label` literal,
 - `versionCode="1"` and `versionName="1.0"`,
 - the standard adaptive and legacy icon paths under `res/`,
 - `assets/config.json`.
 
-The browser replaces those values and the icons. Resource shrinking stays off, R8 keeps the shell classes, and `android.enableResourceOptimizations=false` keeps filenames stable.
+The browser replaces those values with the reverse-domain package and the selected label, plus the icons. Resource shrinking stays off, R8 keeps the shell classes, and `android.enableResourceOptimizations=false` keeps filenames stable.
 
 ## Signing and updates
 
