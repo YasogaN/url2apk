@@ -1,6 +1,7 @@
 package com.urltoapk.shell
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
@@ -162,6 +163,9 @@ open class MainActivity : Activity(), PageEvents, ChromeHost {
         )
     }
 
+    // API 33+ uses the platform OnBackInvokedDispatcher registered above. This
+    // override remains for API 24-32, where the system still routes back here.
+    @SuppressLint("GestureBackNavigation")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         handleBack()
