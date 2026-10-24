@@ -152,7 +152,7 @@ export async function saveIdentity(identity: Identity): Promise<void> {
   const database = await openDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE, "readwrite");
-    transaction.objectStore(STORE).put(identity);
+    transaction.objectStore(STORE).put(identity, KEY);
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });

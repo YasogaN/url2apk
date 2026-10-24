@@ -215,21 +215,22 @@ async function ensureIdentity(): Promise<Identity | null> {
     return null;
   }
   setStatus("Generating a local RSA-2048 key…");
+  const created = await createIdentity(2048, password);
+  identity = created;
+  downloadBytes(
+    created.backup,
+    "url-to-apk-key.p1x",
+    "application/octet-stream",
+  );
   try {
-    const created = await createIdentity(2048, password);
-    identity = created;
     await saveIdentity(created);
-    downloadBytes(created.backup, "url-to-apk-key.p1x", "application/octet-stream");
     updateKeyStatus();
-    setStatus("Key created. Backup downloaded.");
-    return created;
-  } catch (error) {
-    setStatus(
-      error instanceof Error ? error.message : "The key could not be created.",
-      "error",
-    );
-    return null;
+  } catch {
+    keyStatus.textContent =
+      "Key ready in this tab. Browser storage failed; keep the .p1x backup and import it next time.";
   }
+  setStatus("Key created. Backup downloaded.");
+  return created;
 }
 
 async function loadTemplate(): Promise<Uint8Array> {
@@ -489,9 +490,15 @@ importFile.addEventListener("change", () => {
     try {
       const imported = await importIdentity(new Uint8Array(buffer), password);
       identity = imported;
-      await saveIdentity(imported);
-      updateKeyStatus();
-      setStatus("Key imported.");
+      try {
+        await saveIdentity(imported);
+        updateKeyStatus();
+        setStatus("Key imported.");
+      } catch {
+        keyStatus.textContent =
+          "Key ready in this tab. Browser storage failed; keep the .p1x backup.";
+        setStatus("Key imported for this tab.");
+      }
     } catch (error) {
       setStatus(
         error instanceof Error
