@@ -109,9 +109,9 @@ tools/export-template.sh
 
 ## Signing and updates
 
-Android identifies an app by package name and signing certificate. To update an installed app you need the same key and a higher version code.
+Android identifies an app by package name and signing certificate. This builder writes version code 1, so it is designed for a fresh install on each device; keep the same key if you rebuild, or uninstall the old app before installing one signed with a different key.
 
-The private key is generated with WebCrypto and imported as non-extractable; it stays in IndexedDB. The portable copy is a `.p1x` file encrypted with PBKDF2-SHA256 + AES-GCM. Lose the key and the backup and you cannot update the app; you would have to uninstall it and lose its data. Store the backup.
+The private key is generated with WebCrypto and imported as non-extractable; it stays in IndexedDB. The portable copy is a `.p1x` file encrypted with PBKDF2-SHA256 + AES-GCM. Lose the key and the backup and you cannot install a replacement over the app; you would have to uninstall it and lose its data. Store the backup.
 
 ## Distribution
 
