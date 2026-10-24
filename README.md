@@ -19,7 +19,7 @@ The only server-side feature is the optional favicon lookup. Everything else —
 1. The shell is a small Kotlin WebView host. It loads `assets/config.json`, applies hardened WebView settings, and implements file uploads, downloads, camera/microphone/geolocation prompts, fullscreen video, safe external links, back navigation and a native error/retry screen.
 2. The browser fetches the unsigned template and patches it in memory: the package name, the literal label and `versionCode` in the binary `AndroidManifest.xml`, the package name in `resources.arsc`, every launcher PNG, and `assets/config.json`.
 3. The ZIP is rebuilt with `resources.arsc` stored and 4-byte aligned, then signed with APK Signature Scheme v2.
-4. The signing key is generated locally with WebCrypto (RSA-2048/4096) and a self-signed certificate. The live private key is imported as non-extractable and stored in IndexedDB. The portable copy is a password-encrypted `.p1x` backup (PBKDF2-SHA256 + AES-GCM).
+4. The signing key is generated locally with WebCrypto (RSA-2048 by default; the key helper also accepts RSA-4096) and a self-signed certificate. The live private key is imported as non-extractable and stored in IndexedDB. The portable copy is a password-encrypted `.p1x` backup (PBKDF2-SHA256 + AES-GCM).
 
 The template relies on fixed slots rather than aapt2 at runtime: a 34-character package sentinel, a 128-code-unit label literal and a literal `versionCode`. The patcher clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
 
