@@ -6,9 +6,15 @@
 
 Package an HTTPS site as a small Android WebView APK, entirely in your browser. Local key, local signing, no account, no cloud build.
 
-[![Live](https://img.shields.io/badge/live-url2apk.yasogan.dev-8b0000?style=flat-square)](https://url2apk.yasogan.dev)
-[![CI](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml/badge.svg)](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/license-Apache--2.0-black?style=flat-square)](LICENSE)
+[![Live](https://img.shields.io/badge/live-url2apk.yasogan.dev-8b0000?style=for-the-badge)](https://url2apk.yasogan.dev)
+[![CI](https://img.shields.io/github/actions/workflow/status/YasogaN/url2apk/ci.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml)
+
+[![License](https://img.shields.io/github/license/YasogaN/url2apk.svg?style=for-the-badge&color=blue)](LICENSE)
+[![Forks](https://img.shields.io/github/forks/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/forks)
+[![Stars](https://img.shields.io/github/stars/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/stargazers)
+[![Watchers](https://img.shields.io/github/watchers/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/watchers)
+[![Issues](https://img.shields.io/github/issues/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/issues)
+[![Code size](https://img.shields.io/github/languages/code-size/YasogaN/url2apk?style=for-the-badge)](https://github.com/YasogaN/url2apk)
 
 [**Open the builder →**](https://url2apk.yasogan.dev)
 
@@ -128,6 +134,18 @@ No accounts, analytics, telemetry or third-party scripts. The APK is assembled i
 Wrap only sites you have the right to use. Do not impersonate a brand or distribute an app you do not own.
 
 ## Built with
+
+<div align="center">
+
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+
+</div>
 
 Kotlin and Android System WebView on the shell side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; WebCrypto for the key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
 
