@@ -141,7 +141,7 @@ val jacocoTestReport by tasks.registering(JacocoReport::class) {
 }
 
 val jacocoTestCoverageVerification by tasks.registering(JacocoCoverageVerification::class) {
-    dependsOn("testDebugUnitTest")
+    dependsOn("testDebugUnitTest", "jacocoTestReport")
     executionData.setFrom(coverageExecutionData)
     classDirectories.setFrom(coverageClasses)
     sourceDirectories.setFrom(files("src/main/kotlin", "src/main/java"))
