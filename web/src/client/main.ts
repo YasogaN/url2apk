@@ -141,6 +141,7 @@ async function syncIdentity(): Promise<void> {
   renderIcon();
 
   buildButton.disabled = !engineReady;
+  engineStatus.dataset.state = engineReady ? "ready" : "idle";
   engineStatus.textContent = engineReady
     ? "LOCAL ENGINE: READY"
     : "LOCAL ENGINE: IDLE";
@@ -170,7 +171,7 @@ function updateKeyStatus(): void {
   keyStatus.textContent =
     identity === null
       ? "No key yet. It is created on the first build."
-      : "Key stored in this browser. Keep the backup file safe.";
+      : "Key stored. Keep the backup safe.";
 }
 
 function requestPassword(mode: "create" | "import"): Promise<string | null> {
@@ -185,8 +186,8 @@ function requestPassword(mode: "create" | "import"): Promise<string | null> {
       : "Unlock the key backup.";
   keyCopy.textContent =
     mode === "create"
-      ? "The key is generated in this browser and stored as a non-exportable key. The encrypted backup is the only copy you can move. Lose both and you cannot update the app without uninstalling it."
-      : "Choose the .p1x backup file, then enter the password you set when it was created.";
+      ? "The key is generated here. The encrypted backup is the only copy you can move. Lose it and you cannot update the app."
+      : "Choose the .p1x backup, then enter its password.";
   keySubmit.textContent =
     mode === "create" ? "Create key & download backup" : "Unlock key";
   keyDialog.showModal();
@@ -220,7 +221,7 @@ async function ensureIdentity(): Promise<Identity | null> {
     await saveIdentity(created);
     downloadBytes(created.backup, "url-to-apk-key.p1x", "application/octet-stream");
     updateKeyStatus();
-    setStatus("Key created. The encrypted backup has been downloaded.");
+    setStatus("Key created. Backup downloaded.");
     return created;
   } catch (error) {
     setStatus(
@@ -283,7 +284,7 @@ async function build(): Promise<void> {
       "application/vnd.android.package-archive",
     );
     setStatus(
-      "Signed APK downloaded. Install it from your browser or file manager.",
+      "APK signed and downloaded.",
     );
   } catch (error) {
     setStatus(
@@ -466,7 +467,7 @@ backupKeyButton.addEventListener("click", () => {
     "url-to-apk-key.p1x",
     "application/octet-stream",
   );
-  setStatus("Encrypted key backup downloaded.");
+  setStatus("Backup downloaded.");
 });
 
 importKeyButton.addEventListener("click", () => {
@@ -490,7 +491,7 @@ importFile.addEventListener("change", () => {
       identity = imported;
       await saveIdentity(imported);
       updateKeyStatus();
-      setStatus("Key imported from the backup.");
+      setStatus("Key imported.");
     } catch (error) {
       setStatus(
         error instanceof Error

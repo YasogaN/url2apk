@@ -20,6 +20,8 @@
     />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/src/client/style.css" />
     <script type="module" src="/src/client/main.ts"></script>
     <script type="application/ld+json">
@@ -47,7 +49,7 @@
         </a>
         <nav class="site-nav" aria-label="Primary">
           <a href="#builder">Builder</a>
-          <a href="#how">How it works</a>
+          <a href="#how">How</a>
           <a href="#limits">Limits</a>
           <a href="#privacy">Privacy</a>
           <a class="nav-external" href="https://github.com/" rel="noreferrer">GitHub ↗</a>
@@ -61,12 +63,12 @@
           <p class="eyebrow">LOCAL-FIRST APK PACKAGER</p>
           <h1 id="hero-title">A URL in.<br />An Android app out.</h1>
           <p class="lede">
-            Package a website you have the right to use as a signed APK —
-            assembled in this browser tab. No account, no build queue, no Chrome.
+            Package a website as a signed Android APK in your browser.
+            No account, no cloud build, no Chrome.
           </p>
           <div class="hero-actions">
             <a class="button" href="#builder">Build an APK</a>
-            <a class="button button-ghost" href="#limits">Read the limits</a>
+            <a class="button button-ghost" href="#limits">See the limits</a>
           </div>
         </div>
 
@@ -76,33 +78,15 @@
             <span class="spec-value">Android System WebView</span>
           </div>
           <div class="spec-row">
-            <span class="spec-key">Support</span>
-            <span class="spec-value">Android 7.0+ · API 24</span>
-          </div>
-          <div class="spec-row">
             <span class="spec-key">Signing</span>
             <span class="spec-value">Local key · APK v2</span>
           </div>
           <div class="spec-row">
             <span class="spec-key">Network</span>
-            <span class="spec-value">Only the optional favicon fetch</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Licence</span>
-            <span class="spec-value">Apache-2.0</span>
+            <span class="spec-value">Favicon lookup only</span>
           </div>
         </aside>
       </section>
-
-      <div class="ticker" aria-hidden="true">
-        <div class="wrap ticker-inner">
-          <span>Android 7+</span><span class="ticker-dot">·</span>
-          <span>V2 signed</span><span class="ticker-dot">·</span>
-          <span>No account</span><span class="ticker-dot">·</span>
-          <span>No cloud build</span><span class="ticker-dot">·</span>
-          <span>Open source</span>
-        </div>
-      </div>
 
       <section class="wrap section" id="builder" aria-labelledby="builder-title">
         <div class="section-head">
@@ -110,9 +94,8 @@
           <div>
             <h2 id="builder-title">Make the package.</h2>
             <p class="section-lede">
-              Everything below runs in your tab. The only third-party network
-              request is the optional favicon lookup, and it goes only to the
-              site you name.
+              Everything runs in your tab. Only the optional favicon lookup
+              leaves this origin.
             </p>
           </div>
         </div>
@@ -138,8 +121,7 @@
                   required
                 />
                 <p class="field-note" data-url-note>
-                  HTTPS only. The generated app loads the live site; it is not
-                  an offline copy.
+                  HTTPS and a full domain. The app loads the live site.
                 </p>
               </div>
 
@@ -186,7 +168,7 @@
 
                 <div class="icon-panels">
                   <p class="field-note" data-icon-panel="letter">
-                    A monochrome letter tile, generated locally.
+                    Generated locally.
                   </p>
 
                   <div class="icon-panel" data-icon-panel="upload" hidden>
@@ -205,8 +187,7 @@
                       Fetch favicon
                     </button>
                     <p class="field-note">
-                      Uses the network: asks the site for its icon. Nothing is
-                      stored server-side.
+                      Uses the network.
                     </p>
                   </div>
                 </div>
@@ -258,13 +239,6 @@
                 com.example
               </p>
 
-              <dl class="spec-list">
-                <div><dt>Output</dt><dd>Signed APK</dd></div>
-                <div><dt>Signing</dt><dd>Local · RSA-2048</dd></div>
-                <div><dt>Engine</dt><dd>WebView shell</dd></div>
-                <div><dt>Key storage</dt><dd>Non-exportable IndexedDB key</dd></div>
-              </dl>
-
               <div class="key-row">
                 <span class="mono-value" data-key-status>
                   No key yet. It is created on the first build.
@@ -286,75 +260,51 @@
 
       <section class="wrap section" id="how" aria-labelledby="how-title">
         <div class="section-head">
-          <p class="eyebrow">02 / HOW IT WORKS</p>
+          <p class="eyebrow">02 / HOW</p>
           <div>
-            <h2 id="how-title">Three steps. Nothing leaves the tab.</h2>
-            <p class="section-lede">
-              The APK is assembled from a prebuilt Kotlin shell, your identity
-              fields, and a key generated on this device.
-            </p>
+            <h2 id="how-title">Three steps.</h2>
+            <p class="section-lede">No queue. No upload. No server build.</p>
           </div>
         </div>
 
         <ol class="steps">
           <li>
             <span class="step-number">01</span>
-            <h3>Name the site.</h3>
-            <p>
-              Paste an HTTPS URL. The name, icon and package identity are yours
-              to change; the package is the reversed host, derived locally.
-            </p>
+            <h3>Paste a URL.</h3>
+            <p>HTTPS and a full domain. The name and icon are yours.</p>
           </li>
           <li>
             <span class="step-number">02</span>
             <h3>Keep the key.</h3>
-            <p>
-              A signing key is generated in this browser. Export the encrypted
-              backup once — it is the only way to update the app later.
-            </p>
+            <p>Generated here. Download the encrypted backup.</p>
           </li>
           <li>
             <span class="step-number">03</span>
-            <h3>Sign and install.</h3>
-            <p>
-              The APK is assembled and signed locally, then downloaded. Sideload
-              it after allowing installs from your browser or file manager.
-            </p>
+            <h3>Install.</h3>
+            <p>Allow unknown apps, then open the APK.</p>
           </li>
         </ol>
       </section>
 
       <section class="wrap section split-section" id="limits" aria-labelledby="limits-title">
         <div class="split-column">
-          <p class="eyebrow">03 / WHAT IT IS</p>
-          <h2 id="limits-title">A real app, not a bookmark.</h2>
+          <p class="eyebrow">03 / WORKS</p>
+          <h2 id="limits-title">A real app.</h2>
           <ul class="checklist">
-            <li>A launcher icon, app-drawer entry and its own window.</li>
-            <li>File uploads, downloads, camera, microphone and geolocation.</li>
-            <li>Fullscreen video, external links and back navigation.</li>
-            <li>A small APK with no background service and no telemetry.</li>
-            <li>Your key, your signature, your copy of the source.</li>
+            <li>Launcher icon, app-drawer entry and its own window.</li>
+            <li>Uploads, downloads, camera, mic, location and fullscreen.</li>
+            <li>Your key, your signature.</li>
           </ul>
         </div>
 
         <div class="split-column">
-          <p class="eyebrow">04 / WHAT IT ISN'T</p>
+          <p class="eyebrow">04 / DOESN'T</p>
           <h2>Not a browser.</h2>
           <ul class="checklist checklist-neg">
-            <li>
-              <strong>Google sign-in will fail.</strong> Google blocks OAuth in
-              embedded WebViews.
-            </li>
-            <li>No Web Push, browser extensions or Firefox profile.</li>
-            <li>
-              No App Links or domain capture: links to the site still open in
-              your default browser.
-            </li>
-            <li>No offline copy, no DRM L1, and passkeys may not work.</li>
-            <li>
-              Some sites block WebView user agents. This is a wrapper, not a
-              site compatibility layer.
-            </li>
+            <li><strong>Google sign-in fails</strong> in embedded WebViews.</li>
+            <li>No push, extensions or App Links.</li>
+            <li>No offline copy. It loads the live URL.</li>
+            <li>Some sites block WebView.</li>
           </ul>
         </div>
       </section>
@@ -365,46 +315,17 @@
           <div>
             <h2 id="privacy-title">Your key stays here.</h2>
             <p class="section-lede">
-              There is no account and no server-side build. The only server
-              endpoint is the optional favicon lookup.
+              No account, no telemetry. The only third-party request is the
+              optional favicon lookup.
             </p>
           </div>
         </div>
 
-        <div class="facts">
-          <div class="fact">
-            <span class="fact-number">01</span>
-            <h3>No uploads</h3>
-            <p>
-              The URL, icon and name are used in this tab. The APK is assembled
-              in memory and downloaded directly.
-            </p>
-          </div>
-          <div class="fact">
-            <span class="fact-number">02</span>
-            <h3>Key in IndexedDB</h3>
-            <p>
-              The private key is imported as a non-exportable WebCrypto key. An
-              encrypted backup file is the only copy you can move.
-            </p>
-          </div>
-          <div class="fact">
-            <span class="fact-number">03</span>
-            <h3>One network call</h3>
-            <p>
-              Fetch favicon sends the site URL to this worker, which requests
-              the site's icon. Skip the button and nothing leaves the tab.
-            </p>
-          </div>
-          <div class="fact">
-            <span class="fact-number">04</span>
-            <h3>No analytics</h3>
-            <p>
-              No accounts, no telemetry, no third-party scripts. The source is
-              Apache-2.0 and self-hostable.
-            </p>
-          </div>
-        </div>
+        <ul class="checklist">
+          <li>The APK is assembled in this tab.</li>
+          <li>The key is non-exportable; the encrypted backup is the only copy you can move.</li>
+          <li>No analytics or third-party scripts.</li>
+        </ul>
       </section>
 
       <section class="wrap section faq" id="faq" aria-labelledby="faq-title">
@@ -417,53 +338,24 @@
 
         <div class="faq-list">
           <details>
-            <summary>Why not PWABuilder or Bubblewrap?</summary>
-            <p>
-              Those produce Trusted Web Activities, which need Chrome and
-              Digital Asset Links, and the hosted versions run a cloud build.
-              This uses Android System WebView and does the work in the browser.
-            </p>
+            <summary>Can I update it?</summary>
+            <p>Same key and a higher version code. Lose the key and you must uninstall.</p>
           </details>
           <details>
-            <summary>Do I need Chrome installed?</summary>
-            <p>
-              No. The generated app uses Android System WebView, which is
-              normally a separate system package from the Chrome browser.
-            </p>
+            <summary>How do I install it?</summary>
+            <p>Allow unknown apps. Play Protect may warn.</p>
           </details>
           <details>
-            <summary>Can I update an installed app?</summary>
-            <p>
-              Yes — with the same signing key and a higher version code. Keep the
-              encrypted key backup. A different key means uninstalling first,
-              which also removes app data.
-            </p>
+            <summary>Do I need Chrome?</summary>
+            <p>No. It uses Android System WebView.</p>
           </details>
           <details>
-            <summary>What happens if I lose the key?</summary>
-            <p>
-              You cannot update an installed app. You would have to uninstall it
-              and lose its data. The backup file is deliberately the only
-              portable copy.
-            </p>
-          </details>
-          <details>
-            <summary>Is this on Google Play?</summary>
-            <p>
-              No. These are personal sideloaded builds. Android will warn about
-              unknown apps, Play Protect may flag them, and developer
-              verification rules vary by region.
-            </p>
-          </details>
-          <details>
-            <summary>Does the APK work offline?</summary>
-            <p>
-              No. It is a WebView wrapper around the live URL. If the site is
-              offline or unreachable, the app shows a local error page.
-            </p>
+            <summary>Does it work offline?</summary>
+            <p>No. It loads the live URL.</p>
           </details>
         </div>
       </section>
+
     </main>
 
     <footer class="site-footer">
@@ -471,8 +363,7 @@
         <div>
           <p class="wordmark footer-mark">URL<span class="wordmark-slash">/</span>APK</p>
           <p class="footer-note">
-            Apache-2.0. Self-host it, read it, change it. Not affiliated with
-            Google or Android.
+            Apache-2.0. Self-host it. Not affiliated with Google or Android.
           </p>
         </div>
         <div class="footer-links">
@@ -484,8 +375,7 @@
       </div>
       <div class="wrap footer-rule">
         <p>
-          Use responsibly. Wrap sites you have the right to use. Do not
-          impersonate a brand or distribute an app you do not own.
+          Wrap only sites you have the right to use. Do not impersonate a brand.
         </p>
       </div>
     </footer>
@@ -502,9 +392,8 @@
         <p class="eyebrow">SIGNING KEY</p>
         <h2 id="key-dialog-title">Create the key that signs this app.</h2>
         <p class="key-copy" data-key-copy>
-          The key is generated in this browser and stored as a non-exportable
-          key. The encrypted backup is the only copy you can move. Lose both and
-          you cannot update the app without uninstalling it.
+          The key is generated here. The encrypted backup is the only copy you
+          can move. Lose it and you cannot update the app.
         </p>
         <label for="key-password">Backup password</label>
         <input
