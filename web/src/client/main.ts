@@ -206,9 +206,9 @@ function requestPassword(mode: "create" | "import"): Promise<string | null> {
 }
 
 function closePassword(value: string | null): void {
-  keyDialog.close();
   const resolve = passwordResolver;
   passwordResolver = null;
+  keyDialog.close();
   if (resolve !== null) {
     resolve(value);
   }
