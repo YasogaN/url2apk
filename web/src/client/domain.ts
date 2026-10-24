@@ -97,16 +97,18 @@ const KEYWORDS = new Set([
 
 /**
  * Reverse-domain package derived from the page host:
- * example.com -> com.example, www.example.com -> com.example.www.
+ * example.com -> com.example, www.example.com -> com.example.
  */
 export function packageName(url: URL): string {
-  const labels = url.hostname
+  let labels = url.hostname
     .toLowerCase()
     .replace(/\.+$/, "")
     .split(".")
-    .filter((label) => label !== "")
-    .map(sanitizeLabel)
-    .reverse();
+    .filter((label) => label !== "");
+  if (labels.length >= 3 && labels[0] === "www") {
+    labels = labels.slice(1);
+  }
+  labels = labels.map(sanitizeLabel).reverse();
   const joined = labels.join(".");
   const withRoot = joined.includes(".") ? joined : `app.${joined}`;
   if (withRoot.length <= PACKAGE_MAX_LENGTH) {

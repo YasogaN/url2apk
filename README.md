@@ -21,7 +21,7 @@ The only server-side feature is the optional favicon lookup; the template is fet
 3. The ZIP is rebuilt with `resources.arsc` stored and 4-byte aligned, then signed with APK Signature Scheme v2.
 4. The signing key is generated locally with WebCrypto (RSA-2048 by default; the key helper also accepts RSA-4096) and a self-signed certificate. The live private key is imported as non-extractable and stored in IndexedDB. The portable copy is a password-encrypted `.p1x` backup (PBKDF2-SHA256 + AES-GCM).
 
-The template relies on fixed slots rather than aapt2 at runtime: a 127-character package slot, a 128-code-unit label slot and a literal `versionCode`. The browser replaces the package with the reversed host (`example.com` -> `com.example`, `news.ycombinator.com` -> `com.ycombinator.news`) and the label with the chosen name. The patcher shortens the strings in place, NUL-terminates them, clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
+The template relies on fixed slots rather than aapt2 at runtime: a 127-character package slot, a 128-code-unit label slot and a literal `versionCode`. The browser replaces the package with the reversed host, dropping a leading `www` (`example.com` -> `com.example`, `www.example.com` -> `com.example`, `news.ycombinator.com` -> `com.ycombinator.news`), and the label with the chosen name. The patcher shortens the strings in place, NUL-terminates them, clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
 
 ## Status
 

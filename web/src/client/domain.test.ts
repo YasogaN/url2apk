@@ -65,9 +65,11 @@ describe("initials", () => {
 describe("packageName", () => {
   it.each([
     ["https://example.com/", "com.example"],
-    ["https://www.example.com/", "com.example.www"],
+    ["https://www.example.com/", "com.example"],
     ["https://news.ycombinator.com/", "com.ycombinator.news"],
-    ["https://www.bbc.co.uk/", "uk.co.bbc.www"],
+    ["https://www.com/", "com.www"],
+    ["https://www.www.example.com/", "com.example.www"],
+    ["https://www.bbc.co.uk/", "uk.co.bbc"],
     ["https://my-app.example.com/", "com.example.my_app"],
     ["https://123.example.com/", "com.example.a123"],
     ["https://class.example.com/", "com.example.class_"],
