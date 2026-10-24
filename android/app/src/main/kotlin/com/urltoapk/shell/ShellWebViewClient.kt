@@ -1,6 +1,8 @@
 package com.urltoapk.shell
 
+import android.annotation.SuppressLint
 import android.net.http.SslError
+import android.os.Build
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SafeBrowsingResponse
 import android.webkit.SslErrorHandler
@@ -91,12 +93,20 @@ class ShellWebViewClient(
         threatType: Int,
         callback: SafeBrowsingResponse,
     ) {
-        callback.backToSafety(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            callback.backToSafety(true)
+        }
         events.onMainFrameError("Unsafe site blocked", request.url.toString())
     }
 
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
-        events.onRendererGone(detail.didCrash())
+        events.onRendererGone(rendererCrashed(Build.VERSION.SDK_INT, detail))
         return true
     }
+
+    // The callback only exists on API 26+, but the SDK value is injectable so the
+    // pre-26 path is covered by a plain unit test.
+    @SuppressLint("NewApi")
+    internal fun rendererCrashed(sdk: Int, detail: RenderProcessGoneDetail): Boolean =
+        if (sdk >= Build.VERSION_CODES.O) detail.didCrash() else false
 }

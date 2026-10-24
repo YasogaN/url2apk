@@ -235,7 +235,10 @@ class ShellWebViewClientTest {
     fun `handles a dead renderer`() {
         val events = FakeEvents()
         val client = client(events = events)
-        assertTrue(client.onRenderProcessGone(webView, FakeRenderGone(crashed = true)))
+        val detail = FakeRenderGone(crashed = true)
+        assertTrue(client.onRenderProcessGone(webView, detail))
         assertEquals(listOf(true), events.renderer)
+        assertTrue(client.rendererCrashed(26, detail))
+        assertFalse(client.rendererCrashed(24, detail))
     }
 }
