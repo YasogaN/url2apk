@@ -12,7 +12,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.urltoapk.a0000000000000000000"
+        applicationId = "com.urltoapk.a00000000000000000000"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

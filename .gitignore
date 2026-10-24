@@ -27,6 +27,7 @@ coverage/
 *.apk
 *.aab
 !android/app/src/test/fixtures/*.apk
+!web/public/shell.apk
 
 # Editors and OS
 .DS_Store
