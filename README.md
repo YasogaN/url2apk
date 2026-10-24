@@ -2,7 +2,7 @@
 
 A local-first URL → Android APK packager. Paste an HTTPS URL, choose a name and icon, and the browser assembles and signs a small WebView APK. No account, no cloud build, no Chrome.
 
-The only server-side feature is the optional favicon lookup. Everything else — binary resource patching, ZIP assembly, key generation and APK v2 signing — happens in the tab.
+The only server-side feature is the optional favicon lookup; the template is fetched from this deployment itself. Everything else — binary resource patching, ZIP assembly, key generation and APK v2 signing — happens in the tab.
 
 ## Repository layout
 
@@ -117,7 +117,7 @@ There is no QR code for the key. A screenshot of a QR is just a screenshot of a 
 
 ## Privacy
 
-No accounts, no analytics, no telemetry and no third-party scripts. The URL, icon and name are used in the tab. The only network request is `Fetch favicon`, which goes to this deployment's `/api/favicon` endpoint and then to the site you named.
+No accounts, no analytics, no telemetry and no third-party scripts. The URL, icon and name are used in the tab. The only third-party network request is `Fetch favicon`, which goes to this deployment's `/api/favicon` endpoint and then to the site you named.
 
 ## Responsible use
 
