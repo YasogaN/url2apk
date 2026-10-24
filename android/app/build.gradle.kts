@@ -43,18 +43,72 @@ android {
 dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.17")
+    testRuntimeOnly("org.jacoco:org.jacoco.agent:0.8.13:runtime")
 }
 
 jacoco {
     toolVersion = "0.8.13"
 }
 
+val jacocoAntConfiguration = configurations.named("jacocoAnt")
+
+/*
+ * Robolectric loads app classes through its own SandboxClassLoader, so a plain
+ * JaCoCo agent misses everything exercised by a Robolectric test. Instrument the
+ * main classes offline and put them first on the unit-test classpath instead;
+ * Robolectric explicitly understands JaCoCo-instrumented constructors.
+ */
+val instrumentDebugClasses by tasks.registering {
+    val inputDir = layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+    val outputDir = layout.buildDirectory.dir("jacoco-offline/classes")
+    dependsOn("compileDebugKotlin")
+    inputs.dir(inputDir)
+    outputs.dir(outputDir)
+    doLast {
+        val outputRoot = outputDir.get().asFile
+        outputRoot.deleteRecursively()
+        outputRoot.mkdirs()
+        val antClasspath = jacocoAntConfiguration.get().files
+        ant.withGroovyBuilder {
+            "taskdef"(
+                "name" to "jacoco-instrument",
+                "classname" to "org.jacoco.ant.InstrumentTask",
+            ) {
+                "classpath" {
+                    antClasspath.forEach { file ->
+                        "pathelement"("location" to file.absolutePath)
+                    }
+                }
+            }
+            "jacoco-instrument"("destdir" to outputRoot) {
+                "fileset"("dir" to inputDir.get().asFile)
+            }
+        }
+    }
+}
+
 tasks.withType<Test>().configureEach {
     extensions.configure<JacocoTaskExtension> {
-        isEnabled = true
+        isEnabled = false
     }
     testLogging {
         events("passed", "skipped", "failed")
+    }
+    if (name == "testDebugUnitTest") {
+        dependsOn(instrumentDebugClasses)
+        doFirst {
+            val originalClasses = layout.buildDirectory
+                .dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+                .get()
+                .asFile
+            classpath = files(layout.buildDirectory.dir("jacoco-offline/classes")) +
+                classpath.filter { !it.absolutePath.startsWith(originalClasses.absolutePath) }
+            layout.buildDirectory.dir("jacoco").get().asFile.mkdirs()
+        }
+        systemProperty(
+            "jacoco-agent.destfile",
+            layout.buildDirectory.file("jacoco/offline.exec").get().asFile.absolutePath,
+        )
     }
 }
 
@@ -67,13 +121,12 @@ val coverageClasses = files(
             "**/BuildConfig.class",
             "**/*Test.class",
             "**/*Test\$*.class",
+            "**/jacoco-offline/**",
         )
-    }
+    },
 )
 
-val coverageExecutionData = fileTree(layout.buildDirectory) {
-    include("**/*.exec")
-}
+val coverageExecutionData = files(layout.buildDirectory.file("jacoco/offline.exec"))
 
 val jacocoTestReport by tasks.registering(JacocoReport::class) {
     dependsOn("testDebugUnitTest")
