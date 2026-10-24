@@ -1,15 +1,22 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import { LABEL_SENTINEL, PACKAGE_SENTINEL, patchManifest } from "./axml";
 import { patchPackageName } from "./arsc";
+import { findAndroidTool } from "./test-tools";
 import { readZip, writeZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
 const PACKAGE = "com.example.testapp";
-const APK_PATH = join(mkdtempSync(join(tmpdir(), "url-to-apk-")), "patched.apk");
+const TEMP_DIR = mkdtempSync(join(tmpdir(), "url-to-apk-"));
+const APK_PATH = join(TEMP_DIR, "patched.apk");
+const AAPT2 = findAndroidTool("AAPT2", "aapt2");
+
+afterAll(() => {
+  rmSync(TEMP_DIR, { recursive: true, force: true });
+});
 
 function patchedApk(): Uint8Array {
   const archive = readZip(new Uint8Array(readFileSync(TEMPLATE)));
@@ -69,14 +76,14 @@ describe("android binary resources", () => {
   });
 
   it("is readable by aapt2", () => {
-    const aapt2 =
-      process.env.AAPT2 ?? "/home/blocky/android-sdk/build-tools/36.0.0/aapt2";
-    if (!existsSync(aapt2)) {
+    if (AAPT2 === undefined) {
+      if (process.env.CI) {
+        throw new Error("aapt2 is required in CI");
+      }
       return;
     }
-    const path = APK_PATH;
-    writeFileSync(path, patchedApk());
-    const badging = execFileSync(aapt2, ["dump", "badging", path], {
+    writeFileSync(APK_PATH, patchedApk());
+    const badging = execFileSync(AAPT2, ["dump", "badging", APK_PATH], {
       encoding: "utf8",
     });
     expect(badging).toContain(`package: name='${PACKAGE}'`);

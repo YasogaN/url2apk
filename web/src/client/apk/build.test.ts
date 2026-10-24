@@ -1,27 +1,27 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { beforeAll, describe, expect, it } from "vitest";
+import { delimiter, join } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildApk, ICON_PATHS } from "./build";
 import { createIdentity, importIdentity, type Identity } from "./keys";
+import { findAndroidTool } from "./test-tools";
 import { readZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
 const PACKAGE = "com.example.testapp";
-const APK_PATH = join(mkdtempSync(join(tmpdir(), "url-to-apk-")), "signed.apk");
-const AAPT2 =
-  process.env.AAPT2 ?? "/home/blocky/android-sdk/build-tools/36.0.0/aapt2";
-const APKSIGNER =
-  process.env.APKSIGNER ?? "/home/blocky/android-sdk/build-tools/36.0.0/apksigner";
-const ZIPALIGN =
-  process.env.ZIPALIGN ?? "/home/blocky/android-sdk/build-tools/36.0.0/zipalign";
-const JAVA_HOME = process.env.JAVA_HOME ?? "/home/blocky/toolchains/jdk17";
-const toolEnv = {
-  ...process.env,
-  JAVA_HOME,
-  PATH: `${JAVA_HOME}/bin:${process.env.PATH ?? ""}`,
-};
+const TEMP_DIR = mkdtempSync(join(tmpdir(), "url-to-apk-"));
+const APK_PATH = join(TEMP_DIR, "signed.apk");
+const AAPT2 = findAndroidTool("AAPT2", "aapt2");
+const APKSIGNER = findAndroidTool("APKSIGNER", "apksigner");
+const ZIPALIGN = findAndroidTool("ZIPALIGN", "zipalign");
+const JAVA_HOME = process.env.JAVA_HOME;
+const toolEnv = JAVA_HOME
+  ? {
+      ...process.env,
+      PATH: `${join(JAVA_HOME, "bin")}${delimiter}${process.env.PATH ?? ""}`,
+    }
+  : process.env;
 
 let identity: Identity;
 let signed: Uint8Array;
@@ -47,6 +47,10 @@ beforeAll(async () => {
   });
   writeFileSync(APK_PATH, signed);
 }, 120_000);
+
+afterAll(() => {
+  rmSync(TEMP_DIR, { recursive: true, force: true });
+});
 
 describe("key backup", () => {
   it("round trips an encrypted backup", async () => {
@@ -76,18 +80,20 @@ describe("key backup", () => {
 
 describe("signed apk", () => {
   it("is a valid v2-signed APK", () => {
-    if (!existsSync(APKSIGNER)) {
+    if (APKSIGNER === undefined || ZIPALIGN === undefined) {
+      if (process.env.CI) {
+        throw new Error("APK signing tools are required in CI");
+      }
       return;
     }
-    const path = APK_PATH;
-    const verify = execFileSync(APKSIGNER, ["verify", "--verbose", path], {
+    const verify = execFileSync(APKSIGNER, ["verify", "--verbose", APK_PATH], {
       encoding: "utf8",
       env: toolEnv,
     });
     expect(verify).toContain(
       "Verified using v2 scheme (APK Signature Scheme v2): true",
     );
-    const align = execFileSync(ZIPALIGN, ["-c", "-v", "4", path], {
+    const align = execFileSync(ZIPALIGN, ["-c", "-v", "4", APK_PATH], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -95,11 +101,13 @@ describe("signed apk", () => {
   });
 
   it("carries the patched identity", () => {
-    if (!existsSync(AAPT2)) {
+    if (AAPT2 === undefined) {
+      if (process.env.CI) {
+        throw new Error("aapt2 is required in CI");
+      }
       return;
     }
-    const path = APK_PATH;
-    const badging = execFileSync(AAPT2, ["dump", "badging", path], {
+    const badging = execFileSync(AAPT2, ["dump", "badging", APK_PATH], {
       encoding: "utf8",
     });
     expect(badging).toContain(`package: name='${PACKAGE}'`);
