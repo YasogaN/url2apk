@@ -1,0 +1,43 @@
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/.externalNativeBuild/
+android/.cxx/
+*.iml
+
+# JavaScript / Cloudflare
+node_modules/
+.pnpm-store/
+dist/
+.wrangler/
+.dev.vars
+coverage/
+*.tsbuildinfo
+
+# Secrets and generated artifacts
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.p1x
+*.apk
+*.aab
+!android/app/src/test/fixtures/*.apk
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local agent state
+.opencode/
+
+# Logs
+*.log
