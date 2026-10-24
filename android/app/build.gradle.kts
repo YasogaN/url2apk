@@ -61,7 +61,13 @@ tasks.withType<Test>().configureEach {
 val coverageClasses = files(
     fileTree(layout.buildDirectory) {
         include("**/com/urltoapk/shell/**/*.class")
-        exclude("**/R.class", "**/R\$*.class", "**/BuildConfig.class")
+        exclude(
+            "**/R.class",
+            "**/R\$*.class",
+            "**/BuildConfig.class",
+            "**/*Test.class",
+            "**/*Test\$*.class",
+        )
     }
 )
 
