@@ -36,7 +36,6 @@ const fetchButton = requireElement<HTMLButtonElement>("[data-fetch-icon]");
 const buildButton = requireElement<HTMLButtonElement>("[data-build]");
 const urlNote = requireElement<HTMLElement>("[data-url-note]");
 const statusLine = requireElement<HTMLElement>("[data-build-status]");
-const engineStatus = requireElement<HTMLElement>("[data-engine-status]");
 const previewName = requireElement<HTMLElement>("[data-preview-name]");
 const previewPackage = requireElement<HTMLElement>("[data-preview-package]");
 const packageValues = Array.from(
@@ -73,7 +72,6 @@ let identity: Identity | null = null;
 let template: Uint8Array | null = null;
 let passwordResolver: ((value: string | null) => void) | null = null;
 let passwordMode: "create" | "import" = "create";
-let engineReady = true;
 
 function setStatus(message: string, tone: "muted" | "error" = "muted"): void {
   statusLine.textContent = message;
@@ -151,17 +149,8 @@ async function syncIdentity(): Promise<void> {
   previewName.textContent = name;
   renderIcon();
 
-  buildButton.disabled = !engineReady;
-  engineStatus.dataset.state = engineReady ? "ready" : "idle";
-  engineStatus.textContent = engineReady
-    ? "LOCAL ENGINE: READY"
-    : "LOCAL ENGINE: IDLE";
-  setStatus(
-    engineReady
-      ? "Ready to sign locally."
-      : "The local packaging engine is not available in this build.",
-    engineReady ? "muted" : "error",
-  );
+  buildButton.disabled = false;
+  setStatus("Ready to sign locally.");
 }
 
 function selectIconSource(source: IconSource): void {
