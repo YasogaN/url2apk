@@ -144,11 +144,17 @@ open class MainActivity : Activity(), PageEvents, ChromeHost {
         }
         window.setDecorFitsSystemWindows(false)
         root.setOnApplyWindowInsetsListener { view, insets ->
-            val bars = insets.getInsets(
-                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout(),
+            // Edge-to-edge stops the window from resizing for the keyboard.
+            // Include the IME inset so the WebView shrinks instead of panning.
+            val padding = insets.getInsets(
+                WindowInsets.Type.systemBars() or
+                    WindowInsets.Type.displayCutout() or
+                    WindowInsets.Type.ime(),
             )
-            view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
+            view.setPadding(padding.left, padding.top, padding.right, padding.bottom)
+            // The root already consumes the padded insets; letting WebView see
+            // them too would apply the same spacing a second time.
+            WindowInsets.CONSUMED
         }
         root.requestApplyInsets()
     }

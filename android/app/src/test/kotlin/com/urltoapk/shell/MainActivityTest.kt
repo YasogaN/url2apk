@@ -686,6 +686,22 @@ class MainActivityTest {
     }
 
     @Test
+    fun `pads the root for the ime`() {
+        val activity = launch()
+        val root = activity.contentRoot()
+        val insets = WindowInsets.Builder()
+            .setInsets(WindowInsets.Type.systemBars(), Insets.of(1, 2, 3, 4))
+            .setInsets(WindowInsets.Type.ime(), Insets.of(0, 0, 0, 600))
+            .build()
+        val result = root.dispatchApplyWindowInsets(insets)
+        assertEquals(1, root.paddingLeft)
+        assertEquals(2, root.paddingTop)
+        assertEquals(3, root.paddingRight)
+        assertEquals(600, root.paddingBottom)
+        assertTrue(result.isConsumed)
+    }
+
+    @Test
     @Config(sdk = [29])
     fun `does not use edge to edge before api 30`() {
         val activity = launch()
