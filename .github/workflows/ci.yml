@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
 jobs:
   android:
     runs-on: ubuntu-latest
@@ -16,11 +20,14 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
+      # The runner image ships the SDK; setup-android@v3 fails trying to
+      # install the retired "tools" package.
       - name: Install SDK packages
         run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort | tail -n1)"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
       - name: Check and build the shell
         working-directory: android
         run: ./gradlew :app:check :app:assembleRelease --no-daemon
@@ -41,11 +48,12 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
       - name: Install Android build tools for the APK integration test
         run: |
-          yes | sdkmanager --licenses > /dev/null
-          sdkmanager "build-tools;36.0.0"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort | tail -n1)"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "build-tools;36.0.0"
           {
             echo "AAPT2=$ANDROID_HOME/build-tools/36.0.0/aapt2"
             echo "APKSIGNER=$ANDROID_HOME/build-tools/36.0.0/apksigner"
