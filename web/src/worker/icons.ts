@@ -15,7 +15,7 @@ type Fetched = {
   finalUrl: URL;
 };
 
-const MAX_HTML_BYTES = 512 * 1024;
+const MAX_HTML_BYTES = 4 * 1024 * 1024;
 const MAX_MANIFEST_BYTES = 256 * 1024;
 const MAX_ICON_BYTES = 2 * 1024 * 1024;
 const MAX_REDIRECTS = 3;

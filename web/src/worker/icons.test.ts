@@ -230,7 +230,7 @@ describe("findIcon", () => {
     routes.set(
       "https://example.com/",
       () =>
-        new Response(new Uint8Array(512 * 1024 + 1), {
+        new Response(new Uint8Array(4 * 1024 * 1024 + 1), {
           headers: { "content-type": "text/html" },
         }),
     );
