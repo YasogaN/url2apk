@@ -186,7 +186,7 @@ function requestPassword(mode: "create" | "import"): Promise<string | null> {
       : "Unlock the key backup.";
   keyCopy.textContent =
     mode === "create"
-      ? "The key is generated here. The encrypted backup is the only copy you can move. Lose it and you cannot update the app."
+      ? "The key is generated here. The encrypted backup is the only copy you can move. Lose it and you cannot install over the app again."
       : "Choose the .p1x backup, then enter its password.";
   keySubmit.textContent =
     mode === "create" ? "Create key & download backup" : "Unlock key";
