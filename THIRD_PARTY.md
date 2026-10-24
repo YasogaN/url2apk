@@ -25,7 +25,7 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | Vitest | MIT |
 | Wrangler | Apache-2.0 / MIT |
 | TypeScript | Apache-2.0 |
-| IBM Plex Mono | SIL Open Font License 1.1 |
+| IBM Plex Mono | SIL Open Font License 1.1 (see `web/public/fonts/OFL.txt`) |
 
 ## Standards and specifications
 
