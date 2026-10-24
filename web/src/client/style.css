@@ -1,17 +1,37 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/ibm-plex-mono-700.woff2") format("woff2");
+}
+
 @theme {
-  --color-paper: #f3f2ee;
-  --color-surface: #fbfaf7;
-  --color-ink: #0c0c0b;
-  --color-muted: #6d6c66;
-  --color-line: #d6d4cc;
-  --color-inverse: #0c0c0b;
-  --color-inverse-ink: #f3f2ee;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", "Roboto Mono",
-    Menlo, Consolas, monospace;
+  --color-paper: #ffffff;
+  --color-surface: #f5f5f5;
+  --color-ink: #000000;
+  --color-muted: #333333;
+  --color-line: #e5e7eb;
+  --color-strong: #000000;
+  --color-accent: #8b0000;
+  --color-accent-strong: #a50000;
+  --color-success: #4caf50;
+  --color-inverse: #000000;
+  --color-inverse-ink: #ffffff;
+  --font-sans: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
+    monospace;
 }
 
 :root {
@@ -20,13 +40,17 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-paper: #0b0b0a;
-    --color-surface: #121210;
-    --color-ink: #f1efe9;
-    --color-muted: #9c9a91;
-    --color-line: #2a2926;
-    --color-inverse: #f1efe9;
-    --color-inverse-ink: #0b0b0a;
+    --color-paper: #0b0b0b;
+    --color-surface: #151515;
+    --color-ink: #f5f5f5;
+    --color-muted: #9ca3af;
+    --color-line: #2f2f2f;
+    --color-strong: #f5f5f5;
+    --color-accent: #d32f2f;
+    --color-accent-strong: #ef5350;
+    --color-success: #4caf50;
+    --color-inverse: #f5f5f5;
+    --color-inverse-ink: #0b0b0b;
   }
 }
 
@@ -44,18 +68,22 @@
   }
 
   ::selection {
-    background: var(--color-ink);
-    color: var(--color-paper);
+    background: var(--color-accent);
+    color: #ffffff;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
 
   a {
-    color: inherit;
+    color: var(--color-accent);
     text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-ink);
   }
 
   ::placeholder {
@@ -940,5 +968,475 @@
     justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 0.5rem;
+  }
+}
+
+@layer components {
+  .site-header {
+    border-bottom: 2px solid var(--color-strong);
+  }
+
+  .wordmark {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  .wordmark-arrow {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  .wordmark-slash {
+    color: var(--color-accent);
+  }
+
+  .site-nav a:hover {
+    color: var(--color-accent);
+  }
+
+  .nav-external {
+    border-left-color: var(--color-line);
+  }
+
+  .hero {
+    position: relative;
+  }
+
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4rem;
+    height: 0.35rem;
+    background: var(--color-accent);
+  }
+
+  .hero h1 {
+    font-weight: 700;
+    letter-spacing: -0.05em;
+  }
+
+  .eyebrow {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .button {
+    min-height: 2.75rem;
+    border: 2px solid var(--color-strong);
+    font-weight: 700;
+    background: var(--color-strong);
+    color: var(--color-paper);
+  }
+
+  .button:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  .button-ghost {
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  .button-ghost:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  .button:disabled:hover {
+    border-color: var(--color-strong);
+    background: var(--color-strong);
+    color: var(--color-paper);
+  }
+
+  .spec-panel {
+    border: 2px solid var(--color-strong);
+    background: var(--color-surface);
+    box-shadow: 6px 6px 0 var(--color-accent);
+    padding: 0 1rem;
+  }
+
+  .spec-row {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .spec-row:last-child {
+    border-bottom: 0;
+  }
+
+  .spec-key {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .spec-value {
+    font-weight: 700;
+  }
+
+  .section {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .section-head {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+
+  .section-head::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 0.25rem;
+    background: var(--color-accent);
+  }
+
+  .section h2 {
+    font-weight: 700;
+  }
+
+  .builder-panel {
+    border: 2px solid var(--color-strong);
+    box-shadow: 8px 8px 0 var(--color-accent);
+  }
+
+  .builder-bar {
+    border-bottom: 0;
+    background: var(--color-strong);
+    color: var(--color-paper);
+  }
+
+  .builder-engine {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: inherit;
+  }
+
+  .builder-engine::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    flex: none;
+    background: var(--color-muted);
+  }
+
+  .builder-engine[data-state="ready"]::before {
+    background: var(--color-success);
+  }
+
+  .field label,
+  .field legend,
+  .label-static {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  .field input[type="text"],
+  .field input[type="url"],
+  .field input[type="number"] {
+    border: 2px solid var(--color-line);
+  }
+
+  .field input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 3px 3px 0 var(--color-accent);
+  }
+
+  .field-note[data-error="true"] {
+    color: var(--color-accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .segmented {
+    border: 2px solid var(--color-strong);
+  }
+
+  .segmented button {
+    min-height: 2.5rem;
+    border-right: 1px solid var(--color-line);
+  }
+
+  .segmented button:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+  }
+
+  .segmented button[aria-selected="true"] {
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  .segmented button[aria-selected="true"]:hover {
+    background: var(--color-accent-strong);
+    color: #ffffff;
+  }
+
+  .upload-button {
+    min-height: 2.75rem;
+    border: 2px solid var(--color-strong);
+  }
+
+  .upload-button:hover {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: #ffffff;
+  }
+
+  .package-value {
+    border-bottom: 2px solid var(--color-line);
+  }
+
+  .build-status[data-tone="error"] {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .build-status[data-tone="ok"] {
+    color: var(--color-success);
+  }
+
+  .icon-preview {
+    border: 2px solid var(--color-strong);
+  }
+
+  .preview-name {
+    font-weight: 700;
+  }
+
+  .spec-list {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .spec-list div {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .text-button {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .text-button:hover {
+    color: var(--color-ink);
+  }
+
+  .key-row {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .steps {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .steps li {
+    border-right: 1px solid var(--color-line);
+  }
+
+  .steps h3,
+  .fact h3 {
+    font-weight: 700;
+  }
+
+  .step-number,
+  .fact-number {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .checklist li {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .checklist li::before {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .faq-list {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .faq-list summary {
+    font-weight: 700;
+  }
+
+  .faq-list summary::after {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .site-footer {
+    border-top: 2px solid var(--color-strong);
+  }
+
+  .footer-links a:hover {
+    color: var(--color-accent);
+  }
+
+  .key-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: calc(100% - 2rem);
+    max-width: 32rem;
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    border: 2px solid var(--color-strong);
+    box-shadow: 8px 8px 0 var(--color-accent);
+  }
+
+  .key-dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+  }
+
+  .key-form h2 {
+    font-weight: 700;
+  }
+
+  .key-form label {
+    color: var(--color-ink);
+    font-weight: 700;
+  }
+
+  .key-form input {
+    border: 2px solid var(--color-line);
+  }
+
+  .key-form input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 3px 3px 0 var(--color-accent);
+  }
+
+  .key-error {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  .dialog-actions .button {
+    min-height: 2.75rem;
+  }
+
+  @media (max-width: 767px) {
+    .wrap {
+      padding-inline: 1rem;
+    }
+
+    .header-inner {
+      min-height: 0;
+      flex-wrap: wrap;
+      padding-block: 0.75rem;
+    }
+
+    .site-nav {
+      display: flex;
+      width: 100%;
+      gap: 0.9rem;
+      overflow-x: auto;
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--color-line);
+    }
+
+    .site-nav a {
+      white-space: nowrap;
+    }
+
+    .nav-external {
+      border-left: 0;
+      padding-left: 0;
+    }
+
+    .hero {
+      gap: 2rem;
+      padding-block: 3rem 2.5rem;
+    }
+
+    .hero::before {
+      width: 3rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.35rem, 12vw, 3.5rem);
+    }
+
+    .lede {
+      font-size: 1rem;
+    }
+
+    .hero-actions {
+      gap: 0.6rem;
+    }
+
+    .hero-actions .button {
+      flex: 1 1 auto;
+    }
+
+    .spec-panel {
+      box-shadow: 4px 4px 0 var(--color-accent);
+    }
+
+    .section {
+      padding-block: 3rem;
+    }
+
+    .section-head {
+      padding-left: 1rem;
+    }
+
+    .builder-panel {
+      box-shadow: 4px 4px 0 var(--color-accent);
+    }
+
+    .builder-form,
+    .builder-preview {
+      padding: 1rem;
+    }
+
+    .field-pair {
+      grid-template-columns: 1fr;
+    }
+
+    .steps li {
+      border-right: 0;
+      padding: 1.25rem 0;
+    }
+
+    .site-footer {
+      padding-block: 1.5rem;
+    }
+
+    .key-dialog {
+      width: calc(100% - 1.5rem);
+      max-height: calc(100dvh - 1.5rem);
+    }
+
+    .key-form {
+      padding: 1.25rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .segmented {
+      display: flex;
+      width: 100%;
+    }
+
+    .segmented button {
+      flex: 1;
+      padding-inline: 0.4rem;
+    }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field input[type="number"],
+    .key-form input {
+      font-size: 16px;
+    }
   }
 }

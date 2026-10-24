@@ -9,7 +9,7 @@ The only server-side feature is the optional favicon lookup; the template is fet
 | Path | What it is |
 | --- | --- |
 | `android/` | Kotlin WebView shell. minSdk 24, targetSdk 36, no AndroidX. |
-| `web/` | Cloudflare Vite + Hono site, static monochrome UI and the local APK pipeline. |
+| `web/` | Cloudflare Vite + Hono site, static brutalist UI and the local APK pipeline. |
 | `web/public/shell.apk` | Prebuilt **unsigned** release template that the browser patches. |
 | `android/tools/export-template.sh` | Rebuilds the release APK and copies it into the web app. |
 | `.github/workflows/ci.yml` | Android checks and the web typecheck, coverage gate and build. |
