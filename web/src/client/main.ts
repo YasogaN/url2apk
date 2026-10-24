@@ -111,6 +111,17 @@ function renderPreview(): void {
 }
 
 async function syncIdentity(): Promise<void> {
+  if (urlInput.value.trim() === "") {
+    currentUrl = null;
+    setUrlNote(
+      "HTTPS and a full domain. The app loads the live site.",
+      false,
+    );
+    setStatus("Enter an HTTPS URL to begin.");
+    buildButton.disabled = true;
+    return;
+  }
+
   const normalized = normalizeUrl(urlInput.value);
   if (!normalized.ok) {
     currentUrl = null;
