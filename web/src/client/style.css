@@ -190,6 +190,20 @@
     padding-left: 1.25rem;
   }
 
+  .nav-github {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.5rem;
+    min-width: 1.5rem;
+  }
+
+  .nav-github svg {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+  }
+
   .hero {
     display: grid;
     gap: 3rem;
@@ -843,6 +857,18 @@
 
   .footer-links a:hover {
     color: var(--color-ink);
+  }
+
+  .footer-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .footer-github svg {
+    display: block;
+    width: 0.75rem;
+    height: 0.75rem;
   }
 
   .footer-rule {
