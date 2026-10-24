@@ -1100,6 +1100,15 @@
     font-weight: 700;
   }
 
+  .builder-preview {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .builder-preview .key-row {
+    margin-top: auto;
+  }
+
   .builder-panel {
     border: 2px solid var(--color-strong);
     box-shadow: 8px 8px 0 var(--color-accent);
