@@ -99,6 +99,37 @@ export function isPrivateHost(hostname: string): boolean {
   return false;
 }
 
+function isValidHostname(hostname: string): boolean {
+  const host = hostname.replace(/\.+$/, "");
+  const bare = host.replace(/^\[|\]$/g, "");
+  if (bare.includes(":")) {
+    return true;
+  }
+  if (ipv4ToInt(host) !== null) {
+    return true;
+  }
+  if (host.length > 253) {
+    return false;
+  }
+  if (!host.includes(".")) {
+    return false;
+  }
+  const labels = host.split(".");
+  for (const label of labels) {
+    if (label.length === 0 || label.length > 63) {
+      return false;
+    }
+    if (!/^[a-z0-9-]+$/i.test(label)) {
+      return false;
+    }
+    if (label.startsWith("-") || label.endsWith("-")) {
+      return false;
+    }
+  }
+  const tld = labels[labels.length - 1];
+  return /^[a-z]{2,}$/i.test(tld) || /^xn--[a-z0-9-]+$/i.test(tld);
+}
+
 export function parseTarget(raw: string): TargetResult {
   let url: URL;
   try {
@@ -114,6 +145,12 @@ export function parseTarget(raw: string): TargetResult {
   }
   if (isPrivateHost(url.hostname)) {
     return { ok: false, message: "Private and local hosts are not supported." };
+  }
+  if (!isValidHostname(url.hostname)) {
+    return {
+      ok: false,
+      message: "Enter a full domain name, e.g. example.com.",
+    };
   }
   return { ok: true, url };
 }

@@ -11,6 +11,18 @@ describe("parseTarget", () => {
   });
 
   it.each([
+    "https://sub.example.co.uk",
+    "https://xn--bcher-kva.example",
+    "https://example.xn--p1ai",
+    "https://8.8.8.8",
+    "https://[2001:4860:4860::8888]",
+    "https://example.com.",
+    "https://foo.1.example.com",
+  ])("accepts %s", (raw) => {
+    expect(parseTarget(raw).ok).toBe(true);
+  });
+
+  it.each([
     ["", "Enter a valid https URL."],
     ["not a url", "Enter a valid https URL."],
     ["http://example.com", "Only https URLs are supported."],
@@ -19,9 +31,25 @@ describe("parseTarget", () => {
     ["https://:pass@example.com", "URLs with credentials are not supported."],
     ["https://localhost", "Private and local hosts are not supported."],
     ["https://127.0.0.1", "Private and local hosts are not supported."],
+    ["https://yasogan", "Enter a full domain name"],
+    ["https://example", "Enter a full domain name"],
+    ["https://example.c", "Enter a full domain name"],
+    ["https://example.1z", "Enter a full domain name"],
+    ["https://-bad.com", "Enter a full domain name"],
+    ["https://bad-.com", "Enter a full domain name"],
+    ["https://a..com", "Enter a full domain name"],
+    ["https://foo_bar.com", "Enter a full domain name"],
+    [`https://${"a".repeat(64)}.com`, "Enter a full domain name"],
+    [
+      `https://${"a".repeat(61)}.${"b".repeat(61)}.${"c".repeat(61)}.${"d".repeat(61)}.${"e".repeat(61)}.com`,
+      "Enter a full domain name",
+    ],
   ])("rejects %s", (raw, message) => {
     const result = parseTarget(raw);
-    expect(result).toEqual({ ok: false, message });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toContain(message);
+    }
   });
 });
 

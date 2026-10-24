@@ -48,6 +48,16 @@ describe("favicon api", () => {
     });
   });
 
+  it("rejects single-label hosts", async () => {
+    const response = await app.request(
+      `/api/favicon?url=${encodeURIComponent("https://yasogan")}`,
+    );
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      error: "Enter a full domain name, e.g. example.com.",
+    });
+  });
+
   it("returns the best icon", async () => {
     fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
       const url = String(input);

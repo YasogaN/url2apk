@@ -22,6 +22,13 @@ describe("normalizeUrl", () => {
       message: "Only https URLs are supported.",
     });
   });
+
+  it("requires a full domain", () => {
+    expect(normalizeUrl("https://yasogan")).toEqual({
+      ok: false,
+      message: "Enter a full domain name, e.g. example.com.",
+    });
+  });
 });
 
 describe("suggestName", () => {
