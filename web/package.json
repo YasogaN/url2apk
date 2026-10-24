@@ -13,7 +13,10 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
-    "hono": "^4.13.13"
+    "@peculiar/x509": "^2.2.0",
+    "fflate": "^0.8.3",
+    "hono": "^4.13.13",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.65.0",
@@ -25,5 +28,6 @@
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "wrangler": "^4.152.0"
-  }
+  },
+  "packageManager": "pnpm@12.6.0"
 }

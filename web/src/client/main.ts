@@ -1,3 +1,13 @@
+import { buildApk } from "./apk/build";
+import { bufferSource } from "./apk/bytes";
+import { renderIconLayers } from "./apk/icons";
+import {
+  createIdentity,
+  importIdentity,
+  loadIdentity,
+  saveIdentity,
+  type Identity,
+} from "./apk/keys";
 import {
   formatVersionCode,
   initials,
@@ -40,12 +50,31 @@ const panels = Array.from(
   document.querySelectorAll<HTMLElement>("[data-icon-panel]"),
 );
 
+const keyDialog = requireElement<HTMLDialogElement>("#key-dialog");
+const keyForm = requireElement<HTMLFormElement>("#key-form");
+const keyDialogTitle = requireElement<HTMLElement>("#key-dialog-title");
+const keyCopy = requireElement<HTMLElement>("[data-key-copy]");
+const keyPassword = requireElement<HTMLInputElement>("#key-password");
+const keyConfirm = requireElement<HTMLInputElement>("#key-confirm");
+const keyConfirmField = requireElement<HTMLElement>("[data-key-confirm-field]");
+const keyError = requireElement<HTMLElement>("[data-key-error]");
+const keySubmit = requireElement<HTMLButtonElement>("[data-key-submit]");
+const keyCancel = requireElement<HTMLButtonElement>("[data-key-cancel]");
+const keyStatus = requireElement<HTMLElement>("[data-key-status]");
+const backupKeyButton = requireElement<HTMLButtonElement>("[data-backup-key]");
+const importKeyButton = requireElement<HTMLButtonElement>("[data-import-key]");
+const importFile = requireElement<HTMLInputElement>("[data-import-file]");
+
 let currentUrl: URL | null = null;
 let nameTouched = false;
 let iconImage: HTMLImageElement | null = null;
 let iconSource: IconSource = "letter";
 let identityToken = 0;
-let engineReady = false;
+let identity: Identity | null = null;
+let template: Uint8Array | null = null;
+let passwordResolver: ((value: string | null) => void) | null = null;
+let passwordMode: "create" | "import" = "create";
+let engineReady = true;
 
 function setStatus(message: string, tone: "muted" | "error" = "muted"): void {
   statusLine.textContent = message;
@@ -144,6 +173,162 @@ function selectIconSource(source: IconSource): void {
     iconImage = null;
     renderIcon();
   }
+}
+
+function updateKeyStatus(): void {
+  keyStatus.textContent =
+    identity === null
+      ? "No key yet. It is created on the first build."
+      : "Key stored in this browser. Keep the backup file safe.";
+}
+
+function requestPassword(mode: "create" | "import"): Promise<string | null> {
+  passwordMode = mode;
+  keyError.textContent = "";
+  keyPassword.value = "";
+  keyConfirm.value = "";
+  keyConfirmField.hidden = mode === "import";
+  keyDialogTitle.textContent =
+    mode === "create"
+      ? "Create the key that signs this app."
+      : "Unlock the key backup.";
+  keyCopy.textContent =
+    mode === "create"
+      ? "The key is generated in this browser and stored as a non-exportable key. The encrypted backup is the only copy you can move. Lose both and you cannot update the app without uninstalling it."
+      : "Choose the .p1x backup file, then enter the password you set when it was created.";
+  keySubmit.textContent =
+    mode === "create" ? "Create key & download backup" : "Unlock key";
+  keyDialog.showModal();
+  keyPassword.focus();
+  return new Promise((resolve) => {
+    passwordResolver = resolve;
+  });
+}
+
+function closePassword(value: string | null): void {
+  keyDialog.close();
+  const resolve = passwordResolver;
+  passwordResolver = null;
+  if (resolve !== null) {
+    resolve(value);
+  }
+}
+
+async function ensureIdentity(): Promise<Identity | null> {
+  if (identity !== null) {
+    return identity;
+  }
+  const password = await requestPassword("create");
+  if (password === null) {
+    return null;
+  }
+  setStatus("Generating a local RSA-2048 key…");
+  try {
+    const created = await createIdentity(2048, password);
+    identity = created;
+    await saveIdentity(created);
+    downloadBytes(created.backup, "url-to-apk-key.p1x", "application/octet-stream");
+    updateKeyStatus();
+    setStatus("Key created. The encrypted backup has been downloaded.");
+    return created;
+  } catch (error) {
+    setStatus(
+      error instanceof Error ? error.message : "The key could not be created.",
+      "error",
+    );
+    return null;
+  }
+}
+
+async function loadTemplate(): Promise<Uint8Array> {
+  if (template !== null) {
+    return template;
+  }
+  const response = await fetch("/shell.apk");
+  if (!response.ok) {
+    throw new Error("The Android shell template could not be loaded.");
+  }
+  template = new Uint8Array(await response.arrayBuffer());
+  return template;
+}
+
+async function build(): Promise<void> {
+  const normalized = normalizeUrl(urlInput.value);
+  if (!normalized.ok) {
+    setStatus(normalized.message, "error");
+    return;
+  }
+
+  const name = currentName();
+  const versionCode = formatVersionCode(versionInput.valueAsNumber);
+  const packageValue = await packageName(
+    normalized.url,
+    `${name}\n${versionCode}`,
+  );
+
+  buildButton.disabled = true;
+  try {
+    const chosen = await ensureIdentity();
+    if (chosen === null) {
+      setStatus("Build cancelled.");
+      return;
+    }
+
+    setStatus("Preparing the shell…");
+    const shell = await loadTemplate();
+    setStatus("Rendering the icon layers…");
+    const icons = await renderIconLayers(iconImage, name);
+    setStatus("Assembling and signing the APK…");
+    const apk = await buildApk({
+      template: shell,
+      packageName: packageValue,
+      label: name,
+      versionCode,
+      url: normalized.url.href,
+      name,
+      icons,
+      identity: chosen,
+    });
+    downloadBytes(
+      apk,
+      `${slug(name)}-${versionCode}.apk`,
+      "application/vnd.android.package-archive",
+    );
+    setStatus(
+      "Signed APK downloaded. Install it from your browser or file manager.",
+    );
+  } catch (error) {
+    setStatus(
+      error instanceof Error ? error.message : "The APK could not be built.",
+      "error",
+    );
+  } finally {
+    buildButton.disabled = false;
+  }
+}
+
+function downloadBytes(
+  bytes: Uint8Array,
+  filename: string,
+  type: string,
+): void {
+  const blob = new Blob([bufferSource(bytes)], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function slug(value: string): string {
+  const normalized = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized === "" ? "app" : normalized;
 }
 
 urlInput.addEventListener("input", () => {
@@ -252,11 +437,81 @@ fetchButton.addEventListener("click", () => {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (currentUrl === null) {
-    setStatus("Enter an HTTPS URL first.", "error");
+  void build();
+});
+
+keyForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const password = keyPassword.value;
+  if (password.length < 10) {
+    keyError.textContent = "Use at least 10 characters.";
     return;
   }
-  setStatus("The local packaging engine is not available in this build.", "error");
+  if (passwordMode === "create" && keyConfirm.value !== password) {
+    keyError.textContent = "The passwords do not match.";
+    return;
+  }
+  keyPassword.value = "";
+  keyConfirm.value = "";
+  closePassword(password);
+});
+
+keyCancel.addEventListener("click", () => {
+  closePassword(null);
+});
+
+keyDialog.addEventListener("close", () => {
+  if (passwordResolver !== null) {
+    const resolve = passwordResolver;
+    passwordResolver = null;
+    resolve(null);
+  }
+});
+
+backupKeyButton.addEventListener("click", () => {
+  if (identity === null) {
+    setStatus("Create a key with the first build first.", "error");
+    return;
+  }
+  downloadBytes(
+    identity.backup,
+    "url-to-apk-key.p1x",
+    "application/octet-stream",
+  );
+  setStatus("Encrypted key backup downloaded.");
+});
+
+importKeyButton.addEventListener("click", () => {
+  importFile.click();
+});
+
+importFile.addEventListener("change", () => {
+  const file = importFile.files?.[0];
+  importFile.value = "";
+  if (file === undefined) {
+    return;
+  }
+  void file.arrayBuffer().then(async (buffer) => {
+    const password = await requestPassword("import");
+    if (password === null) {
+      return;
+    }
+    setStatus("Unlocking the key backup…");
+    try {
+      const imported = await importIdentity(new Uint8Array(buffer), password);
+      identity = imported;
+      await saveIdentity(imported);
+      updateKeyStatus();
+      setStatus("Key imported from the backup.");
+    } catch (error) {
+      setStatus(
+        error instanceof Error
+          ? error.message
+          : "The backup could not be imported.",
+        "error",
+      );
+    }
+  });
 });
 
 const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -266,4 +521,14 @@ media.addEventListener("change", () => {
 
 previewName.textContent = "Example";
 paintLetter(canvas, "E");
+void loadIdentity()
+  .then((stored) => {
+    if (stored !== null) {
+      identity = stored;
+      updateKeyStatus();
+    }
+  })
+  .catch(() => {
+    setStatus("IndexedDB is unavailable; the key will not persist.", "error");
+  });
 void syncIdentity();

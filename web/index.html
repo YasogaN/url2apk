@@ -263,6 +263,21 @@
                 <div><dt>Engine</dt><dd>WebView shell</dd></div>
                 <div><dt>Key storage</dt><dd>Non-exportable IndexedDB key</dd></div>
               </dl>
+
+              <div class="key-row">
+                <span class="mono-value" data-key-status>
+                  No key yet. It is created on the first build.
+                </span>
+                <div class="key-actions">
+                  <button type="button" class="text-button" data-backup-key>
+                    Backup key
+                  </button>
+                  <button type="button" class="text-button" data-import-key>
+                    Import key
+                  </button>
+                  <input type="file" accept=".p1x" data-import-file hidden />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -480,5 +495,44 @@
         browser. The documentation above is still readable.
       </p>
     </noscript>
+
+    <dialog class="key-dialog" id="key-dialog" aria-labelledby="key-dialog-title">
+      <form class="key-form" id="key-form" novalidate>
+        <p class="eyebrow">SIGNING KEY</p>
+        <h2 id="key-dialog-title">Create the key that signs this app.</h2>
+        <p class="key-copy" data-key-copy>
+          The key is generated in this browser and stored as a non-exportable
+          key. The encrypted backup is the only copy you can move. Lose both and
+          you cannot update the app without uninstalling it.
+        </p>
+        <label for="key-password">Backup password</label>
+        <input
+          id="key-password"
+          type="password"
+          minlength="10"
+          autocomplete="new-password"
+          required
+        />
+        <div data-key-confirm-field>
+          <label for="key-confirm">Confirm password</label>
+          <input
+            id="key-confirm"
+            type="password"
+            minlength="10"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+        <p class="key-error" data-key-error aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button type="button" class="button button-ghost" data-key-cancel>
+            Cancel
+          </button>
+          <button type="submit" class="button" data-key-submit>
+            Create key &amp; download backup
+          </button>
+        </div>
+      </form>
+    </dialog>
   </body>
 </html>
