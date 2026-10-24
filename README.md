@@ -76,7 +76,7 @@ The first build creates an RSA-2048 key, downloads the encrypted backup and sign
 
 ## Status
 
-- **Android:** 135 unit tests, lint clean, 100% line coverage gate.
+- **Android:** 136 unit tests, lint clean, 100% line coverage gate.
 - **Web:** 198 tests, 100% statements/branches/functions/lines for the Hono API and the pure front-end domain helpers.
 - **APK integration:** a real APK is built in tests and verified with `aapt2`, `zipalign` and `apksigner` (v2 true).
 - **Live:** [url2apk.yasogan.dev](https://url2apk.yasogan.dev) on Cloudflare Workers.
