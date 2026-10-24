@@ -97,6 +97,8 @@ tools/export-template.sh
 
 `web/public/shell.apk` is the committed unsigned template. `android/tools/export-template.sh` rebuilds it. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
 
+The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$ANDROID_HOME` (or via `AAPT2`, `APKSIGNER`, `ZIPALIGN`) and skip when they are absent. CI installs them.
+
 ## Repository layout
 
 | Path | Contents |
