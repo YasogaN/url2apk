@@ -131,7 +131,7 @@ async function syncIdentity(): Promise<void> {
 
   currentUrl = normalized.url;
   setUrlNote(
-    "HTTPS only. The generated app loads the live site; it is not an offline copy.",
+    "HTTPS and a full domain. The app loads the live site.",
     false,
   );
 
