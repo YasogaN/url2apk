@@ -1,128 +1,134 @@
+<div align="center">
+
 # URL to APK
 
-A local-first URL → Android APK packager. Paste an HTTPS URL, choose a name and icon, and the browser assembles and signs a small WebView APK. No account, no cloud build, no Chrome.
+**A website in. A signed Android app out.**
 
-The only server-side feature is the optional favicon lookup; the template is fetched from this deployment itself. Everything else — binary resource patching, ZIP assembly, key generation and APK v2 signing — happens in the tab.
+Package an HTTPS site as a small Android WebView APK, entirely in your browser. Local key, local signing, no account, no cloud build.
 
-## Repository layout
+[![Live](https://img.shields.io/badge/live-url2apk.yasogan.dev-8b0000?style=flat-square)](https://url2apk.yasogan.dev)
+[![CI](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml/badge.svg)](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-black?style=flat-square)](LICENSE)
 
-| Path | What it is |
-| --- | --- |
-| `android/` | Kotlin WebView shell. minSdk 24, targetSdk 36, no AndroidX. |
-| `web/` | Cloudflare Vite + Hono site, static brutalist UI and the local APK pipeline. |
-| `web/public/shell.apk` | Prebuilt **unsigned** release template that the browser patches. |
-| `android/tools/export-template.sh` | Rebuilds the release APK and copies it into the web app. |
-| `.github/workflows/ci.yml` | Android checks and the web typecheck, coverage gate and build. |
+[**Open the builder →**](https://url2apk.yasogan.dev)
+
+</div>
+
+![URL to APK builder in light mode](docs/light.png)
+
+> Also searched as **website to APK**, **HTML to APK**, **PWA to APK**, **WebView wrapper**, or a **local APK generator**. It is a browser-only alternative to PWABuilder and Bubblewrap.
+
+## Why
+
+Firefox on Android can add a site to the home screen, but it is still a browser-badged shortcut. PWAs that install as real apps need a browser that mints WebAPKs or a TWA, which means Chrome, Digital Asset Links and often a cloud build.
+
+URL to APK takes a different route: a prebuilt Kotlin WebView shell, patched and signed in the tab. You get a real app-drawer entry, your own icon and a signature you control. No login, no queue, no server-side build.
+
+## Try it
+
+1. Open [url2apk.yasogan.dev](https://url2apk.yasogan.dev).
+2. Paste a full HTTPS URL, e.g. `https://example.com/`.
+3. Choose the app name and icon (letter, upload or fetch).
+4. Generate the APK. On the first build, set a backup password for the signing key.
+5. Save the `.p1x` key backup and install the `.apk` (allow installs from your browser or file manager).
+
+The first build creates an RSA-2048 key, downloads the encrypted backup and signs the APK. Later builds reuse the non-exportable key in IndexedDB; keep the `.p1x` file safe.
+
+## What you get
+
+- A launcher icon, app-drawer entry and its own window.
+- Uploads, downloads, camera, microphone, geolocation and fullscreen video.
+- A local error/retry screen and safe back navigation.
+- Your key, your signature, your package. One app per site.
+
+## What it is not
+
+- **Not a browser.** It is a WebView wrapper around the live URL; there is no offline copy.
+- **Google sign-in will fail.** Google blocks OAuth in embedded WebViews.
+- No Web Push, browser extensions or Firefox profile.
+- No App Links or domain capture; links to the site still open in your default browser.
+- DRM L1 and passkeys are limited, and some sites block WebView.
 
 ## How it works
 
-1. The shell is a small Kotlin WebView host. It loads `assets/config.json`, applies hardened WebView settings, and implements file uploads, downloads, camera/microphone/geolocation prompts, fullscreen video, safe external links, back navigation and a native error/retry screen.
-2. The browser fetches the unsigned template and patches it in memory: the package name, the literal label and `versionCode` in the binary `AndroidManifest.xml`, the package name in `resources.arsc`, every launcher PNG, and `assets/config.json`.
-3. The ZIP is rebuilt with `resources.arsc` stored and 4-byte aligned, then signed with APK Signature Scheme v2.
-4. The signing key is generated locally with WebCrypto (RSA-2048 by default; the key helper also accepts RSA-4096) and a self-signed certificate. The live private key is imported as non-extractable and stored in IndexedDB. The portable copy is a password-encrypted `.p1x` backup (PBKDF2-SHA256 + AES-GCM).
+1. **A prebuilt Kotlin shell.** minSdk 24, targetSdk 36, Android System WebView, no AndroidX. Hardened settings and the WebView plumbing live here.
+2. **Fixed template slots.** A 127-character package slot, a 128-code-unit label slot, a literal `versionCode` and stable icon paths. The browser patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`.
+3. **A local, aligned ZIP and v2 signature.** `resources.arsc` is stored and 4-byte aligned; the APK is signed with APK Signature Scheme v2 using a key generated in the tab.
+4. **A reverse-domain package.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
-The template relies on fixed slots rather than aapt2 at runtime: a 127-character package slot, a 128-code-unit label slot and a literal `versionCode`. The browser replaces the package with the reversed host, dropping a leading `www` (`example.com` -> `com.example`, `www.example.com` -> `com.example`, `news.ycombinator.com` -> `com.ycombinator.news`), and the label with the chosen name. The patcher shortens the strings in place, NUL-terminates them, clears the AXML string-pool `SORTED_FLAG`, and AGP resource-name optimization is disabled so the icon paths stay predictable.
+## Screenshots
+
+| Light | Dark |
+| --- | --- |
+| ![Light mode](docs/light.png) | ![Dark mode](docs/dark.png) |
+
+<details>
+<summary>Mobile</summary>
+<br>
+<p align="center"><img src="docs/mobile.png" alt="Mobile builder" width="340"></p>
+</details>
 
 ## Status
 
-- **Android:** `./gradlew :app:check` passes unit tests, lint and the 100% line-coverage gate (JaCoCo offline instrumentation, so Robolectric tests are counted).
-- **Web:** `pnpm test:coverage` passes with 100% statements, branches, functions and lines for the Hono API and the pure front-end domain helpers.
-- **APK integration:** a test builds a real APK from the committed template and verifies it with `aapt2`, `zipalign` and `apksigner`.
+- **Android:** 135 unit tests, lint clean, 100% line coverage gate.
+- **Web:** 196 tests, 100% statements/branches/functions/lines for the Hono API and the pure front-end domain helpers.
+- **APK integration:** a real APK is built in tests and verified with `aapt2`, `zipalign` and `apksigner` (v2 true).
+- **Live:** [url2apk.yasogan.dev](https://url2apk.yasogan.dev) on Cloudflare Workers.
 
-## Requirements
+## Self-host
 
-- JDK 17.
-- Android SDK platform 36 and build-tools 36.0.0 (for the shell and for the APK integration test).
-- Node 24 and pnpm 12.
-- For the browser: a modern browser with WebCrypto, IndexedDB, Canvas and `dialog` support.
-
-## Development
-
-### Android shell
-
-```sh
-cd android
-./gradlew :app:check          # tests + 100% line gate + lint
-./gradlew :app:assembleRelease
-```
-
-The release APK is unsigned and uses R8. `android/tools/export-template.sh` builds it and copies it to `web/public/shell.apk`.
-
-### Web app
+Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12.
 
 ```sh
 cd web
 pnpm install
-pnpm dev                      # Vite + the Hono worker
+pnpm dev
 pnpm typecheck
-pnpm test                     # unit + APK integration tests
-pnpm test:coverage            # API/front-end-domain coverage gate
+pnpm test:coverage
 pnpm build
+pnpm deploy
 ```
 
-`pnpm dev` serves the site at `http://localhost:5173` by default; pass `--port` to change it.
+```sh
+cd android
+./gradlew :app:check :app:assembleRelease
+tools/export-template.sh
+```
 
-`GET /api/favicon?url=https://example.com/` returns the best icon the site exposes. It accepts public HTTPS URLs only, re-validates every redirect, refuses private and local hosts, caps HTML at 4 MB, manifests at 256 KB and icons at 2 MB, and times out after six seconds.
+`web/public/shell.apk` is the committed unsigned template. `android/tools/export-template.sh` rebuilds it. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
 
-### Deploy
+## Repository layout
 
-The web app is a standard Cloudflare Worker with static assets. `pnpm deploy` builds and runs `wrangler deploy`. No secrets, databases or KV namespaces are required.
-
-## The template APK
-
-The template is deliberately a normal Gradle release build, not a hand-patched APK. Its fixed slots are:
-
-- package `com.urltoapk.slot.` followed by 109 `a` characters (127 characters),
-- a 128-character `android:label` literal,
-- `versionCode="1"` and `versionName="1.0"`,
-- the standard adaptive and legacy icon paths under `res/`,
-- `assets/config.json`.
-
-The browser replaces those values with the reverse-domain package and the selected label, plus the icons. Resource shrinking stays off, R8 keeps the shell classes, and `android.enableResourceOptimizations=false` keeps filenames stable.
+| Path | Contents |
+| --- | --- |
+| `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
+| `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser APK pipeline. |
+| `web/public/shell.apk` | Unsigned release template the browser patches. |
+| `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
+| `docs/` | README screenshots. |
 
 ## Signing and updates
 
-Android identifies an app by package name plus signing certificate. To update an installed app you need **the same key** and a **higher version code**.
+Android identifies an app by package name and signing certificate. To update an installed app you need the same key and a higher version code.
 
-The first build generates the key, downloads the encrypted `.p1x` backup and stores a non-exportable copy in IndexedDB. Keep the backup. If the browser storage is cleared and the backup is lost, the app can no longer be updated: you would have to uninstall it and lose its data. The backup password is the only thing protecting the `.p1x` file.
+The private key is generated with WebCrypto and imported as non-extractable; it stays in IndexedDB. The portable copy is a `.p1x` file encrypted with PBKDF2-SHA256 + AES-GCM. Lose the key and the backup and you cannot update the app; you would have to uninstall it and lose its data. Store the backup.
 
-There is no QR code for the key. A screenshot of a QR is just a screenshot of a secret.
+## Distribution
 
-## What works
-
-- A launcher icon, app-drawer entry and its own window.
-- File uploads, downloads, camera, microphone, geolocation and fullscreen video.
-- External `mailto:`, `tel:`, maps and app links through the system.
-- A local error/retry page when the site is unreachable.
-- Multiple generated apps on one device (each has its own package and key).
-- Any icon source: a locally generated letter tile, an uploaded image, or a fetched favicon.
-
-## What does not
-
-- **Google sign-in will fail.** Google blocks OAuth in embedded WebViews. Opening it in an external browser logs into that browser, not the wrapper.
-- No Web Push, browser extensions or Firefox profile.
-- No App Links/domain capture: links to the site from other apps still open in your default browser.
-- No offline copy. The APK loads the live URL.
-- No DRM L1, and passkeys/WebAuthn support is limited.
-- Some sites block WebView user agents or rely on APIs WebView does not expose.
-- A wrapper is not a compatibility layer. If the site does not work in Android System WebView, the APK will not fix it.
-
-## Distribution reality
-
-- Android will warn about unknown apps; you must allow installs from your browser or file manager.
-- Play Protect may warn or block. Do not publish these wrappers to Google Play; they do not meet the minimum-functionality policy.
-- Android 14+ refuses apps targeting an API below 23; this template targets 36.
-- Google's developer verification starts on 30 September 2026 in Brazil, Indonesia, Singapore and Thailand for participating stores, and is planned to expand globally in 2027. Unverified sideloads may need ADB or the advanced flow (with a wait). Limited distribution to up to 20 devices is exempt. Plan for ADB for personal builds.
-- A different signing key cannot update an installed app.
+These are personal sideloaded builds. Android will warn about unknown apps, Play Protect may flag them, and Google's developer verification is rolling out (30 September 2026 in Brazil, Indonesia, Singapore and Thailand; global in 2027). Unverified sideloads may need ADB or the advanced flow. Do not publish these wrappers to Google Play; they do not meet the minimum-functionality policy.
 
 ## Privacy
 
-No accounts, no analytics, no telemetry and no third-party scripts. The URL, icon and name are used in the tab. The only third-party network request is `Fetch favicon`, which goes to this deployment's `/api/favicon` endpoint and then to the site you named.
+No accounts, analytics, telemetry or third-party scripts. The APK is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects.
 
 ## Responsible use
 
-Use this for sites you have the right to package. Do not impersonate a brand, wrap a site you do not own for distribution, or use generated APKs to phish or mislead. The tool signs with your key; the project has no signing authority.
+Wrap only sites you have the right to use. Do not impersonate a brand or distribute an app you do not own.
+
+## Built with
+
+Kotlin and Android System WebView on the shell side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; WebCrypto for the key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
 
 ## Licence
 
-Apache-2.0. See `LICENSE` and `THIRD_PARTY.md`.
+Apache-2.0. See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md).
