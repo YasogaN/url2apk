@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { LABEL_SENTINEL, PACKAGE_SENTINEL, patchManifest } from "./axml";
 import { patchPackageName } from "./arsc";
@@ -7,6 +9,7 @@ import { readZip, writeZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
 const PACKAGE = "com.example.testapp";
+const APK_PATH = join(mkdtempSync(join(tmpdir(), "url-to-apk-")), "patched.apk");
 
 function patchedApk(): Uint8Array {
   const archive = readZip(new Uint8Array(readFileSync(TEMPLATE)));
@@ -71,7 +74,7 @@ describe("android binary resources", () => {
     if (!existsSync(aapt2)) {
       return;
     }
-    const path = "/tmp/opencode/patched-template.apk";
+    const path = APK_PATH;
     writeFileSync(path, patchedApk());
     const badging = execFileSync(aapt2, ["dump", "badging", path], {
       encoding: "utf8",

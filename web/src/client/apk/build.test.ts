@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { buildApk, ICON_PATHS } from "./build";
 import { createIdentity, importIdentity, type Identity } from "./keys";
@@ -7,6 +9,7 @@ import { readZip } from "./zip";
 
 const TEMPLATE = new URL("../../../public/shell.apk", import.meta.url);
 const PACKAGE = "com.example.testapp";
+const APK_PATH = join(mkdtempSync(join(tmpdir(), "url-to-apk-")), "signed.apk");
 const AAPT2 =
   process.env.AAPT2 ?? "/home/blocky/android-sdk/build-tools/36.0.0/aapt2";
 const APKSIGNER =
@@ -42,7 +45,7 @@ beforeAll(async () => {
     icons,
     identity,
   });
-  writeFileSync("/tmp/opencode/url-to-apk-test.apk", signed);
+  writeFileSync(APK_PATH, signed);
 }, 120_000);
 
 describe("key backup", () => {
@@ -76,7 +79,7 @@ describe("signed apk", () => {
     if (!existsSync(APKSIGNER)) {
       return;
     }
-    const path = "/tmp/opencode/url-to-apk-test.apk";
+    const path = APK_PATH;
     const verify = execFileSync(APKSIGNER, ["verify", "--verbose", path], {
       encoding: "utf8",
       env: toolEnv,
@@ -95,7 +98,7 @@ describe("signed apk", () => {
     if (!existsSync(AAPT2)) {
       return;
     }
-    const path = "/tmp/opencode/url-to-apk-test.apk";
+    const path = APK_PATH;
     const badging = execFileSync(AAPT2, ["dump", "badging", path], {
       encoding: "utf8",
     });
