@@ -118,15 +118,17 @@ tasks.withType<Test>().configureEach {
 }
 
 val coverageClasses = files(
-    fileTree(layout.buildDirectory) {
-        include("**/com/urltoapk/shell/**/*.class")
+    fileTree(
+        layout.buildDirectory
+            .dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")
+            .get()
+            .asFile,
+    ) {
+        include("**/*.class")
         exclude(
             "**/R.class",
             "**/R\$*.class",
             "**/BuildConfig.class",
-            "**/*Test.class",
-            "**/*Test\$*.class",
-            "**/jacoco-offline/**",
         )
     },
 )
