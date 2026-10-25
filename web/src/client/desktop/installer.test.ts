@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { minimalPe, minimalPng } from "../../../test/helpers/binaries";
 import { packageBase, type DesktopConfig } from "./config";
+import { pngToIco } from "./ico";
 import { buildWindowsInstaller } from "./installer";
-import { readTrailer } from "./trailer";
+import { readTrailer, TRAILER_SIZE } from "./trailer";
 
 const config: DesktopConfig = {
   schema: 1,
@@ -43,6 +44,11 @@ describe("buildWindowsInstaller", () => {
         result.trailer.iconOffset + result.trailer.iconLength,
       ),
     ).toEqual(icon);
+    const icoStart =
+      result.trailer.iconOffset + result.trailer.iconLength;
+    expect(
+      bundle.bytes.slice(icoStart, bundle.bytes.length - TRAILER_SIZE),
+    ).toEqual(pngToIco(icon));
   });
 
   it("uses the requested architecture in the filename", () => {
