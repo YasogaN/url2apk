@@ -32,7 +32,8 @@ export function buildDesktopArtifact(
       const bundle = buildWindowsPortable(config, icon, shell, arch);
       return { bytes: bundle.archive, filename: bundle.filename };
     }
-    case "windows-setup": {
+    case "windows-setup-user":
+    case "windows-setup-system": {
       const bundle = buildWindowsInstaller(config, icon, base, arch);
       return { bytes: bundle.bytes, filename: bundle.filename };
     }

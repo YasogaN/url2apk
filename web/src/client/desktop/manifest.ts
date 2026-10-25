@@ -32,7 +32,8 @@ export type FetchBaseOptions = {
 };
 
 const ARTIFACTS: DesktopArtifact[] = [
-  "windows-setup",
+  "windows-setup-user",
+  "windows-setup-system",
   "windows-portable",
   "linux-tar",
   "linux-appimage",

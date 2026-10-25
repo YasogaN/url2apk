@@ -107,7 +107,7 @@ let passwordResolver: ((value: string | null) => void) | null = null;
 let passwordMode: "create" | "import" = "create";
 let target: Target = "android";
 let arch: DesktopArch = "x64";
-let artifact: DesktopArtifact = "windows-setup";
+let artifact: DesktopArtifact = "windows-setup-user";
 let host: HostPlatform = "other";
 let manifest: ShellManifest | null = null;
 let manifestLoading: Promise<ShellManifest | null> | null = null;
@@ -116,7 +116,8 @@ const WINDOWS_ARTIFACTS: ReadonlyArray<{
   value: DesktopArtifact;
   label: string;
 }> = [
-  { value: "windows-setup", label: "Setup.exe (recommended)" },
+  { value: "windows-setup-user", label: "Setup · current user" },
+  { value: "windows-setup-system", label: "Setup · all users" },
   { value: "windows-portable", label: "Portable .zip" },
 ];
 

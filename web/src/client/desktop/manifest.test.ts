@@ -82,7 +82,7 @@ describe("parseManifest", () => {
         extra: true,
         artifacts: {
           "linux-tar": { x64: base, arm64: base },
-          "windows-setup": { x64: base },
+          "windows-setup-user": { x64: base },
           unknown: { x64: base },
         },
       }),
@@ -90,7 +90,7 @@ describe("parseManifest", () => {
       version: "1",
       artifacts: {
         "linux-tar": { x64: base, arm64: base },
-        "windows-setup": { x64: base },
+        "windows-setup-user": { x64: base },
       },
     });
   });
@@ -178,7 +178,7 @@ describe("findBase", () => {
   });
 
   it("rejects a missing artifact", () => {
-    expect(() => findBase(manifest, "windows-setup", "x64")).toThrow(
+    expect(() => findBase(manifest, "windows-setup-user", "x64")).toThrow(
       "not available",
     );
   });

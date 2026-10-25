@@ -12,7 +12,8 @@ export const DESKTOP_MAX_HEIGHT = 4320;
 export type DesktopPlatform = "windows" | "linux";
 export type DesktopArch = "x64" | "arm64";
 export type DesktopArtifact =
-  | "windows-setup"
+  | "windows-setup-user"
+  | "windows-setup-system"
   | "windows-portable"
   | "linux-tar"
   | "linux-appimage"

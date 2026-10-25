@@ -36,12 +36,21 @@ describe("buildDesktopArtifact", () => {
     const result = buildDesktopArtifact({
       config,
       icon,
-      artifact: "windows-setup",
+      artifact: "windows-setup-user",
       arch: "arm64",
       base: minimalPe(),
     });
     expect(result.filename).toBe("example-6789ab-arm64-Setup.exe");
     expect(Array.from(result.bytes.slice(0, 2))).toEqual([0x4d, 0x5a]);
+
+    const system = buildDesktopArtifact({
+      config,
+      icon,
+      artifact: "windows-setup-system",
+      arch: "x64",
+      base: minimalPe(),
+    });
+    expect(system.filename).toBe("example-6789ab-x64-Setup.exe");
   });
 
   it("builds a Linux tarball", () => {
