@@ -16,6 +16,13 @@ import {
 const HELLO = new TextEncoder().encode("hello");
 const HELLO_SHA =
   "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824";
+
+async function digest(bytes: Uint8Array): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", bufferSource(bytes));
+  return Array.from(new Uint8Array(hash), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+}
 const base: BaseFile = {
   url: "/shells/hello.bin",
   size: HELLO.length,
@@ -95,6 +102,25 @@ describe("parseManifest", () => {
     });
   });
 
+  it("accepts a chunked base", () => {
+    const parts = [
+      { url: "/shells/part-0", size: 2, sha256: "a".repeat(64) },
+      { url: "/shells/part-1", size: 3, sha256: "b".repeat(64) },
+    ];
+    const parsed = parseManifest({
+      version: "1",
+      artifacts: {
+        "linux-appimage-full": {
+          x64: { ...base, parts },
+        },
+      },
+    });
+    expect(parsed.artifacts["linux-appimage-full"]?.x64).toEqual({
+      ...base,
+      parts,
+    });
+  });
+
   it("accepts an empty artifact set", () => {
     expect(parseManifest({ version: "1", artifacts: {} })).toEqual({
       version: "1",
@@ -134,6 +160,44 @@ describe("parseManifest", () => {
       { url: "/x", size: Number.MAX_SAFE_INTEGER + 1, sha256: HELLO_SHA },
     ],
     ["a missing sha256", { url: "/x", size: 1 }],
+    [
+      "empty parts",
+      { url: "/x", size: 1, sha256: HELLO_SHA, parts: [] },
+    ],
+    [
+      "part size mismatch",
+      {
+        url: "/x",
+        size: 5,
+        sha256: HELLO_SHA,
+        parts: [{ url: "/p", size: 4, sha256: HELLO_SHA }],
+      },
+    ],
+    [
+      "an invalid part",
+      {
+        url: "/x",
+        size: 1,
+        sha256: HELLO_SHA,
+        parts: [{ url: "/p", size: 1, sha256: "nope" }],
+      },
+    ],
+    [
+      "nested parts",
+      {
+        url: "/x",
+        size: 1,
+        sha256: HELLO_SHA,
+        parts: [
+          {
+            url: "/p",
+            size: 1,
+            sha256: HELLO_SHA,
+            parts: [{ url: "/q", size: 1, sha256: HELLO_SHA }],
+          },
+        ],
+      },
+    ],
     ["a short sha256", { url: "/x", size: 1, sha256: "abc" }],
     ["an uppercase sha256", { url: "/x", size: 1, sha256: HELLO_SHA.toUpperCase() }],
   ])("rejects a file with %s", (_label, file) => {
@@ -256,6 +320,87 @@ describe("fetchBase", () => {
       HELLO,
     );
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("concatenates a chunked base", async () => {
+    const first = HELLO.slice(0, 2);
+    const second = HELLO.slice(2);
+    const chunked: BaseFile = {
+      url: "/shells/part-0",
+      size: HELLO.length,
+      sha256: HELLO_SHA,
+      parts: [
+        { url: "/shells/part-0", size: first.length, sha256: await digest(first) },
+        { url: "/shells/part-1", size: second.length, sha256: await digest(second) },
+      ],
+    };
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) =>
+      new Response(
+        bufferSource(String(input) === "/shells/part-0" ? first : second),
+      ),
+    ) as unknown as typeof fetch;
+    await expect(
+      fetchBase(chunked, { cache: null, fetch: fetchImpl }),
+    ).resolves.toEqual(HELLO);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  it("reuses cached chunks", async () => {
+    const first = HELLO.slice(0, 2);
+    const second = HELLO.slice(2);
+    const chunked: BaseFile = {
+      url: "/shells/part-0",
+      size: HELLO.length,
+      sha256: HELLO_SHA,
+      parts: [
+        { url: "/shells/part-0", size: first.length, sha256: await digest(first) },
+        { url: "/shells/part-1", size: second.length, sha256: await digest(second) },
+      ],
+    };
+    const cache = fakeCache();
+    cache.store.set("/shells/part-0", first);
+    cache.store.set("/shells/part-1", second);
+    const fetchImpl = vi.fn() as unknown as typeof fetch;
+    await expect(
+      fetchBase(chunked, { cache, fetch: fetchImpl }),
+    ).resolves.toEqual(HELLO);
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid chunk or a total mismatch", async () => {
+    const first = HELLO.slice(0, 2);
+    const second = HELLO.slice(2);
+    const validParts = [
+      { url: "/shells/part-0", size: first.length, sha256: await digest(first) },
+      { url: "/shells/part-1", size: second.length, sha256: await digest(second) },
+    ];
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) =>
+      new Response(
+        bufferSource(String(input) === "/shells/part-0" ? first : second),
+      ),
+    ) as unknown as typeof fetch;
+    await expect(
+      fetchBase(
+        {
+          url: "/shells/part-0",
+          size: HELLO.length,
+          sha256: HELLO_SHA,
+          parts: [validParts[0], { ...validParts[1], sha256: "a".repeat(64) }],
+        },
+        { cache: null, fetch: fetchImpl },
+      ),
+    ).rejects.toThrow("integrity");
+    await expect(
+      fetchBase(
+        {
+          url: "/shells/part-0",
+          size: HELLO.length,
+          sha256: "a".repeat(64),
+          parts: validParts,
+        },
+        { cache: null, fetch: fetchImpl },
+      ),
+    ).rejects.toThrow("integrity");
   });
 
   it("works without a cache", async () => {
