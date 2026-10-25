@@ -1,0 +1,12 @@
+[package]
+name = "url2app-appimage-repack"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+backhand = { path = "../backhand", default-features = false, features = ["gzip", "error-strings"] }
+wasm-bindgen = "=0.2.129"

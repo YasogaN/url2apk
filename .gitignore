@@ -49,3 +49,6 @@ web/public/shells.json
 
 # Logs
 *.log
+
+# Rust WASM build output
+web/wasm/**/target/
