@@ -48,6 +48,8 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | AppImage type2-runtime | MIT |
 | @tauri-apps/cli | Apache-2.0 OR MIT |
 | jsdom | MIT |
+| backhand (vendored for WASM) | MIT OR Apache-2.0 |
+| wasm-bindgen | MIT OR Apache-2.0 |
 
 The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The bundled-WebKit AppImage contains those LGPL libraries, so distributing it carries the usual LGPL relinking and source-offer obligations.
 

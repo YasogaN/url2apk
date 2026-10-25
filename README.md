@@ -65,19 +65,19 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
 2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json`, or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
 3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
-4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The bundled-WebKit AppImage is about 109 MiB, so CI splits it into 20 MiB parts; the browser verifies and concatenates the parts before patching, which keeps every static asset under Cloudflare's 25 MiB per-file limit without R2. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
+4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The bundled-WebKit AppImage is about 87 MiB, so CI splits it into 20 MiB parts; the browser verifies and concatenates the parts before patching, which keeps every static asset under Cloudflare's 25 MiB per-file limit without R2. AppImage bases use gzip squashfs and a small Rust/WASM repacker replaces the embedded desktop entry and icon with the generated app name and icon before the config trailer is appended. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 527 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
+- **Web:** 546 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
 - **Desktop:** the Windows and Linux shells, browser packaging, installer, and release workflow are implemented. The live builder needs the first shell release; Windows manual validation is still pending. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
 ## Self-host
 
-Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS.
+Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS. Rebuilding the optional AppImage metadata WASM module needs the `wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129; the generated module is checked in for normal web builds.
 
 ```sh
 cd web
@@ -114,6 +114,7 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
 | `web/public/shell.apk` | Generated unsigned Android template (ignored by Git; exported locally or by CI). |
 | `web/public/shells/` | Generated desktop shell bases and manifest (ignored by Git; produced by CI). |
+| `web/wasm/` | Rust/WASM AppImage metadata repacker, its vendored backhand dependency and generated browser module. |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
 | `docs/` | README screenshots. |
