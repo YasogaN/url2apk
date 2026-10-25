@@ -20,7 +20,29 @@ Package an HTTPS site as a small Android WebView APK or an unsigned Windows/Linu
 
 </div>
 
-![URL to App builder in light mode](docs/light.png)
+<div align="center">
+
+**Built with**
+
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white)
+
+Kotlin and Android System WebView on the Android shell side; Rust and Tauri with WebView2/WebKitGTK on the desktop side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; Rust/WASM with backhand for per-app AppImage metadata; WebCrypto for the Android key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
+
+</div>
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Animated URL to App hero cycling through Linux, Windows and Android" />
+</p>
+<p align="center"><sub>Static screenshots: <a href="docs/light.png">light</a> · <a href="docs/dark.png">dark</a> · <a href="docs/mobile.png">mobile</a></sub></p>
 
 > Also searched as **website to app**, **web to desktop app**, **URL to APK**, **website to APK**, **HTML to APK**, **PWA to APK**, **WebView wrapper**, or a **local app generator**. It is a browser-only alternative to PWABuilder, Bubblewrap, Tauri CLI and Electron Forge.
 
@@ -30,7 +52,7 @@ Firefox on Android can add a site to the home screen, but it is still a browser-
 
 URL to App takes a different route: a prebuilt WebView shell, patched in the tab. For Android that means a Kotlin WebView shell and a locally signed APK with your own icon and package. For Windows and Linux it means a URL-agnostic Tauri shell whose URL, name, icon and size are data, never compiled in. No login, no queue, no server-side build.
 
-The Android target is live. The Windows and Linux targets are implemented in this branch and become available once the first shell release is published. macOS is not supported yet; contributions are welcome.
+Android, Windows and Linux are live. macOS is not supported yet; contributions are welcome.
 
 ## Try it
 
@@ -45,8 +67,8 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## What you get
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
-- **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile. These downloads appear after the first desktop shell release.
-- **Linux:** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build. These downloads appear after the first desktop shell release.
+- **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
+- **Linux:** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build, with the generated app name and icon embedded in its launcher entry.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -72,7 +94,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
 - **Web:** 546 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
-- **Desktop:** the Windows and Linux shells, browser packaging, installer, and release workflow are implemented. The live builder needs the first shell release; Windows manual validation is still pending. macOS is deferred.
+- **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker and release workflow are implemented. The live builder is on release v1.1; Windows manual validation is still pending. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
 ## Self-host
@@ -117,7 +139,7 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | `web/wasm/` | Rust/WASM AppImage metadata repacker, its vendored backhand dependency and generated browser module. |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
-| `docs/` | README screenshots. |
+| `docs/` | README screenshots and the demo GIF. |
 
 ## Signing and updates
 
@@ -140,24 +162,6 @@ No accounts, analytics, telemetry or third-party scripts. The package is assembl
 ## Responsible use
 
 Wrap only sites you have the right to use. Do not impersonate a brand or distribute an app you do not own.
-
-## Built with
-
-<div align="center">
-
-![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
-![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
-![Tauri](https://img.shields.io/badge/Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
-![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
-
-</div>
-
-Kotlin and Android System WebView on the Android shell side; Rust and Tauri with WebView2/WebKitGTK on the desktop side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; WebCrypto for the Android key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
 
 ## Licence
 
