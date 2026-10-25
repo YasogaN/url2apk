@@ -84,3 +84,29 @@ jobs:
       - name: Build the static site and worker
         working-directory: web
         run: pnpm build
+
+  desktop:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libssl-dev
+      - name: Test the core and installer helper
+        working-directory: desktop
+        run: cargo test -p url2app-shell-core -p url2app-installer-helper
+      - name: Check the Tauri shell
+        working-directory: desktop
+        run: cargo check -p url2app-shell
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
+      - name: Add LLVM coverage tools
+        run: rustup component add llvm-tools-preview
+      - name: Rust coverage gate
+        working-directory: desktop
+        run: |
+          cargo llvm-cov -p url2app-shell-core --tests --ignore-filename-regex 'core/tests/' --fail-under-lines 99 --fail-under-functions 100 --summary-only
+          cargo llvm-cov -p url2app-installer-helper --tests --ignore-filename-regex 'core/|installer-helper/tests/|installer-helper/src/main.rs' --fail-under-lines 99 --fail-under-functions 100 --summary-only
