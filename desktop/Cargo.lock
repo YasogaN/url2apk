@@ -4100,6 +4100,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "url",
  "url2app-shell-core",
  "webkit2gtk",
  "windows-sys 0.61.2",
