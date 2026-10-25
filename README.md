@@ -94,7 +94,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
 - **Web:** 546 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
-- **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker and release workflow are implemented. The live builder is on release v1.1; Windows manual validation is still pending. macOS is deferred.
+- **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker and release workflow are implemented. The live builder is on release v1.2; Windows manual validation is still pending. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
 ## Self-host
