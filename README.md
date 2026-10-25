@@ -1,89 +1,83 @@
 <div align="center">
 
-# URL to APK
+# URL to App
 
-**A website in. A signed Android app out.**
+**A website in. An app out.**
 
-Package an HTTPS site as a small Android WebView APK, entirely in your browser. Local key, local signing, no account, no cloud build.
+Package an HTTPS site as a small Android WebView APK, entirely in your browser. Windows and Linux desktop targets are landing next. No account, no cloud build.
 
-[![Live](https://img.shields.io/badge/live-url2apk.yasogan.dev-8b0000?style=for-the-badge)](https://url2apk.yasogan.dev)
-[![CI](https://img.shields.io/github/actions/workflow/status/YasogaN/url2apk/ci.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/YasogaN/url2apk/actions/workflows/ci.yml)
+[![Live](https://img.shields.io/badge/live-url2app.yasogan.dev-8b0000?style=for-the-badge)](https://url2app.yasogan.dev)
+[![CI](https://img.shields.io/github/actions/workflow/status/YasogaN/url2app/ci.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/YasogaN/url2app/actions/workflows/ci.yml)
 
-[![License](https://img.shields.io/github/license/YasogaN/url2apk.svg?style=for-the-badge&color=blue)](LICENSE)
-[![Forks](https://img.shields.io/github/forks/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/forks)
-[![Stars](https://img.shields.io/github/stars/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/stargazers)
-[![Watchers](https://img.shields.io/github/watchers/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/watchers)
-[![Issues](https://img.shields.io/github/issues/YasogaN/url2apk.svg?style=for-the-badge)](https://github.com/YasogaN/url2apk/issues)
-[![Code size](https://img.shields.io/github/languages/code-size/YasogaN/url2apk?style=for-the-badge)](https://github.com/YasogaN/url2apk)
+[![License](https://img.shields.io/github/license/YasogaN/url2app.svg?style=for-the-badge&color=blue)](LICENSE)
+[![Forks](https://img.shields.io/github/forks/YasogaN/url2app.svg?style=for-the-badge)](https://github.com/YasogaN/url2app/forks)
+[![Stars](https://img.shields.io/github/stars/YasogaN/url2app.svg?style=for-the-badge)](https://github.com/YasogaN/url2app/stargazers)
+[![Watchers](https://img.shields.io/github/watchers/YasogaN/url2app.svg?style=for-the-badge)](https://github.com/YasogaN/url2app/watchers)
+[![Issues](https://img.shields.io/github/issues/YasogaN/url2app.svg?style=for-the-badge)](https://github.com/YasogaN/url2app/issues)
+[![Code size](https://img.shields.io/github/languages/code-size/YasogaN/url2app?style=for-the-badge)](https://github.com/YasogaN/url2app)
 
-[**Open the builder →**](https://url2apk.yasogan.dev)
+[**Open the builder →**](https://url2app.yasogan.dev)
 
 </div>
 
-![URL to APK builder in light mode](docs/light.png)
+![URL to App builder in light mode](docs/light.png)
 
-> Also searched as **website to APK**, **HTML to APK**, **PWA to APK**, **WebView wrapper**, or a **local APK generator**. It is a browser-only alternative to PWABuilder and Bubblewrap.
+> Also searched as **website to app**, **web to desktop app**, **URL to APK**, **website to APK**, **HTML to APK**, **PWA to APK**, **WebView wrapper**, or a **local app generator**. It is a browser-only alternative to PWABuilder, Bubblewrap, Tauri CLI and Electron Forge.
 
 ## Why
 
-Firefox on Android can add a site to the home screen, but it is still a browser-badged shortcut. PWAs that install as real apps need a browser that mints WebAPKs or a TWA, which means Chrome, Digital Asset Links and often a cloud build.
+Firefox on Android can add a site to the home screen, but it is still a browser-badged shortcut. PWAs that install as real apps need a browser that mints WebAPKs or a TWA, which means Chrome, Digital Asset Links and often a cloud build. Desktop wrappers usually make you install a toolchain and compile a new binary for every site.
 
-URL to APK takes a different route: a prebuilt Kotlin WebView shell, patched and signed in the tab. You get a real app-drawer entry, your own icon and a signature you control. No login, no queue, no server-side build.
+URL to App takes a different route: a prebuilt WebView shell, patched in the tab. For Android that means a Kotlin WebView shell and a locally signed APK with your own icon and package. For Windows and Linux it means a URL-agnostic Tauri shell whose URL, name, icon and size are data, never compiled in. No login, no queue, no server-side build.
+
+The Android target is live. The Windows and Linux targets are in development on this branch. macOS is not supported yet; contributions are welcome.
 
 ## Try it
 
-1. Open [url2apk.yasogan.dev](https://url2apk.yasogan.dev).
+1. Open [url2app.yasogan.dev](https://url2app.yasogan.dev).
 2. Paste a full HTTPS URL, e.g. `https://example.com/`.
 3. Choose the app name and icon (letter, upload or fetch).
-4. Generate the APK. On the first build, set a backup password for the signing key.
-5. Save the `.p1x` key backup and install the `.apk` (allow installs from your browser or file manager).
+4. Generate the package. Android builds ask for a backup password for the signing key; desktop builds are unsigned and skip the key step.
+5. Save the `.p1x` key backup on Android and install the output.
 
-The first build creates an RSA-2048 key, downloads the encrypted backup and signs the APK. Later builds reuse the non-exportable key in IndexedDB; keep the `.p1x` file safe.
+The first Android build creates an RSA-2048 key, downloads the encrypted backup and signs the APK. Later builds reuse the non-exportable key in IndexedDB; keep the `.p1x` file safe.
 
 ## What you get
 
-- A launcher icon, app-drawer entry and its own window.
-- Uploads, downloads, camera, microphone, geolocation and fullscreen video.
-- A local error/retry screen and safe back navigation.
-- Your key, your signature, your package. One app per site.
+- **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
+- **Windows (in development):** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
+- **Linux (in development):** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build.
+- **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
 
 - **Not a browser.** It is a WebView wrapper around the live URL; there is no offline copy.
 - **Google sign-in will fail.** Google blocks OAuth in embedded WebViews.
-- No Web Push, browser extensions or Firefox profile.
+- No Web Push, browser extensions or Firefox profile on Android.
 - No App Links or domain capture; links to the site still open in your default browser.
 - DRM L1 and passkeys are limited, and some sites block WebView.
+- Windows builds are unsigned and will show SmartScreen warnings. They do not update themselves.
+- Linux AppImages still need FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks. Downloads need the executable bit.
+- macOS is not supported yet. The current builder will show a contribution note instead of a macOS download.
 
 ## How it works
 
-1. **A prebuilt Kotlin shell.** minSdk 24, targetSdk 36, Android System WebView, no AndroidX. Hardened settings and the WebView plumbing live here.
-2. **Fixed template slots.** A 127-character package slot, a 128-code-unit label slot, a literal `versionCode` and stable icon paths. The browser patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`.
-3. **A local, aligned ZIP and v2 signature.** `resources.arsc` is stored and 4-byte aligned; the APK is signed with APK Signature Scheme v2 using a key generated in the tab.
-4. **A reverse-domain package.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
-
-## Screenshots
-
-| Light | Dark |
-| --- | --- |
-| ![Light mode](docs/light.png) | ![Dark mode](docs/dark.png) |
-
-<details>
-<summary>Mobile</summary>
-<br>
-<p align="center"><img src="docs/mobile.png" alt="Mobile builder" width="340"></p>
-</details>
+1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
+2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json`, or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
+3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
+4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site.
+5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 198 tests, 100% statements/branches/functions/lines for the Hono API and the pure front-end domain helpers.
-- **APK integration:** a real APK is built in tests and verified with `aapt2`, `zipalign` and `apksigner` (v2 true).
-- **Live:** [url2apk.yasogan.dev](https://url2apk.yasogan.dev) on Cloudflare Workers.
+- **Web:** the Hono API, front-end domain helpers, APK pipeline and UI are under a 100% statements/branches/functions/lines gate.
+- **Desktop:** Windows and Linux shells, packaging and CI are in development. macOS is deferred.
+- **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
 ## Self-host
 
-Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12.
+Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS.
 
 ```sh
 cd web
@@ -110,9 +104,12 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | Path | Contents |
 | --- | --- |
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
-| `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser APK pipeline. |
+| `desktop/` | Tauri Desktop shell, packaging helpers and its tests (in development). |
+| `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
 | `web/public/shell.apk` | Generated unsigned Android template (ignored by Git; exported locally or by CI). |
+| `web/public/shells/` | Generated desktop shell bases and manifest (ignored by Git; produced by CI). |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
+| `web/test-fixtures/` | Small synthetic PE, ELF and tar fixtures for the packaging tests. |
 | `docs/` | README screenshots. |
 
 ## Signing and updates
@@ -121,13 +118,17 @@ Android identifies an app by package name and signing certificate. This builder 
 
 The private key is generated with WebCrypto and imported as non-extractable; it stays in IndexedDB. The portable copy is a `.p1x` file encrypted with PBKDF2-SHA256 + AES-GCM. Lose the key and the backup and you cannot install a replacement over the app; you would have to uninstall it and lose its data. Store the backup.
 
+Desktop packages are unsigned. They do not use the Android key and do not auto-update. Regenerating the app is the only update path for now.
+
 ## Distribution
 
 These are personal sideloaded builds. Android will warn about unknown apps, Play Protect may flag them, and Google's developer verification is rolling out (30 September 2026 in Brazil, Indonesia, Singapore and Thailand; global in 2027). Unverified sideloads may need ADB or the advanced flow. Do not publish these wrappers to Google Play; they do not meet the minimum-functionality policy.
 
+Windows builds will trigger SmartScreen until they earn reputation; users need the "More info" flow. Linux tarballs preserve the executable bit, while AppImages need `chmod +x` after a browser download. macOS is not supported yet.
+
 ## Privacy
 
-No accounts, analytics, telemetry or third-party scripts. The APK is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects.
+No accounts, analytics, telemetry or third-party scripts. The package is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects. Desktop builds download their prebuilt shell from this deployment and nothing else.
 
 ## Responsible use
 
@@ -139,6 +140,8 @@ Wrap only sites you have the right to use. Do not impersonate a brand or distrib
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-000000?style=for-the-badge&logo=rust&logoColor=white)
+![Tauri](https://img.shields.io/badge/Tauri-24C8DB?style=for-the-badge&logo=tauri&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 ![Hono](https://img.shields.io/badge/Hono-E36002?style=for-the-badge&logo=hono&logoColor=white)
@@ -147,7 +150,7 @@ Wrap only sites you have the right to use. Do not impersonate a brand or distrib
 
 </div>
 
-Kotlin and Android System WebView on the shell side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; WebCrypto for the key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
+Kotlin and Android System WebView on the Android shell side; Rust and Tauri with WebView2/WebKitGTK on the desktop side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; WebCrypto for the Android key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
 
 ## Licence
 
