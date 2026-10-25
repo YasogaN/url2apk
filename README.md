@@ -101,7 +101,7 @@ cd android
 tools/export-template.sh
 ```
 
-`web/public/shell.apk` is the committed unsigned template. `android/tools/export-template.sh` rebuilds it. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
+`web/public/shell.apk` is a build artifact, not a checked-in file. CI exports it from the Android build and passes it to the web job; locally run `android/tools/export-template.sh` before `pnpm test:coverage` or `pnpm build`. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
 
 The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$ANDROID_HOME` (or via `AAPT2`, `APKSIGNER`, `ZIPALIGN`) and skip when they are absent. CI installs them.
 
@@ -111,7 +111,7 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | --- | --- |
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser APK pipeline. |
-| `web/public/shell.apk` | Unsigned release template the browser patches. |
+| `web/public/shell.apk` | Generated unsigned Android template (ignored by Git; exported locally or by CI). |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `docs/` | README screenshots. |
 
