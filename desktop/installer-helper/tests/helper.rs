@@ -103,3 +103,35 @@ fn rejects_invalid_config() {
     fs::write(&installer, build_installer(b"no", ICON, ICO)).unwrap();
     assert!(install(&installer, &dir.path().join("out")).is_err());
 }
+
+#[test]
+fn reports_install_io_errors() {
+    let dir = tempdir().unwrap();
+    let valid = dir.path().join("setup.exe");
+    fs::write(&valid, build_installer(JSON, ICON, ICO)).unwrap();
+
+    assert!(install(&dir.path().join("missing.exe"), &dir.path().join("out")).is_err());
+
+    let short = dir.path().join("short.exe");
+    fs::write(&short, b"short").unwrap();
+    assert!(install(&short, &dir.path().join("out")).is_err());
+
+    let target_file = dir.path().join("target-file");
+    fs::write(&target_file, b"x").unwrap();
+    assert!(install(&valid, &target_file).is_err());
+
+    for blocked in ["config.json", "icon.png", "app.ico", "meta.ini"] {
+        let target = dir.path().join(format!("blocked-{blocked}"));
+        fs::create_dir_all(&target).unwrap();
+        fs::create_dir_all(target.join(blocked)).unwrap();
+        assert!(install(&valid, &target).is_err());
+    }
+
+    assert!(run_with([
+        "--installer".to_string(),
+        dir.path().join("missing.exe").display().to_string(),
+        "--target".to_string(),
+        dir.path().join("out").display().to_string(),
+    ])
+    .is_err());
+}
