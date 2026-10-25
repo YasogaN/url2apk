@@ -1,14 +1,18 @@
-import { bufferSource } from "../apk/bytes";
+import { bufferSource, concat } from "../apk/bytes";
 import type { DesktopArch, DesktopArtifact } from "./config";
 
 export const MANIFEST_URL = "/shells.json";
 export const CONFIRMATION_THRESHOLD = 25 * 1024 * 1024;
 const CACHE_NAME = "url2app-shells-v1";
 
-export type BaseFile = {
+export type BasePart = {
   url: string;
   size: number;
   sha256: string;
+};
+
+export type BaseFile = BasePart & {
+  parts?: BasePart[];
 };
 
 export type ShellArtifacts = Partial<
@@ -45,7 +49,7 @@ function invalidManifest(): Error {
   return new Error("The shell manifest is not valid.");
 }
 
-function parseBaseFile(value: unknown): BaseFile {
+function parseFields(value: unknown): BasePart {
   if (typeof value !== "object" || value === null) {
     throw invalidManifest();
   }
@@ -57,7 +61,7 @@ function parseBaseFile(value: unknown): BaseFile {
   if (
     typeof size !== "number" ||
     !Number.isSafeInteger(size) ||
-    size < 0
+    size < 1
   ) {
     throw invalidManifest();
   }
@@ -65,6 +69,31 @@ function parseBaseFile(value: unknown): BaseFile {
     throw invalidManifest();
   }
   return { url, size, sha256 };
+}
+
+function parseBaseFile(value: unknown): BaseFile {
+  const base = parseFields(value);
+  const record = value as Record<string, unknown>;
+  if (record.parts === undefined) {
+    return base;
+  }
+  if (!Array.isArray(record.parts) || record.parts.length === 0) {
+    throw invalidManifest();
+  }
+  const parts = record.parts.map((part) => {
+    if (
+      typeof part === "object" &&
+      part !== null &&
+      (part as Record<string, unknown>).parts !== undefined
+    ) {
+      throw invalidManifest();
+    }
+    return parseFields(part);
+  });
+  if (parts.reduce((sum, part) => sum + part.size, 0) !== base.size) {
+    throw invalidManifest();
+  }
+  return { ...base, parts };
 }
 
 export function parseManifest(value: unknown): ShellManifest {
@@ -154,7 +183,7 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   ).join("");
 }
 
-async function matches(bytes: Uint8Array, base: BaseFile): Promise<boolean> {
+async function matches(bytes: Uint8Array, base: BasePart): Promise<boolean> {
   return bytes.length === base.size && (await sha256Hex(bytes)) === base.sha256;
 }
 
@@ -171,7 +200,7 @@ async function openCache(): Promise<BaseCache | undefined> {
 
 async function readCached(
   cache: BaseCache,
-  base: BaseFile,
+  base: BasePart,
 ): Promise<Uint8Array | undefined> {
   let cached: Response | undefined;
   try {
@@ -194,6 +223,41 @@ async function readCached(
   return undefined;
 }
 
+async function fetchPart(
+  part: BasePart,
+  cache: BaseCache | undefined,
+  fetchImpl: typeof fetch,
+): Promise<Uint8Array> {
+  if (cache !== undefined) {
+    const cached = await readCached(cache, part);
+    if (cached !== undefined) {
+      return cached;
+    }
+  }
+
+  const response = await fetchImpl(part.url, { cache: "force-cache" });
+  if (!response.ok) {
+    throw new Error("The shell download failed.");
+  }
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!(await matches(bytes, part))) {
+    throw new Error("The shell download failed its integrity check.");
+  }
+  if (cache !== undefined) {
+    try {
+      await cache.put(
+        part.url,
+        new Response(bufferSource(bytes), {
+          headers: { "content-type": "application/octet-stream" },
+        }),
+      );
+    } catch {
+      // A cache write failure should not block the build.
+    }
+  }
+  return bytes;
+}
+
 export async function fetchBase(
   base: BaseFile,
   options: FetchBaseOptions = {},
@@ -202,33 +266,15 @@ export async function fetchBase(
     options.cache === null
       ? undefined
       : (options.cache ?? (await openCache()));
-  const cached =
-    cache === undefined ? undefined : await readCached(cache, base);
-  if (cached !== undefined) {
-    return cached;
+  const fetchImpl = options.fetch ?? fetch;
+  const parts = base.parts ?? [base];
+  const chunks: Uint8Array[] = [];
+  for (const part of parts) {
+    chunks.push(await fetchPart(part, cache, fetchImpl));
   }
-
-  const response = await (options.fetch ?? fetch)(base.url, {
-    cache: "force-cache",
-  });
-  if (!response.ok) {
-    throw new Error("The shell download failed.");
-  }
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  const bytes = concat(...chunks);
   if (!(await matches(bytes, base))) {
     throw new Error("The shell download failed its integrity check.");
-  }
-  if (cache !== undefined) {
-    try {
-      await cache.put(
-        base.url,
-        new Response(bufferSource(bytes), {
-          headers: { "content-type": "application/octet-stream" },
-        }),
-      );
-    } catch {
-      // A cache write failure should not block the build.
-    }
   }
   return bytes;
 }
