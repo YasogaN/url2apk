@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 cd "$(dirname "$0")/.."
+output="${1:-../web/public/shell.apk}"
 ./gradlew :app:assembleRelease
-cp app/build/outputs/apk/release/app-release-unsigned.apk ../web/public/shell.apk
-echo "Wrote ../web/public/shell.apk"
+mkdir -p "$(dirname "$output")"
+cp app/build/outputs/apk/release/app-release-unsigned.apk "$output"
+echo "Wrote $output"
