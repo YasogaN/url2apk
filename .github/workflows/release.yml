@@ -152,6 +152,11 @@ jobs:
           desktop/tools/repack-appimage.sh bases/linux-x64-tauri.AppImage /tmp/runtime-x86_64 bases/linux-x64-full.AppImage
           desktop/tools/repack-appimage.sh bases/linux-arm64-tauri.AppImage /tmp/runtime-aarch64 bases/linux-arm64-full.AppImage
           rm bases/linux-*-tauri.AppImage
+          for arch in x64 arm64; do
+            full="bases/linux-$arch-full.AppImage"
+            split -b 20M -d -a 3 "$full" "$full.part-"
+            rm "$full"
+          done
       - name: Build the Windows installers
         run: |
           desktop/installer/build.sh user bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-user.exe

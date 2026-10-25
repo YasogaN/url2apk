@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const [directory, version, output] = process.argv.slice(2);
@@ -18,21 +18,53 @@ const FILES = {
   "linux-appimage-full": { x64: "linux-x64-full.AppImage", arm64: "linux-arm64-full.AppImage" },
 };
 
+function hash(bytes) {
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
+function warnIfLarge(name, size) {
+  if (size > 25 * 1024 * 1024) {
+    console.warn(`warning: ${name} is ${size} bytes and exceeds the 25 MiB static-asset limit`);
+  }
+}
+
+function readArtifact(name) {
+  const partNames = readdirSync(directory)
+    .filter((file) => file.startsWith(`${name}.part-`))
+    .sort();
+  if (partNames.length > 0) {
+    const parts = partNames.map((partName) => {
+      const bytes = readFileSync(join(directory, partName));
+      warnIfLarge(partName, bytes.length);
+      return {
+        url: `/shells/${version}/${partName}`,
+        size: bytes.length,
+        sha256: hash(bytes),
+        bytes,
+      };
+    });
+    const whole = Buffer.concat(parts.map((part) => part.bytes));
+    return {
+      url: parts[0].url,
+      size: whole.length,
+      sha256: hash(whole),
+      parts: parts.map(({ bytes: _bytes, ...part }) => part),
+    };
+  }
+  const bytes = readFileSync(join(directory, name));
+  warnIfLarge(name, bytes.length);
+  return {
+    url: `/shells/${version}/${name}`,
+    size: bytes.length,
+    sha256: hash(bytes),
+  };
+}
+
 const artifacts = {};
 for (const [artifact, arches] of Object.entries(FILES)) {
   artifacts[artifact] = {};
   for (const [arch, name] of Object.entries(arches)) {
-    const path = join(directory, name);
-    const bytes = readFileSync(path);
-    const size = statSync(path).size;
-    if (size > 25 * 1024 * 1024) {
-      console.warn(`warning: ${name} is ${size} bytes and exceeds the 25 MiB static-asset limit`);
-    }
-    artifacts[artifact][arch] = {
-      url: `/shells/${version}/${name}`,
-      size,
-      sha256: createHash("sha256").update(bytes).digest("hex"),
-    };
+    artifacts[artifact][arch] = readArtifact(name);
   }
 }
 writeFileSync(output, `${JSON.stringify({ version, artifacts }, null, 2)}\n`);
