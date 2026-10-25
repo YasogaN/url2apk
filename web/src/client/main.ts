@@ -38,9 +38,13 @@ import {
 } from "./domain";
 import { createHero, type HeroController } from "./hero";
 import { loadImage, paintImage, paintLetter } from "./paint";
+import { loadShell } from "./shell-cache";
 
 type IconSource = "letter" | "upload" | "fetch";
 type Target = PrimaryTarget;
+
+const SHELL_TEMPLATE_URL = "/shell.apk";
+const SHELL_TEMPLATE_ERROR = "The Android shell template could not be loaded.";
 
 function requireElement<T>(selector: string): T {
   const element = document.querySelector(selector);
@@ -359,11 +363,9 @@ async function loadTemplate(): Promise<Uint8Array> {
   if (template !== null) {
     return template;
   }
-  const response = await fetch("/shell.apk");
-  if (!response.ok) {
-    throw new Error("The Android shell template could not be loaded.");
-  }
-  template = new Uint8Array(await response.arrayBuffer());
+  template = await loadShell(SHELL_TEMPLATE_URL, {
+    message: SHELL_TEMPLATE_ERROR,
+  });
   return template;
 }
 

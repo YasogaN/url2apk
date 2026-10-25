@@ -390,6 +390,13 @@ describe("startup", () => {
     expect(element<HTMLElement>("[data-key-row]").hidden).toBe(false);
   });
 
+  it("does not download build data until a build is requested", async () => {
+    await boot();
+    expect(fetchMock).not.toHaveBeenCalledWith("/shell.apk");
+    expect(mocks.loadManifest).not.toHaveBeenCalled();
+    expect(mocks.fetchBase).not.toHaveBeenCalled();
+  });
+
   it("stops the hero when the page is hidden", async () => {
     await boot();
     window.dispatchEvent(new Event("pagehide"));

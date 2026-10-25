@@ -1,9 +1,9 @@
 import { bufferSource, concat } from "../apk/bytes";
+import { SHELL_CACHE_NAME } from "../shell-cache";
 import type { DesktopArch, DesktopArtifact } from "./config";
 
 export const MANIFEST_URL = "/shells.json";
 export const CONFIRMATION_THRESHOLD = 25 * 1024 * 1024;
-const CACHE_NAME = "url2app-shells-v1";
 
 export type BasePart = {
   url: string;
@@ -192,7 +192,7 @@ async function openCache(): Promise<BaseCache | undefined> {
     return undefined;
   }
   try {
-    return await caches.open(CACHE_NAME);
+    return await caches.open(SHELL_CACHE_NAME);
   } catch {
     return undefined;
   }
