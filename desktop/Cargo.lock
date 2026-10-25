@@ -4089,6 +4089,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "url2app-installer-helper"
+version = "0.1.0"
+dependencies = [
+ "tempfile",
+ "url2app-shell-core",
+]
+
+[[package]]
 name = "url2app-shell"
 version = "0.1.0"
 dependencies = [

@@ -1,0 +1,13 @@
+[package]
+name = "url2app-installer-helper"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "Apache-2.0"
+description = "Reads the URL to App installer trailer and writes the installed config"
+
+[dependencies]
+url2app-shell-core = { path = "../core" }
+
+[dev-dependencies]
+tempfile = "3"
