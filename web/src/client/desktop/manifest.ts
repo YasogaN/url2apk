@@ -13,6 +13,7 @@ export type BasePart = {
 
 export type BaseFile = BasePart & {
   parts?: BasePart[];
+  squashfsOffset?: number;
 };
 
 export type ShellArtifacts = Partial<
@@ -75,7 +76,18 @@ function parseBaseFile(value: unknown): BaseFile {
   const base = parseFields(value);
   const record = value as Record<string, unknown>;
   if (record.parts === undefined) {
-    return base;
+    const offset = record.squashfsOffset;
+    if (offset === undefined) {
+      return base;
+    }
+    if (
+      typeof offset !== "number" ||
+      !Number.isSafeInteger(offset) ||
+      offset < 1
+    ) {
+      throw invalidManifest();
+    }
+    return { ...base, squashfsOffset: offset };
   }
   if (!Array.isArray(record.parts) || record.parts.length === 0) {
     throw invalidManifest();
@@ -92,6 +104,17 @@ function parseBaseFile(value: unknown): BaseFile {
   });
   if (parts.reduce((sum, part) => sum + part.size, 0) !== base.size) {
     throw invalidManifest();
+  }
+  const offset = record.squashfsOffset;
+  if (offset !== undefined) {
+    if (
+      typeof offset !== "number" ||
+      !Number.isSafeInteger(offset) ||
+      offset < 1
+    ) {
+      throw invalidManifest();
+    }
+    return { ...base, parts, squashfsOffset: offset };
   }
   return { ...base, parts };
 }

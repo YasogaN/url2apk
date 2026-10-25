@@ -121,6 +121,41 @@ describe("parseManifest", () => {
     });
   });
 
+  it("accepts a squashfs offset", () => {
+    const parsed = parseManifest({
+      version: "1",
+      artifacts: {
+        "linux-appimage": {
+          x64: { ...base, squashfsOffset: 944632 },
+        },
+      },
+    });
+    expect(parsed.artifacts["linux-appimage"]?.x64).toEqual({
+      ...base,
+      squashfsOffset: 944632,
+    });
+  });
+
+  it("accepts a squashfs offset with parts", () => {
+    const parts = [
+      { url: "/shells/part-0", size: 2, sha256: "a".repeat(64) },
+      { url: "/shells/part-1", size: 3, sha256: "b".repeat(64) },
+    ];
+    const parsed = parseManifest({
+      version: "1",
+      artifacts: {
+        "linux-appimage-full": {
+          x64: { ...base, parts, squashfsOffset: 944632 },
+        },
+      },
+    });
+    expect(parsed.artifacts["linux-appimage-full"]?.x64).toEqual({
+      ...base,
+      parts,
+      squashfsOffset: 944632,
+    });
+  });
+
   it("accepts an empty artifact set", () => {
     expect(parseManifest({ version: "1", artifacts: {} })).toEqual({
       version: "1",
@@ -135,6 +170,44 @@ describe("parseManifest", () => {
     ["an empty version", { version: "", artifacts: {} }],
     ["missing artifacts", { version: "1" }],
     ["null artifacts", { version: "1", artifacts: null }],
+    [
+      "a zero squashfs offset",
+      {
+        version: "1",
+        artifacts: {
+          "linux-appimage": { x64: { ...base, squashfsOffset: 0 } },
+        },
+      },
+    ],
+    [
+      "a fractional squashfs offset",
+      {
+        version: "1",
+        artifacts: {
+          "linux-appimage": { x64: { ...base, squashfsOffset: 1.5 } },
+        },
+      },
+    ],
+    [
+      "a string squashfs offset",
+      {
+        version: "1",
+        artifacts: {
+          "linux-appimage": { x64: { ...base, squashfsOffset: "1" } },
+        },
+      },
+    ],
+    [
+      "a zero chunked offset",
+      {
+        version: "1",
+        artifacts: {
+          "linux-appimage-full": {
+            x64: { ...base, parts: [{ url: "/p", size: 5, sha256: HELLO_SHA }], squashfsOffset: 0 },
+          },
+        },
+      },
+    ],
     [
       "an invalid artifact",
       { version: "1", artifacts: { "linux-tar": 3 } },

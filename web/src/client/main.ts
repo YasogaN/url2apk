@@ -8,6 +8,7 @@ import {
   saveIdentity,
   type Identity,
 } from "./apk/keys";
+import { repackAppImage } from "./desktop/appimage-repack";
 import { buildDesktopArtifact } from "./desktop/build";
 import {
   buildDesktopConfig,
@@ -499,13 +500,30 @@ async function buildDesktop(): Promise<void> {
     const shell = await fetchBase(base);
     setStatus("Rendering the icon…");
     const icon = await canvasPng();
+    let image = shell;
+    if (
+      selectedArtifact === "linux-appimage" ||
+      selectedArtifact === "linux-appimage-full"
+    ) {
+      if (base.squashfsOffset === undefined) {
+        throw new Error("The AppImage base is missing its filesystem offset.");
+      }
+      setStatus("Repacking the AppImage…");
+      image = await repackAppImage(
+        shell,
+        base.squashfsOffset,
+        configResult.config,
+        icon,
+        selectedArtifact === "linux-appimage" ? "lite" : "full",
+      );
+    }
     setStatus("Assembling the package…");
     const result = buildDesktopArtifact({
       config: configResult.config,
       icon,
       artifact: selectedArtifact,
       arch: selectedArch,
-      base: shell,
+      base: image,
     });
     downloadBytes(result.bytes, result.filename, "application/octet-stream");
     setStatus(`${result.filename} downloaded.`);

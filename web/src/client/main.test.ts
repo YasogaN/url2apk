@@ -24,11 +24,18 @@ const mocks = vi.hoisted(() => {
       bytes: new Uint8Array([4]),
       filename: "app.zip",
     })),
+    repackAppImage: vi.fn(async () => new Uint8Array([6])),
     loadManifest: vi.fn(async () => ({ version: "1", artifacts: {} })),
-    findBase: vi.fn(() => ({
+    findBase: vi.fn((): {
+      url: string;
+      size: number;
+      sha256: string;
+      squashfsOffset?: number;
+    } => ({
       url: "/shells/base",
       size: 1,
       sha256: "a".repeat(64),
+      squashfsOffset: 4,
     })),
     fetchBase: vi.fn(async () => new Uint8Array([9])),
     needsConfirmation: vi.fn(() => false),
@@ -46,6 +53,9 @@ vi.mock("./apk/keys", () => ({
   importIdentity: mocks.importIdentity,
   loadIdentity: mocks.loadIdentity,
   saveIdentity: mocks.saveIdentity,
+}));
+vi.mock("./desktop/appimage-repack", () => ({
+  repackAppImage: mocks.repackAppImage,
 }));
 vi.mock("./desktop/build", () => ({
   buildDesktopArtifact: mocks.buildDesktopArtifact,
@@ -228,6 +238,7 @@ beforeEach(() => {
     url: "/shells/base",
     size: 1,
     sha256: "a".repeat(64),
+    squashfsOffset: 4,
   });
   mocks.fetchBase.mockResolvedValue(new Uint8Array([9]));
   mocks.needsConfirmation.mockReturnValue(false);
@@ -934,9 +945,64 @@ describe("desktop build", () => {
     await flush();
     expect(mocks.loadManifest).toHaveBeenCalled();
     expect(mocks.fetchBase).toHaveBeenCalled();
+    expect(mocks.repackAppImage).toHaveBeenCalledWith(
+      new Uint8Array([9]),
+      4,
+      expect.any(Object),
+      expect.any(Uint8Array),
+      "lite",
+    );
     expect(mocks.buildDesktopArtifact).toHaveBeenCalled();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
       "app.zip downloaded.",
+    );
+  });
+
+  it("repacks the full AppImage variant", async () => {
+    await prepareDesktop();
+    selectArtifact("linux-appimage-full");
+    submit();
+    await flush();
+    expect(mocks.repackAppImage).toHaveBeenCalledWith(
+      new Uint8Array([9]),
+      4,
+      expect.any(Object),
+      expect.any(Uint8Array),
+      "full",
+    );
+  });
+
+  it("does not repack non-AppImage artifacts", async () => {
+    await prepareDesktop();
+    selectArtifact("linux-tar");
+    submit();
+    await flush();
+    expect(mocks.repackAppImage).not.toHaveBeenCalled();
+    expect(mocks.buildDesktopArtifact).toHaveBeenCalled();
+  });
+
+  it("rejects an AppImage base without an offset", async () => {
+    mocks.findBase.mockReturnValue({
+      url: "/shells/base",
+      size: 1,
+      sha256: "a".repeat(64),
+      squashfsOffset: undefined,
+    });
+    await prepareDesktop();
+    submit();
+    await flush();
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "The AppImage base is missing its filesystem offset.",
+    );
+  });
+
+  it("reports an AppImage repack failure", async () => {
+    mocks.repackAppImage.mockRejectedValueOnce(new Error("repack failed"));
+    await prepareDesktop();
+    submit();
+    await flush();
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "repack failed",
     );
   });
 
@@ -998,6 +1064,7 @@ describe("desktop build", () => {
       url: "/shells/base",
       size: 1,
       sha256: "a".repeat(64),
+      squashfsOffset: 4,
     });
     mocks.fetchBase.mockRejectedValueOnce(new Error("download failed"));
     submit();

@@ -21,7 +21,7 @@ if [ ! -x "$appdir/AppRun" ]; then
 fi
 
 squashfs="$tmp/payload.squashfs"
-mksquashfs "$appdir" "$squashfs" -noappend -all-root -comp zstd -Xcompression-level 19 -quiet
+mksquashfs "$appdir" "$squashfs" -noappend -all-root -comp gzip -quiet
 cat "$runtime" "$squashfs" > "$output"
 chmod 755 "$output"
 

@@ -13,10 +13,11 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT INT TERM
 appdir="$tmp/AppDir"
 
-mkdir -p "$appdir/usr/bin" "$appdir/usr/share/applications"
+mkdir -p "$appdir/usr/bin" "$appdir/usr/share/applications" "$appdir/usr/share/icons/hicolor/256x256/apps"
 cp "$shell" "$appdir/usr/bin/shell"
 chmod 755 "$appdir/usr/bin/shell"
 cp "$icon" "$appdir/url2app-shell.png"
+cp "$icon" "$appdir/usr/share/icons/hicolor/256x256/apps/url2app-shell.png"
 ln -s url2app-shell.png "$appdir/.DirIcon"
 
 cat > "$appdir/AppRun" <<'APPRUN'
@@ -41,7 +42,7 @@ DESKTOP
 cp "$appdir/url2app-shell.desktop" "$appdir/usr/share/applications/url2app-shell.desktop"
 
 squashfs="$tmp/payload.squashfs"
-mksquashfs "$appdir" "$squashfs" -noappend -all-root -comp zstd -Xcompression-level 19 -quiet
+mksquashfs "$appdir" "$squashfs" -noappend -all-root -comp gzip -quiet
 cat "$runtime" "$squashfs" > "$output"
 chmod 755 "$output"
 
