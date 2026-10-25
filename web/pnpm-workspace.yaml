@@ -4,3 +4,6 @@ onlyBuiltDependencies:
 allowBuilds:
   esbuild: true
   workerd: true
+
+overrides:
+  undici@7.29.1: 7.30.1
