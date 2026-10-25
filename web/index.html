@@ -3,20 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>URL to APK — a URL in, an Android app out</title>
+    <title>URL to App — a URL in, an app out</title>
     <meta
       name="description"
-      content="Turn a website into a signed Android APK locally, in your browser. No accounts, no cloud builds, no Chrome. Open source and Apache-2.0."
+      content="Turn a website into a local app for Android, Windows and Linux, in your browser. No accounts, no cloud builds. Open source and Apache-2.0."
     />
     <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="URL to APK" />
-    <meta property="og:title" content="URL to APK — a URL in, an Android app out" />
+    <meta property="og:site_name" content="URL to App" />
+    <meta property="og:title" content="URL to App — a URL in, an app out" />
     <meta
       property="og:description"
-      content="Package a website as a signed Android APK in your browser. Local key, local signing, no account."
+      content="Package a website as a local app in your browser. Android, Windows and Linux. No account, no cloud build."
     />
     <meta name="twitter:card" content="summary" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -28,13 +28,13 @@
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "URL to APK",
+        "name": "URL to App",
         "applicationCategory": "DeveloperApplication",
-        "operatingSystem": "Any",
+        "operatingSystem": "Android, Windows, Linux",
         "isAccessibleForFree": true,
         "license": "https://www.apache.org/licenses/LICENSE-2.0",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "A local-first tool that packages a website as a signed Android APK using an Android System WebView shell."
+        "description": "A local-first tool that packages a website as an Android, Windows or Linux app using a prebuilt WebView shell."
       }
     </script>
   </head>
@@ -43,9 +43,9 @@
 
     <header class="site-header">
       <div class="wrap header-inner">
-        <a class="wordmark" href="#top" aria-label="URL to APK, home">
+        <a class="wordmark" href="#top" aria-label="URL to App, home">
           <span class="wordmark-arrow" aria-hidden="true">→</span>
-          <span>URL<span class="wordmark-slash">/</span>APK</span>
+          <span>URL<span class="wordmark-slash">/</span>APP</span>
         </a>
         <nav class="site-nav" aria-label="Primary">
           <a href="#builder">Builder</a>
@@ -54,7 +54,7 @@
           <a href="#privacy">Privacy</a>
           <a
             class="nav-external nav-github"
-            href="https://github.com/YasogaN/url2apk"
+            href="https://github.com/YasogaN/url2app"
             rel="noreferrer"
             aria-label="View the source on GitHub"
             title="View the source on GitHub"
@@ -79,14 +79,14 @@
     <main>
       <section class="wrap hero" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow">LOCAL-FIRST APK PACKAGER</p>
-          <h1 id="hero-title">A URL in.<br />An Android app out.</h1>
+          <p class="eyebrow">LOCAL-FIRST APP PACKAGER</p>
+          <h1 id="hero-title">A URL in.<br />An app out.</h1>
           <p class="lede">
-            Package a website as a signed Android APK in your browser.
-            No account, no cloud build, no Chrome.
+            Package a website as a local app in your browser.
+            Android, Windows and Linux. No account, no cloud build.
           </p>
           <div class="hero-actions">
-            <a class="button" href="#builder">Build an APK</a>
+            <a class="button" href="#builder">Build an app</a>
             <a class="button button-ghost" href="#limits">See the limits</a>
           </div>
         </div>
@@ -94,11 +94,11 @@
         <aside class="spec-panel" aria-label="At a glance">
           <div class="spec-row">
             <span class="spec-key">Runtime</span>
-            <span class="spec-value">Android System WebView</span>
+            <span class="spec-value">WebView · WebView2 · WebKitGTK</span>
           </div>
           <div class="spec-row">
             <span class="spec-key">Signing</span>
-            <span class="spec-value">Local key · APK v2</span>
+            <span class="spec-value">Android: local key · APK v2</span>
           </div>
           <div class="spec-row">
             <span class="spec-key">Network</span>
@@ -339,7 +339,7 @@
         </div>
 
         <ul class="checklist">
-          <li>The APK is assembled in this tab.</li>
+          <li>The app is assembled in this tab.</li>
           <li>The key is non-exportable; the encrypted backup is the only copy you can move.</li>
           <li>No analytics or third-party scripts.</li>
         </ul>
@@ -378,7 +378,7 @@
     <footer class="site-footer">
       <div class="wrap footer-inner">
         <div>
-          <p class="wordmark footer-mark">URL<span class="wordmark-slash">/</span>APK</p>
+          <p class="wordmark footer-mark">URL<span class="wordmark-slash">/</span>APP</p>
           <p class="footer-note">
             Apache-2.0. Self-host it. Not affiliated with Google or Android.
           </p>
@@ -389,7 +389,7 @@
           <a href="#limits">Limits</a>
           <a
             class="footer-github"
-            href="https://github.com/YasogaN/url2apk"
+            href="https://github.com/YasogaN/url2app"
             rel="noreferrer"
             aria-label="View the source on GitHub"
             title="View the source on GitHub"
@@ -419,7 +419,7 @@
 
     <noscript>
       <p class="wrap noscript-note">
-        The builder needs JavaScript because the APK is assembled in your
+        The builder needs JavaScript because the app is assembled in your
         browser. The documentation above is still readable.
       </p>
     </noscript>
