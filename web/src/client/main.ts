@@ -169,17 +169,6 @@ function isDesktop(): boolean {
   return target !== "android";
 }
 
-function targetArtifacts(): ReadonlyArray<{
-  value: DesktopArtifact;
-  label: string;
-}> {
-  return target === "windows"
-    ? WINDOWS_ARTIFACTS
-    : target === "linux"
-      ? LINUX_ARTIFACTS
-      : [];
-}
-
 function renderTargetUi(): void {
   const desktop = isDesktop();
   desktopFields.hidden = !desktop;
@@ -199,7 +188,8 @@ function renderTargetUi(): void {
         : "Generate APK";
 
   if (desktop) {
-    const options = targetArtifacts();
+    const options =
+      target === "windows" ? WINDOWS_ARTIFACTS : LINUX_ARTIFACTS;
     if (!options.some((option) => option.value === artifact)) {
       artifact = options[0].value;
     }
@@ -585,10 +575,7 @@ archSelect.addEventListener("change", () => {
 
 for (const tab of tabs) {
   tab.addEventListener("click", () => {
-    const source = tab.dataset.iconSource as IconSource | undefined;
-    if (source === undefined) {
-      return;
-    }
+    const source = tab.dataset.iconSource as IconSource;
     selectIconSource(source);
     if (source === "upload") {
       fileInput.click();
@@ -795,8 +782,8 @@ void loadIdentity()
   .then((stored) => {
     if (stored !== null) {
       identity = stored;
-      updateKeyStatus();
     }
+    updateKeyStatus();
   })
   .catch(() => {
     setStatus("IndexedDB is unavailable; the key will not persist.", "error");
