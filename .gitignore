@@ -27,7 +27,10 @@ coverage/
 *.apk
 *.aab
 !android/app/src/test/fixtures/*.apk
-!web/public/shell.apk
+
+# Generated shell bases (built by CI, never committed)
+web/public/shells/
+web/public/shells.json
 
 # Editors and OS
 .DS_Store
