@@ -93,6 +93,14 @@ describe("zip", () => {
     );
   });
 
+  it("finds the end of central directory before trailing bytes", () => {
+    const written = sample();
+    const withTrailing = new Uint8Array(written.bytes.length + 4);
+    withTrailing.set(written.bytes);
+    const archive = readZip(withTrailing);
+    expect(archive.entries).toHaveLength(3);
+  });
+
   it("rejects zip64 markers", () => {
     const written = sample();
     const view = new DataView(
