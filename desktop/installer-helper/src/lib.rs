@@ -54,12 +54,47 @@ pub fn install(installer: &Path, target: &Path) -> Result<()> {
         fs::write(target.join("app.ico"), ico)?;
     }
 
-    write_meta(&target.join("meta.ini"), &config.name, &config.id)?;
+    let folder = folder_name(&config.name, &config.id);
+    write_meta(&target.join("meta.ini"), &config.name, &config.id, &folder)?;
     Ok(())
 }
 
-fn write_meta(path: &Path, name: &str, id: &str) -> Result<()> {
-    let content = format!("[app]\r\nname={name}\r\nid={id}\r\n");
+pub fn folder_name(name: &str, id: &str) -> String {
+    let mut folder = String::new();
+    for character in name.chars() {
+        if character.is_control()
+            || matches!(
+                character,
+                '\\' | '/' | ':' | '*' | '?' | '"' | '<' | '>' | '|'
+            )
+        {
+            if !folder.ends_with('-') {
+                folder.push('-');
+            }
+        } else {
+            folder.push(character);
+        }
+    }
+    let folder = folder.trim().trim_end_matches(['.', ' ']);
+    let folder = if folder.is_empty() { "app" } else { folder };
+    let suffix: String = id
+        .chars()
+        .rev()
+        .take(6)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .collect();
+    let suffix = if suffix.is_empty() {
+        "app"
+    } else {
+        suffix.as_str()
+    };
+    format!("{folder}-{suffix}")
+}
+
+fn write_meta(path: &Path, name: &str, id: &str, folder: &str) -> Result<()> {
+    let content = format!("[app]\r\nname={name}\r\nid={id}\r\nfolder={folder}\r\n");
     let mut bytes = vec![0xff, 0xfe];
     for unit in content.encode_utf16() {
         bytes.extend_from_slice(&unit.to_le_bytes());

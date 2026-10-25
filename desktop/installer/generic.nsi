@@ -12,9 +12,13 @@ Unicode true
   !error "HELPER is required"
 !endif
 
-Name "URL to App"
+Var AppName
+Var AppId
+Var AppFolder
+
+Name "$AppName"
 OutFile "${OUTFILE}"
-BrandingText "URL to App"
+BrandingText "$AppName"
 !define MUI_ABORTWARNING
 !define MUI_ICON "${ICON_ICO}"
 !define MUI_UNICON "${ICON_ICO}"
@@ -33,8 +37,6 @@ BrandingText "URL to App"
   !define SHELL_CONTEXT current
 !endif
 
-Var AppName
-Var AppId
 Var IconPath
 
 !insertmacro MUI_PAGE_WELCOME
@@ -56,16 +58,32 @@ Function .onInit
   ${EndIf}
   ReadINIStr $AppName "$PLUGINSDIR\meta\meta.ini" "app" "name"
   ReadINIStr $AppId "$PLUGINSDIR\meta\meta.ini" "app" "id"
+  ReadINIStr $AppFolder "$PLUGINSDIR\meta\meta.ini" "app" "folder"
   ${If} $AppName == ""
   ${OrIf} $AppId == ""
     MessageBox MB_ICONSTOP "This installer is missing its app metadata."
     Abort
   ${EndIf}
+  ${If} $AppFolder == ""
+    StrCpy $AppFolder "$AppId"
+  ${EndIf}
   !ifdef SYSTEM_WIDE
-    StrCpy $INSTDIR "$PROGRAMFILES64\$AppId"
+    StrCpy $INSTDIR "$PROGRAMFILES64\$AppFolder"
   !else
-    StrCpy $INSTDIR "$LOCALAPPDATA\Programs\$AppId"
+    StrCpy $INSTDIR "$LOCALAPPDATA\Programs\$AppFolder"
   !endif
+FunctionEnd
+
+Function un.onInit
+  ReadINIStr $AppName "$INSTDIR\meta.ini" "app" "name"
+  ReadINIStr $AppId "$INSTDIR\meta.ini" "app" "id"
+  ReadINIStr $AppFolder "$INSTDIR\meta.ini" "app" "folder"
+  ${If} $AppName == ""
+    StrCpy $AppName "URL to App"
+  ${EndIf}
+  ${If} $AppId == ""
+    StrCpy $AppId "url2app"
+  ${EndIf}
 FunctionEnd
 
 Section "Install"

@@ -67,6 +67,20 @@ fn writes_config_icon_ico_and_meta() {
     .unwrap();
     assert!(text.contains("name=Example\r\n"));
     assert!(text.contains("id=napp-0123456789ab\r\n"));
+    assert!(text.contains("folder=Example-6789ab\r\n"));
+}
+
+#[test]
+fn builds_a_friendly_install_folder_name() {
+    assert_eq!(folder_name("My App", "napp-0123456789ab"), "My App-6789ab");
+    assert_eq!(
+        folder_name("Example.", "napp-0123456789ab"),
+        "Example-6789ab"
+    );
+    assert_eq!(folder_name("A/B:C", "napp-0123456789ab"), "A-B-C-6789ab");
+    assert_eq!(folder_name("   ", "napp-0123456789ab"), "app-6789ab");
+    assert_eq!(folder_name("CON", "napp-0123456789ab"), "CON-6789ab");
+    assert_eq!(folder_name("Example", ""), "Example-app");
 }
 
 #[test]

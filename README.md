@@ -67,7 +67,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## What you get
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
-- **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
+- **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile. The installer takes its title from the generated app name and installs under `<app-name>-<short id>` instead of an opaque internal ID.
 - **Linux:** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build, with the generated app name and icon embedded in its launcher entry.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
