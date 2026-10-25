@@ -2,9 +2,9 @@
 
 # URL to App
 
-**A website in. An app out.**
+**A URL in. An Android, Windows or Linux app out.**
 
-Package an HTTPS site as a small Android WebView APK, entirely in your browser. Windows and Linux desktop targets are landing next. No account, no cloud build.
+Package an HTTPS site as a small Android WebView APK or an unsigned Windows/Linux desktop app, entirely in your browser. No account, no cloud build.
 
 [![Live](https://img.shields.io/badge/live-url2app.yasogan.dev-8b0000?style=for-the-badge)](https://url2app.yasogan.dev)
 [![CI](https://img.shields.io/github/actions/workflow/status/YasogaN/url2app/ci.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/YasogaN/url2app/actions/workflows/ci.yml)
@@ -65,13 +65,13 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
 2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json`, or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
 3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
-4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The bundled-WebKit AppImage is about 109 MiB, so CI splits it into 20 MiB parts; the browser verifies and concatenates the parts before patching, which keeps every static asset under Cloudflare's 25 MiB per-file limit without R2.
+4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The bundled-WebKit AppImage is about 109 MiB, so CI splits it into 20 MiB parts; the browser verifies and concatenates the parts before patching, which keeps every static asset under Cloudflare's 25 MiB per-file limit without R2. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 492 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
+- **Web:** 527 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
 - **Desktop:** the Windows and Linux shells, browser packaging, installer, and release workflow are implemented. The live builder needs the first shell release; Windows manual validation is still pending. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
