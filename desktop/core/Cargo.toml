@@ -1,0 +1,16 @@
+[package]
+name = "url2app-shell-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.90"
+license = "Apache-2.0"
+description = "Config and policy core for the URL to App desktop shell"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+url = "2"
+
+[dev-dependencies]
+tempfile = "3"
