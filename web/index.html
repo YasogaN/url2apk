@@ -127,6 +127,22 @@
           <div class="builder-grid">
             <form class="builder-form" id="builder-form" novalidate>
               <div class="field">
+                <label for="target">Target</label>
+                <select id="target" name="target">
+                  <option value="android">Android APK</option>
+                  <option value="windows">Windows</option>
+                  <option value="linux">Linux</option>
+                </select>
+                <p class="field-note" data-target-note>
+                  Android builds use a local signing key. Desktop builds are unsigned.
+                </p>
+                <p class="field-note" data-macos-note hidden>
+                  macOS builds are not supported yet.
+                  <a href="https://github.com/YasogaN/url2app" rel="noreferrer">Contributions are welcome.</a>
+                </p>
+              </div>
+
+              <div class="field">
                 <label for="site-url">Site URL</label>
                 <input
                   id="site-url"
@@ -153,6 +169,20 @@
                   maxlength="80"
                   placeholder="Example"
                 />
+              </div>
+
+              <div class="field field-pair" data-desktop-only hidden>
+                <div>
+                  <label for="arch">Architecture</label>
+                  <select id="arch" name="arch">
+                    <option value="x64">x86_64</option>
+                    <option value="arm64">ARM64</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="artifact">Package</label>
+                  <select id="artifact" name="artifact"></select>
+                </div>
               </div>
 
               <fieldset class="field">
@@ -211,7 +241,7 @@
                 </div>
               </fieldset>
 
-              <div class="field field-pair">
+              <div class="field field-pair" data-android-only>
                 <div>
                   <label for="version-code">Version code</label>
                   <input
@@ -230,12 +260,12 @@
               </div>
 
               <div class="field">
-                <span class="label-static">Package</span>
+                <span class="label-static" data-package-label>Package</span>
                 <p class="mono-value package-value" data-package>com.example</p>
               </div>
 
               <button class="button button-wide" type="submit" data-build disabled>
-                Generate APK
+                Generate app
               </button>
               <p class="build-status" data-build-status aria-live="polite">
                 Enter an HTTPS URL to begin.
@@ -257,7 +287,7 @@
                 com.example
               </p>
 
-              <div class="key-row">
+              <div class="key-row" data-key-row>
                 <span class="mono-value" data-key-status>
                   No key yet. It is created on the first build.
                 </span>
@@ -292,13 +322,13 @@
           </li>
           <li>
             <span class="step-number">02</span>
-            <h3>Keep the key.</h3>
-            <p>Generated here. Download the encrypted backup.</p>
+            <h3>Choose the target.</h3>
+            <p>Android needs a local key. Desktop builds are unsigned.</p>
           </li>
           <li>
             <span class="step-number">03</span>
             <h3>Install.</h3>
-            <p>Allow unknown apps, then open the APK.</p>
+            <p>Allow unknown apps for the APK, or run the desktop package.</p>
           </li>
         </ol>
       </section>
@@ -356,15 +386,15 @@
         <div class="faq-list">
           <details>
             <summary>Can I update it?</summary>
-            <p>Same key and a higher version code. Lose the key and you must uninstall.</p>
+            <p>Regenerate it. Android can reuse the key; desktop builds do not auto-update.</p>
           </details>
           <details>
             <summary>How do I install it?</summary>
-            <p>Allow unknown apps. Play Protect may warn.</p>
+            <p>Android: allow unknown apps. Windows: run Setup. Linux: chmod the AppImage or extract the tar.</p>
           </details>
           <details>
             <summary>Do I need Chrome?</summary>
-            <p>No. It uses Android System WebView.</p>
+            <p>No. Android uses System WebView; desktop uses WebView2 or WebKitGTK.</p>
           </details>
           <details>
             <summary>Does it work offline?</summary>

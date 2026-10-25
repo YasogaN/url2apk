@@ -8,6 +8,27 @@ import {
   saveIdentity,
   type Identity,
 } from "./apk/keys";
+import { buildDesktopArtifact } from "./desktop/build";
+import {
+  buildDesktopConfig,
+  type DesktopArch,
+  type DesktopArtifact,
+} from "./desktop/config";
+import {
+  fetchBase,
+  findBase,
+  formatBytes,
+  loadManifest,
+  needsConfirmation,
+  type ShellManifest,
+} from "./desktop/manifest";
+import {
+  detectArch,
+  detectHost,
+  primaryTarget,
+  type HostPlatform,
+  type PrimaryTarget,
+} from "./desktop/platform";
 import {
   formatVersionCode,
   initials,
@@ -18,13 +39,14 @@ import {
 import { loadImage, paintImage, paintLetter } from "./paint";
 
 type IconSource = "letter" | "upload" | "fetch";
+type Target = PrimaryTarget;
 
-function requireElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector);
+function requireElement<T>(selector: string): T {
+  const element = document.querySelector(selector);
   if (element === null) {
     throw new Error(`Missing element: ${selector}`);
   }
-  return element;
+  return element as T;
 }
 
 const form = requireElement<HTMLFormElement>("#builder-form");
@@ -63,6 +85,17 @@ const keyStatus = requireElement<HTMLElement>("[data-key-status]");
 const backupKeyButton = requireElement<HTMLButtonElement>("[data-backup-key]");
 const importKeyButton = requireElement<HTMLButtonElement>("[data-import-key]");
 const importFile = requireElement<HTMLInputElement>("[data-import-file]");
+const targetSelect = requireElement<HTMLSelectElement>("#target");
+const archSelect = requireElement<HTMLSelectElement>("#arch");
+const artifactSelect = requireElement<HTMLSelectElement>("#artifact");
+const desktopFields = requireElement<HTMLElement>("[data-desktop-only]");
+const androidFields = Array.from(
+  document.querySelectorAll<HTMLElement>("[data-android-only]"),
+);
+const keyRow = requireElement<HTMLElement>("[data-key-row]");
+const packageLabel = requireElement<HTMLElement>("[data-package-label]");
+const targetNote = requireElement<HTMLElement>("[data-target-note]");
+const macNote = requireElement<HTMLElement>("[data-macos-note]");
 
 let currentUrl: URL | null = null;
 let nameTouched = false;
@@ -72,6 +105,29 @@ let identity: Identity | null = null;
 let template: Uint8Array | null = null;
 let passwordResolver: ((value: string | null) => void) | null = null;
 let passwordMode: "create" | "import" = "create";
+let target: Target = "android";
+let arch: DesktopArch = "x64";
+let artifact: DesktopArtifact = "windows-setup";
+let host: HostPlatform = "other";
+let manifest: ShellManifest | null = null;
+let manifestLoading: Promise<ShellManifest | null> | null = null;
+
+const WINDOWS_ARTIFACTS: ReadonlyArray<{
+  value: DesktopArtifact;
+  label: string;
+}> = [
+  { value: "windows-setup", label: "Setup.exe (recommended)" },
+  { value: "windows-portable", label: "Portable .zip" },
+];
+
+const LINUX_ARTIFACTS: ReadonlyArray<{
+  value: DesktopArtifact;
+  label: string;
+}> = [
+  { value: "linux-appimage", label: "AppImage · system WebKit" },
+  { value: "linux-appimage-full", label: "AppImage · bundled WebKit" },
+  { value: "linux-tar", label: "tar.gz" },
+];
 
 function setStatus(message: string, tone: "muted" | "error" = "muted"): void {
   statusLine.textContent = message;
@@ -108,6 +164,78 @@ function renderPreview(): void {
   renderIcon();
 }
 
+function isDesktop(): boolean {
+  return target !== "android";
+}
+
+function targetArtifacts(): ReadonlyArray<{
+  value: DesktopArtifact;
+  label: string;
+}> {
+  return target === "windows"
+    ? WINDOWS_ARTIFACTS
+    : target === "linux"
+      ? LINUX_ARTIFACTS
+      : [];
+}
+
+function renderTargetUi(): void {
+  const desktop = isDesktop();
+  desktopFields.hidden = !desktop;
+  for (const field of androidFields) {
+    field.hidden = desktop;
+  }
+  keyRow.hidden = desktop;
+  macNote.hidden = host !== "mac";
+  targetNote.textContent = desktop
+    ? "The prebuilt shell downloads once and the package is assembled here."
+    : "Android builds use a local signing key. Desktop builds are unsigned.";
+  buildButton.textContent =
+    target === "windows"
+      ? "Generate Windows app"
+      : target === "linux"
+        ? "Generate Linux app"
+        : "Generate APK";
+
+  if (desktop) {
+    const options = targetArtifacts();
+    if (!options.some((option) => option.value === artifact)) {
+      artifact = options[0].value;
+    }
+    artifactSelect.replaceChildren(
+      ...options.map((option) => {
+        const element = document.createElement("option");
+        element.value = option.value;
+        element.textContent = option.label;
+        return element;
+      }),
+    );
+    artifactSelect.value = artifact;
+    archSelect.value = arch;
+  }
+  void syncIdentity();
+}
+
+function previewPackageValue(url: URL | null): string {
+  if (url === null) {
+    return "—";
+  }
+  if (!isDesktop()) {
+    return packageName(url);
+  }
+  const result = buildDesktopConfig({ url: url.href, name: currentName() });
+  return result.ok ? result.config.id : "—";
+}
+
+function updatePackagePreview(): void {
+  packageLabel.textContent = isDesktop() ? "App id" : "Package";
+  const value = previewPackageValue(currentUrl);
+  for (const element of packageValues) {
+    element.textContent = value;
+  }
+  previewPackage.textContent = value;
+}
+
 async function syncIdentity(): Promise<void> {
   if (urlInput.value.trim() === "") {
     currentUrl = null;
@@ -117,6 +245,7 @@ async function syncIdentity(): Promise<void> {
     );
     setStatus("Enter an HTTPS URL to begin.");
     buildButton.disabled = true;
+    updatePackagePreview();
     return;
   }
 
@@ -126,6 +255,7 @@ async function syncIdentity(): Promise<void> {
     setUrlNote(normalized.message, true);
     setStatus("Enter an HTTPS URL to begin.");
     buildButton.disabled = true;
+    updatePackagePreview();
     return;
   }
 
@@ -139,18 +269,12 @@ async function syncIdentity(): Promise<void> {
     nameInput.value = suggestName(normalized.url);
   }
 
-  const name = currentName();
-  const packageValue = packageName(normalized.url);
-
-  for (const element of packageValues) {
-    element.textContent = packageValue;
-  }
-  previewPackage.textContent = packageValue;
-  previewName.textContent = name;
+  previewName.textContent = currentName();
+  updatePackagePreview();
   renderIcon();
 
   buildButton.disabled = false;
-  setStatus("Ready to sign locally.");
+  setStatus(isDesktop() ? "Ready to build." : "Ready to sign locally.");
 }
 
 function selectIconSource(source: IconSource): void {
@@ -219,7 +343,7 @@ async function ensureIdentity(): Promise<Identity | null> {
   identity = created;
   downloadBytes(
     created.backup,
-    "url-to-apk-key.p1x",
+    "url-to-app-key.p1x",
     "application/octet-stream",
   );
   try {
@@ -245,7 +369,7 @@ async function loadTemplate(): Promise<Uint8Array> {
   return template;
 }
 
-async function build(): Promise<void> {
+async function buildAndroid(): Promise<void> {
   const normalized = normalizeUrl(urlInput.value);
   if (!normalized.ok) {
     setStatus(normalized.message, "error");
@@ -297,6 +421,114 @@ async function build(): Promise<void> {
   }
 }
 
+async function ensureManifest(): Promise<ShellManifest | null> {
+  if (manifest !== null) {
+    return manifest;
+  }
+  if (manifestLoading === null) {
+    manifestLoading = loadManifest()
+      .then((value) => {
+        manifest = value;
+        return value;
+      })
+      .catch((error: unknown) => {
+        setStatus(
+          error instanceof Error
+            ? error.message
+            : "The shell catalog could not be loaded.",
+          "error",
+        );
+        return null;
+      })
+      .finally(() => {
+        manifestLoading = null;
+      });
+  }
+  return manifestLoading;
+}
+
+function canvasPng(): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob === null) {
+        reject(new Error("The icon could not be rendered."));
+        return;
+      }
+      void blob.arrayBuffer().then((buffer) => {
+        resolve(new Uint8Array(buffer));
+      }, reject);
+    }, "image/png");
+  });
+}
+
+async function buildDesktop(): Promise<void> {
+  const normalized = normalizeUrl(urlInput.value);
+  if (!normalized.ok) {
+    setStatus(normalized.message, "error");
+    return;
+  }
+  const configResult = buildDesktopConfig({
+    url: normalized.url.href,
+    name: currentName(),
+  });
+  if (!configResult.ok) {
+    setStatus(configResult.message, "error");
+    return;
+  }
+
+  const selectedArtifact = artifact;
+  const selectedArch = arch;
+  buildButton.disabled = true;
+  try {
+    setStatus("Loading the shell catalog…");
+    const catalog = await ensureManifest();
+    if (catalog === null) {
+      return;
+    }
+    const base = findBase(catalog, selectedArtifact, selectedArch);
+    if (needsConfirmation(base)) {
+      const proceed = window.confirm(
+        `This build downloads a ${formatBytes(base.size)} shell. Continue?`,
+      );
+      if (!proceed) {
+        setStatus("Download cancelled.");
+        return;
+      }
+    }
+    setStatus(`Downloading the ${formatBytes(base.size)} shell…`);
+    const shell = await fetchBase(base);
+    setStatus("Rendering the icon…");
+    const icon = await canvasPng();
+    setStatus("Assembling the package…");
+    const result = buildDesktopArtifact({
+      config: configResult.config,
+      icon,
+      artifact: selectedArtifact,
+      arch: selectedArch,
+      base: shell,
+    });
+    downloadBytes(result.bytes, result.filename, "application/octet-stream");
+    setStatus(`${result.filename} downloaded.`);
+  } catch (error) {
+    setStatus(
+      error instanceof Error
+        ? error.message
+        : "The desktop package could not be built.",
+      "error",
+    );
+  } finally {
+    buildButton.disabled = false;
+  }
+}
+
+async function build(): Promise<void> {
+  if (isDesktop()) {
+    await buildDesktop();
+  } else {
+    await buildAndroid();
+  }
+}
+
 function downloadBytes(
   bytes: Uint8Array,
   filename: string,
@@ -332,6 +564,21 @@ nameInput.addEventListener("input", () => {
 });
 
 versionInput.addEventListener("input", () => {
+  void syncIdentity();
+});
+
+targetSelect.addEventListener("change", () => {
+  target = targetSelect.value as Target;
+  renderTargetUi();
+});
+
+artifactSelect.addEventListener("change", () => {
+  artifact = artifactSelect.value as DesktopArtifact;
+  void syncIdentity();
+});
+
+archSelect.addEventListener("change", () => {
+  arch = archSelect.value as DesktopArch;
   void syncIdentity();
 });
 
@@ -465,7 +712,7 @@ backupKeyButton.addEventListener("click", () => {
   }
   downloadBytes(
     identity.backup,
-    "url-to-apk-key.p1x",
+    "url-to-app-key.p1x",
     "application/octet-stream",
   );
   setStatus("Backup downloaded.");
@@ -517,6 +764,32 @@ media.addEventListener("change", () => {
 
 previewName.textContent = "Example";
 paintLetter(canvas, "E");
+host = detectHost(navigator.userAgent, navigator.platform);
+target = primaryTarget(host);
+targetSelect.value = target;
+arch = detectArch(navigator.userAgent);
+archSelect.value = arch;
+const highEntropy = (
+  navigator as unknown as {
+    userAgentData?: {
+      getHighEntropyValues?: (
+        hints: string[],
+      ) => Promise<{ architecture?: string }>;
+    };
+  }
+).userAgentData;
+if (highEntropy?.getHighEntropyValues !== undefined) {
+  void highEntropy
+    .getHighEntropyValues(["architecture"])
+    .then((values) => {
+      arch = detectArch(navigator.userAgent, values.architecture);
+      archSelect.value = arch;
+    })
+    .catch(() => {
+      // Keep the user-agent fallback.
+    });
+}
+renderTargetUi();
 void loadIdentity()
   .then((stored) => {
     if (stored !== null) {
@@ -527,4 +800,3 @@ void loadIdentity()
   .catch(() => {
     setStatus("IndexedDB is unavailable; the key will not persist.", "error");
   });
-void syncIdentity();
