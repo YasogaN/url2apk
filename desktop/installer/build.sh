@@ -5,9 +5,9 @@ if [ "$#" -ne 4 ]; then
   exit 2
 fi
 scope="$1"
-shell="$2"
-helper="$3"
-output="$4"
+shell="$(realpath "$2")"
+helper="$(realpath "$3")"
+output="$(realpath -m "$4")"
 case "$scope" in
   user) scope_flag="" ;;
   system) scope_flag="-DSYSTEM_WIDE" ;;

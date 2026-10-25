@@ -154,10 +154,10 @@ jobs:
           cp artifacts/linux/linux-arm64/url2app-shell bases/linux-arm64-shell
           cp artifacts/linux/linux-arm64/linux-arm64-lite.AppImage bases/
           cp artifacts/linux/linux-arm64/linux-arm64-full.AppImage.part-* bases/
-          cp "$(find artifacts/windows/windows-x64 -type f -name url2app-shell.exe)" bases/windows-x64-shell.exe
-          cp "$(find artifacts/windows/windows-x64 -type f -name url2app-installer-helper.exe)" bases/windows-x64-helper.exe
-          cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-shell.exe)" bases/windows-arm64-shell.exe
-          cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-installer-helper.exe)" bases/windows-arm64-helper.exe
+          cp artifacts/windows/windows-x64/url2app-shell.exe bases/windows-x64-shell.exe
+          cp artifacts/windows/windows-x64/url2app-installer-helper.exe bases/windows-x64-helper.exe
+          cp artifacts/windows/windows-arm64/url2app-shell.exe bases/windows-arm64-shell.exe
+          cp artifacts/windows/windows-arm64/url2app-installer-helper.exe bases/windows-arm64-helper.exe
           chmod +x bases/linux-*-shell
       - name: Build the Windows installers
         run: |
