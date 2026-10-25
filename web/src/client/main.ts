@@ -36,6 +36,7 @@ import {
   packageName,
   suggestName,
 } from "./domain";
+import { createHero, type HeroController } from "./hero";
 import { loadImage, paintImage, paintLetter } from "./paint";
 
 type IconSource = "letter" | "upload" | "fetch";
@@ -96,6 +97,11 @@ const keyRow = requireElement<HTMLElement>("[data-key-row]");
 const packageLabel = requireElement<HTMLElement>("[data-package-label]");
 const targetNote = requireElement<HTMLElement>("[data-target-note]");
 const macNote = requireElement<HTMLElement>("[data-macos-note]");
+const heroArticle = requireElement<HTMLElement>("[data-hero-article]");
+const heroTarget = requireElement<HTMLElement>("[data-hero-target]");
+const specRuntime = requireElement<HTMLElement>("[data-spec-runtime]");
+const specSigning = requireElement<HTMLElement>("[data-spec-signing]");
+const specNetwork = requireElement<HTMLElement>("[data-spec-network]");
 
 let currentUrl: URL | null = null;
 let nameTouched = false;
@@ -109,6 +115,7 @@ let target: Target = "android";
 let arch: DesktopArch = "x64";
 let artifact: DesktopArtifact = "windows-setup-user";
 let host: HostPlatform = "other";
+let hero: HeroController | null = null;
 let manifest: ShellManifest | null = null;
 let manifestLoading: Promise<ShellManifest | null> | null = null;
 
@@ -560,6 +567,7 @@ versionInput.addEventListener("input", () => {
 
 targetSelect.addEventListener("change", () => {
   target = targetSelect.value as Target;
+  hero?.setTarget(target);
   renderTargetUi();
 });
 
@@ -755,6 +763,22 @@ paintLetter(canvas, "E");
 host = detectHost(navigator.userAgent, navigator.platform);
 target = primaryTarget(host);
 targetSelect.value = target;
+hero = createHero(
+  {
+    article: heroArticle,
+    target: heroTarget,
+    runtime: specRuntime,
+    signing: specSigning,
+    network: specNetwork,
+  },
+  target,
+  {
+    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches,
+  },
+);
+hero.start();
+window.addEventListener("pagehide", () => hero?.stop());
 arch = detectArch(navigator.userAgent);
 archSelect.value = arch;
 const highEntropy = (

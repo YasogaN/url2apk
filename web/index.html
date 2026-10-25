@@ -80,7 +80,13 @@
       <section class="wrap hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow">LOCAL-FIRST APP PACKAGER</p>
-          <h1 id="hero-title">A URL in.<br />An app out.</h1>
+          <h1
+            id="hero-title"
+            aria-label="A URL in. An Android, Windows or Linux app out."
+          >
+            A URL in.<br />
+            <span data-hero-article>An</span> <span class="hero-target" data-hero-target>Android</span> app out.
+          </h1>
           <p class="lede">
             Package a website as a local app in your browser.
             Android, Windows and Linux. No account, no cloud build.
@@ -94,15 +100,15 @@
         <aside class="spec-panel" aria-label="At a glance">
           <div class="spec-row">
             <span class="spec-key">Runtime</span>
-            <span class="spec-value">WebView · WebView2 · WebKitGTK</span>
+            <span class="spec-value" data-spec-runtime>Android System WebView</span>
           </div>
           <div class="spec-row">
             <span class="spec-key">Signing</span>
-            <span class="spec-value">Android: local key · APK v2</span>
+            <span class="spec-value" data-spec-signing>Local key · APK v2</span>
           </div>
           <div class="spec-row">
             <span class="spec-key">Network</span>
-            <span class="spec-value">Favicon lookup only</span>
+            <span class="spec-value" data-spec-network>Favicon + on-demand shell</span>
           </div>
         </aside>
       </section>

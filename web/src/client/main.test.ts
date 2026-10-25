@@ -100,6 +100,10 @@ const HTML = `
   <input data-import-file type="file" />
   <p data-target-note></p>
   <p data-macos-note hidden></p>
+  <h1><span data-hero-article>An</span> <span data-hero-target>Android</span></h1>
+  <span data-spec-runtime></span>
+  <span data-spec-signing></span>
+  <span data-spec-network></span>
 </form>
 <dialog id="key-dialog">
   <form id="key-form">
@@ -254,8 +258,8 @@ beforeEach(() => {
   mediaListener = undefined;
   Object.defineProperty(window, "matchMedia", {
     configurable: true,
-    value: vi.fn(() => ({
-      matches: false,
+    value: vi.fn((query: string) => ({
+      matches: query.includes("prefers-reduced-motion"),
       addEventListener: vi.fn((_event: string, callback: () => void) => {
         mediaListener = callback;
       }),
@@ -317,6 +321,19 @@ describe("startup", () => {
     expect(element<HTMLSelectElement>("#artifact").value).toBe(
       "linux-appimage",
     );
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Linux",
+    );
+    expect(element<HTMLElement>("[data-hero-article]").textContent).toBe("A");
+    expect(element<HTMLElement>("[data-spec-runtime]").textContent).toBe(
+      "WebKitGTK",
+    );
+    expect(element<HTMLElement>("[data-spec-signing]").textContent).toBe(
+      "Unsigned",
+    );
+    expect(element<HTMLElement>("[data-spec-network]").textContent).toBe(
+      "Favicon + on-demand shell",
+    );
   });
 
   it("selects Windows on Windows", async () => {
@@ -331,6 +348,13 @@ describe("startup", () => {
     expect(element<HTMLSelectElement>("#artifact").value).toBe(
       "windows-setup-user",
     );
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Windows",
+    );
+    expect(element<HTMLElement>("[data-hero-article]").textContent).toBe("A");
+    expect(element<HTMLElement>("[data-spec-runtime]").textContent).toBe(
+      "WebView2",
+    );
   });
 
   it("uses Android on macOS and shows the contribution note", async () => {
@@ -343,6 +367,16 @@ describe("startup", () => {
     expect(element<HTMLButtonElement>("[data-build]").textContent).toBe(
       "Generate APK",
     );
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Android",
+    );
+    expect(element<HTMLElement>("[data-hero-article]").textContent).toBe("An");
+    expect(element<HTMLElement>("[data-spec-runtime]").textContent).toBe(
+      "Android System WebView",
+    );
+    expect(element<HTMLElement>("[data-spec-signing]").textContent).toBe(
+      "Local key · APK v2",
+    );
   });
 
   it("uses Android on Android", async () => {
@@ -354,6 +388,11 @@ describe("startup", () => {
     expect(element<HTMLSelectElement>("#target").value).toBe("android");
     expect(element<HTMLElement>("[data-desktop-only]").hidden).toBe(true);
     expect(element<HTMLElement>("[data-key-row]").hidden).toBe(false);
+  });
+
+  it("stops the hero when the page is hidden", async () => {
+    await boot();
+    window.dispatchEvent(new Event("pagehide"));
   });
 
   it("uses Client Hints for the architecture", async () => {
@@ -484,9 +523,15 @@ describe("form", () => {
     expect(element<HTMLSelectElement>("#artifact").value).toBe(
       "windows-setup-user",
     );
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Windows",
+    );
     selectArtifact("windows-portable");
     selectTarget("linux");
     await flush();
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Linux",
+    );
     selectArch("arm64");
     await flush();
     expect(element<HTMLSelectElement>("#arch").value).toBe("arm64");
@@ -494,6 +539,13 @@ describe("form", () => {
     await flush();
     expect(element<HTMLElement>("[data-desktop-only]").hidden).toBe(true);
     expect(element<HTMLElement>("[data-key-row]").hidden).toBe(false);
+    expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
+      "Android",
+    );
+    expect(element<HTMLElement>("[data-hero-article]").textContent).toBe("An");
+    expect(element<HTMLElement>("[data-spec-runtime]").textContent).toBe(
+      "Android System WebView",
+    );
   });
 
   it("re-renders the icon when the color scheme changes", async () => {
