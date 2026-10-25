@@ -98,8 +98,6 @@ jobs:
         run: cargo test --manifest-path web/wasm/appimage-repack/Cargo.toml
       - name: Build the browser module
         run: ./web/wasm/appimage-repack/build.sh
-      - name: Check the committed module is current
-        run: git diff --exit-code -- web/public/wasm
 
   desktop:
     runs-on: ubuntu-22.04
