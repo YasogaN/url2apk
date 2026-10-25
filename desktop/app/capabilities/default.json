@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "No IPC permissions are granted to remote content.",
+  "windows": ["*"],
+  "permissions": []
+}
