@@ -179,6 +179,8 @@ jobs:
   deploy:
     needs: [package, android-template]
     runs-on: ubuntu-22.04
+    environment:
+      name: release
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
