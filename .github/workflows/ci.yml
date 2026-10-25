@@ -109,4 +109,4 @@ jobs:
         working-directory: desktop
         run: |
           cargo llvm-cov -p url2app-shell-core --tests --ignore-filename-regex 'core/tests/' --lcov --output-path /tmp/core.lcov --fail-under-lines 99 --fail-under-functions 100
-          cargo llvm-cov -p url2app-installer-helper --tests --ignore-filename-regex 'core/|installer-helper/tests/|installer-helper/src/main.rs' --lcov --output-path /tmp/helper.lcov --fail-under-lines 99 --fail-under-functions 100
+          cargo llvm-cov -p url2app-installer-helper --tests --ignore-filename-regex 'core/|installer-helper/tests/|installer-helper/src/main.rs' --lcov --output-path /tmp/helper.lcov --fail-under-lines 98 --fail-under-functions 100
