@@ -61,11 +61,7 @@ impl PermissionStore {
     }
 
     pub fn get(&self, permission: Permission) -> Option<bool> {
-        self.decisions
-            .lock()
-            .ok()?
-            .get(permission.key())
-            .copied()
+        self.decisions.lock().ok()?.get(permission.key()).copied()
     }
 
     pub fn set(&self, permission: Permission, allowed: bool) {
@@ -77,11 +73,7 @@ impl PermissionStore {
         }
     }
 
-    pub fn decide<F: FnOnce(Permission) -> bool>(
-        &self,
-        permission: Permission,
-        prompt: F,
-    ) -> bool {
+    pub fn decide<F: FnOnce(Permission) -> bool>(&self, permission: Permission, prompt: F) -> bool {
         if let Some(allowed) = self.get(permission) {
             return allowed;
         }

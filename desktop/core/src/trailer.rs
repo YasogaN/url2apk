@@ -47,7 +47,9 @@ pub enum TrailerError {
 
 impl Trailer {
     pub fn parse(bytes: &[u8], file_length: u64) -> Result<Self, TrailerError> {
-        let trailer = bytes.get(..TRAILER_SIZE as usize).ok_or(TrailerError::TooSmall)?;
+        let trailer = bytes
+            .get(..TRAILER_SIZE as usize)
+            .ok_or(TrailerError::TooSmall)?;
         let file_length = file_length
             .checked_sub(TRAILER_SIZE)
             .ok_or(TrailerError::TooSmall)?;
@@ -92,17 +94,13 @@ impl Trailer {
 }
 
 fn offset(trailer: &[u8], start: usize) -> Result<u64, TrailerError> {
-    let bytes = trailer
-        .get(start..start + 8)
-        .ok_or(TrailerError::Offsets)?;
+    let bytes = trailer.get(start..start + 8).ok_or(TrailerError::Offsets)?;
     let mut value = [0u8; 8];
     value.copy_from_slice(bytes);
     Ok(u64::from_le_bytes(value))
 }
 
-pub fn read_trailer<R: Read + Seek>(
-    reader: &mut R,
-) -> Result<(Trailer, u64), TrailerError> {
+pub fn read_trailer<R: Read + Seek>(reader: &mut R) -> Result<(Trailer, u64), TrailerError> {
     let file_length = reader.seek(SeekFrom::End(0))?;
     if file_length < TRAILER_SIZE {
         return Err(TrailerError::TooSmall);
@@ -148,14 +146,12 @@ mod tests {
     ) -> Vec<u8> {
         let mut bytes = vec![0u8; TRAILER_SIZE as usize];
         bytes[MAGIC_OFFSET..MAGIC_OFFSET + 4].copy_from_slice(MAGIC);
-        bytes[VERSION_OFFSET..VERSION_OFFSET + 2]
-            .copy_from_slice(&TRAILER_VERSION.to_le_bytes());
+        bytes[VERSION_OFFSET..VERSION_OFFSET + 2].copy_from_slice(&TRAILER_VERSION.to_le_bytes());
         bytes[JSON_OFFSET..JSON_OFFSET + 8].copy_from_slice(&json_offset.to_le_bytes());
         bytes[JSON_LENGTH..JSON_LENGTH + 8].copy_from_slice(&json_length.to_le_bytes());
         bytes[ICON_OFFSET..ICON_OFFSET + 8].copy_from_slice(&icon_offset.to_le_bytes());
         bytes[ICON_LENGTH..ICON_LENGTH + 8].copy_from_slice(&icon_length.to_le_bytes());
-        bytes[PAYLOAD_OFFSET..PAYLOAD_OFFSET + 8]
-            .copy_from_slice(&payload_offset.to_le_bytes());
+        bytes[PAYLOAD_OFFSET..PAYLOAD_OFFSET + 8].copy_from_slice(&payload_offset.to_le_bytes());
         bytes
     }
 
@@ -268,17 +264,11 @@ mod tests {
     #[test]
     fn rejects_overflowing_ranges() {
         assert!(matches!(
-            Trailer::parse(
-                &trailer_bytes(10, u64::MAX, 20, 0, 10),
-                100
-            ),
+            Trailer::parse(&trailer_bytes(10, u64::MAX, 20, 0, 10), 100),
             Err(TrailerError::Offsets)
         ));
         assert!(matches!(
-            Trailer::parse(
-                &trailer_bytes(10, 1, u64::MAX, 2, 10),
-                100
-            ),
+            Trailer::parse(&trailer_bytes(10, 1, u64::MAX, 2, 10), 100),
             Err(TrailerError::Offsets)
         ));
     }

@@ -33,9 +33,9 @@ pub fn same_origin(left: &Url, right: &Url) -> bool {
 
 pub fn is_auth_host(host: &str) -> bool {
     let host = host.to_ascii_lowercase();
-    AUTH_HOSTS.iter().any(|entry| {
-        host == *entry || host.ends_with(&format!(".{entry}"))
-    })
+    AUTH_HOSTS
+        .iter()
+        .any(|entry| host == *entry || host.ends_with(&format!(".{entry}")))
 }
 
 fn external_scheme(url: &Url) -> bool {
@@ -57,10 +57,7 @@ pub fn popup_decision(base: &Url, target: &Url) -> PopupDecision {
         return PopupDecision::InApp;
     }
     let https = target.scheme() == "https";
-    if https
-        && (same_origin(base, target)
-            || target.host_str().is_some_and(is_auth_host))
-    {
+    if https && (same_origin(base, target) || target.host_str().is_some_and(is_auth_host)) {
         return PopupDecision::InApp;
     }
     if external_scheme(target) {

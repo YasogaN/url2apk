@@ -43,8 +43,7 @@ pub enum ConfigError {
 
 impl AppConfig {
     pub fn from_json(bytes: &[u8]) -> Result<ValidatedConfig, ConfigError> {
-        let config: AppConfig =
-            serde_json::from_slice(bytes).map_err(|_| ConfigError::Json)?;
+        let config: AppConfig = serde_json::from_slice(bytes).map_err(|_| ConfigError::Json)?;
         config.validate()
     }
 
@@ -83,9 +82,9 @@ impl AppConfig {
 fn valid_id(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 64
-        && id
-            .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-')
+        && id.chars().all(|character| {
+            character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-'
+        })
 }
 
 #[cfg(test)]
@@ -130,7 +129,10 @@ mod tests {
 
     #[test]
     fn rejects_invalid_json() {
-        assert_eq!(AppConfig::from_json(b"not json").unwrap_err(), ConfigError::Json);
+        assert_eq!(
+            AppConfig::from_json(b"not json").unwrap_err(),
+            ConfigError::Json
+        );
         assert_eq!(
             AppConfig::from_json(br#"{"schema":1}"#).unwrap_err(),
             ConfigError::Json
@@ -172,7 +174,10 @@ mod tests {
         let bytes = format!(
             r#"{{"schema":1,"id":"{long}","url":"https://example.com/","name":"Example","width":1,"height":1}}"#
         );
-        assert_eq!(AppConfig::from_json(bytes.as_bytes()).unwrap_err(), ConfigError::Id);
+        assert_eq!(
+            AppConfig::from_json(bytes.as_bytes()).unwrap_err(),
+            ConfigError::Id
+        );
     }
 
     #[test]
@@ -209,6 +214,9 @@ mod tests {
         let bytes = format!(
             r#"{{"schema":1,"id":"a","url":"https://example.com/","name":"{long}","width":1,"height":1}}"#
         );
-        assert_eq!(AppConfig::from_json(bytes.as_bytes()).unwrap_err(), ConfigError::Name);
+        assert_eq!(
+            AppConfig::from_json(bytes.as_bytes()).unwrap_err(),
+            ConfigError::Name
+        );
     }
 }
