@@ -4,7 +4,8 @@ import {
   type DesktopArch,
   type DesktopConfig,
 } from "./config";
-import { appendPayload } from "./trailer";
+import { pngToIco } from "./ico";
+import { buildTrailer, TRAILER_SIZE } from "./trailer";
 
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const;
 
@@ -61,8 +62,29 @@ export function buildWindowsInstaller(
   }
 
   const base = packageBase(config);
+  const json = serializeConfig(config);
+  const ico = pngToIco(icon);
+  const jsonOffset = installer.length;
+  const iconOffset = jsonOffset + json.length;
+  const icoOffset = iconOffset + icon.length;
+  const trailerOffset = icoOffset + ico.length;
+  const bytes = new Uint8Array(trailerOffset + TRAILER_SIZE);
+  bytes.set(installer, 0);
+  bytes.set(json, jsonOffset);
+  bytes.set(icon, iconOffset);
+  bytes.set(ico, icoOffset);
+  bytes.set(
+    buildTrailer({
+      jsonOffset,
+      jsonLength: json.length,
+      iconOffset,
+      iconLength: icon.length,
+      payloadOffset: installer.length,
+    }),
+    trailerOffset,
+  );
   return {
-    bytes: appendPayload(installer, serializeConfig(config), icon),
+    bytes,
     filename: `${base}-${arch}-Setup.exe`,
     base,
   };
