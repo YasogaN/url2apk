@@ -1,10 +1,10 @@
-import { concat } from "./bytes";
-
 type PoolString = {
   value: string;
   dataOffset: number;
   prefixOffset: number;
   prefixSize: number;
+  byteLengthPrefixOffset: number;
+  byteLengthPrefixSize: number;
   byteLength: number;
   codeUnits: number;
 };
@@ -65,7 +65,9 @@ function parseStringPool(bytes: Uint8Array): StringPool {
 
     if (utf8) {
       const first = readUtf8Length(bytes, position);
+      const prefixOffset = position;
       position += first.size;
+      const byteLengthPrefixOffset = position;
       const second = readUtf8Length(bytes, position);
       position += second.size;
       prefixSize = first.size;
@@ -75,8 +77,10 @@ function parseStringPool(bytes: Uint8Array): StringPool {
           bytes.subarray(position, position + second.value),
         ),
         dataOffset: position,
-        prefixOffset: chunkStart + stringsStart + offset,
+        prefixOffset,
         prefixSize,
+        byteLengthPrefixOffset,
+        byteLengthPrefixSize: second.size,
         byteLength: second.value,
         codeUnits,
       });
@@ -96,6 +100,8 @@ function parseStringPool(bytes: Uint8Array): StringPool {
         dataOffset: position,
         prefixOffset: chunkStart + stringsStart + offset,
         prefixSize,
+        byteLengthPrefixOffset: 0,
+        byteLengthPrefixSize: 0,
         byteLength: codeUnits * 2,
         codeUnits,
       });
@@ -121,10 +127,20 @@ function replaceString(
     throw new Error("Expected placeholder string was not found.");
   }
   if (pool.utf8) {
-    const fitted = fitUtf8(newValue, entry.byteLength);
-    bytes.set(fitted, entry.dataOffset);
-    const codeUnits = new TextDecoder().decode(fitted).length;
-    writeLengthPrefix(bytes, entry, codeUnits);
+    const encoded = new TextEncoder().encode(newValue);
+    const codeUnits = newValue.length;
+    if (encoded.length > entry.byteLength) {
+      throw new Error("Replacement string does not fit its template slot.");
+    }
+    bytes.set(encoded, entry.dataOffset);
+    bytes.fill(0, entry.dataOffset + encoded.length, entry.dataOffset + entry.byteLength);
+    writeUtf8Length(bytes, entry.prefixOffset, entry.prefixSize, codeUnits);
+    writeUtf8Length(
+      bytes,
+      entry.byteLengthPrefixOffset,
+      entry.byteLengthPrefixSize,
+      encoded.length,
+    );
     return;
   }
   const units = toUtf16Units(newValue);
@@ -148,12 +164,23 @@ function writeLengthPrefix(
   codeUnits: number,
 ): void {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (entry.prefixSize === 4) {
-    view.setUint16(entry.prefixOffset, 0x8000, true);
-    view.setUint16(entry.prefixOffset + 2, codeUnits, true);
+  view.setUint16(entry.prefixOffset, codeUnits, true);
+}
+
+
+function writeUtf8Length(
+  bytes: Uint8Array,
+  offset: number,
+  size: number,
+  value: number,
+): void {
+  if (size === 1) {
+    bytes[offset] = value;
     return;
   }
-  view.setUint16(entry.prefixOffset, codeUnits, true);
+  const encoded = 0x8000 | value;
+  bytes[offset] = encoded >> 8;
+  bytes[offset + 1] = encoded & 0xff;
 }
 
 function clearSortedFlag(bytes: Uint8Array, pool: StringPool): void {
@@ -211,23 +238,6 @@ function readUtf8Length(
     };
   }
   return { value: first, size: 1 };
-}
-
-function fitUtf8(value: string, maxBytes: number): Uint8Array {
-  const encoder = new TextEncoder();
-  const parts: Uint8Array[] = [];
-  let used = 0;
-  for (const character of value) {
-    const encoded = encoder.encode(character);
-    if (used + encoded.length > maxBytes) {
-      break;
-    }
-    parts.push(encoded);
-    used += encoded.length;
-  }
-  const padding = new Uint8Array(maxBytes - used);
-  padding.fill(0x20);
-  return concat(...parts, padding);
 }
 
 function toUtf16Units(value: string): number[] {
