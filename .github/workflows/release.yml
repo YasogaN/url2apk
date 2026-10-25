@@ -47,9 +47,13 @@ jobs:
           - runner: ubuntu-22.04
             arch: x64
             target: x86_64-unknown-linux-gnu
+            runtime: runtime-x86_64
+            runtime_sha: 617aa77314d57c8b8e4fae9c3f0b35af7b30d5529cb69e98f64f92510ed98a46
           - runner: ubuntu-22.04-arm
             arch: arm64
             target: aarch64-unknown-linux-gnu
+            runtime: runtime-aarch64
+            runtime_sha: 9a72a744d221576c9347ec074243acc5c3c7568896b12714e0e82e9f0bf47900
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +63,7 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 squashfs-tools
       - name: Build the raw shell
         working-directory: desktop
         run: cargo build --release -p url2app-shell --target ${{ matrix.target }}
@@ -68,12 +72,27 @@ jobs:
       - name: Build the bundled-WebKit AppImage
         working-directory: desktop/app
         run: tauri build --bundles appimage
+      - name: Download the static AppImage runtime
+        run: |
+          curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/${{ matrix.runtime }}" -o "$RUNNER_TEMP/runtime"
+          echo "${{ matrix.runtime_sha }}  $RUNNER_TEMP/runtime" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/runtime"
+      - name: Build the AppImages
+        run: |
+          mkdir -p bases out
+          source="$(find desktop/target/release/bundle/appimage -maxdepth 1 -type f -name '*.AppImage' | head -n1)"
+          desktop/tools/build-appimage-lite.sh "${{ matrix.arch }}" "desktop/target/${{ matrix.target }}/release/url2app-shell" desktop/app/icons/icon.png "$RUNNER_TEMP/runtime" "bases/linux-${{ matrix.arch }}-lite.AppImage"
+          desktop/tools/repack-appimage.sh "$source" "$RUNNER_TEMP/runtime" "bases/linux-${{ matrix.arch }}-full.AppImage"
+          full="bases/linux-${{ matrix.arch }}-full.AppImage"
+          split -b 20M -d -a 3 "$full" "$full.part-"
+          rm "$full"
+          cp "desktop/target/${{ matrix.target }}/release/url2app-shell" out/url2app-shell
+          cp "bases/linux-${{ matrix.arch }}-lite.AppImage" out/
+          cp bases/linux-${{ matrix.arch }}-full.AppImage.part-* out/
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
-          path: |
-            desktop/target/${{ matrix.target }}/release/url2app-shell
-            desktop/target/release/bundle/appimage/*.AppImage
+          path: out
           if-no-files-found: error
 
   windows-shell:
@@ -117,7 +136,7 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y squashfs-tools nsis
+          sudo apt-get install -y nsis
       - uses: actions/download-artifact@v4
         with:
           pattern: linux-*
@@ -129,34 +148,17 @@ jobs:
       - name: Collect the shell builds
         run: |
           mkdir -p bases
-          cp "$(find artifacts/linux/linux-x64 -type f -name url2app-shell)" bases/linux-x64-shell
-          cp "$(find artifacts/linux/linux-x64 -type f -name '*.AppImage')" bases/linux-x64-tauri.AppImage
-          cp "$(find artifacts/linux/linux-arm64 -type f -name url2app-shell)" bases/linux-arm64-shell
-          cp "$(find artifacts/linux/linux-arm64 -type f -name '*.AppImage')" bases/linux-arm64-tauri.AppImage
+          cp artifacts/linux/linux-x64/url2app-shell bases/linux-x64-shell
+          cp artifacts/linux/linux-x64/linux-x64-lite.AppImage bases/
+          cp artifacts/linux/linux-x64/linux-x64-full.AppImage.part-* bases/
+          cp artifacts/linux/linux-arm64/url2app-shell bases/linux-arm64-shell
+          cp artifacts/linux/linux-arm64/linux-arm64-lite.AppImage bases/
+          cp artifacts/linux/linux-arm64/linux-arm64-full.AppImage.part-* bases/
           cp "$(find artifacts/windows/windows-x64 -type f -name url2app-shell.exe)" bases/windows-x64-shell.exe
           cp "$(find artifacts/windows/windows-x64 -type f -name url2app-installer-helper.exe)" bases/windows-x64-helper.exe
           cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-shell.exe)" bases/windows-arm64-shell.exe
           cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-installer-helper.exe)" bases/windows-arm64-helper.exe
           chmod +x bases/linux-*-shell
-      - name: Download the static AppImage runtimes
-        run: |
-          curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64" -o /tmp/runtime-x86_64
-          echo "617aa77314d57c8b8e4fae9c3f0b35af7b30d5529cb69e98f64f92510ed98a46  /tmp/runtime-x86_64" | sha256sum -c -
-          curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-aarch64" -o /tmp/runtime-aarch64
-          echo "9a72a744d221576c9347ec074243acc5c3c7568896b12714e0e82e9f0bf47900  /tmp/runtime-aarch64" | sha256sum -c -
-          chmod +x /tmp/runtime-x86_64 /tmp/runtime-aarch64
-      - name: Build the Linux AppImages
-        run: |
-          desktop/tools/build-appimage-lite.sh x86_64 bases/linux-x64-shell desktop/app/icons/icon.png /tmp/runtime-x86_64 bases/linux-x64-lite.AppImage
-          desktop/tools/build-appimage-lite.sh arm64 bases/linux-arm64-shell desktop/app/icons/icon.png /tmp/runtime-aarch64 bases/linux-arm64-lite.AppImage
-          desktop/tools/repack-appimage.sh bases/linux-x64-tauri.AppImage /tmp/runtime-x86_64 bases/linux-x64-full.AppImage
-          desktop/tools/repack-appimage.sh bases/linux-arm64-tauri.AppImage /tmp/runtime-aarch64 bases/linux-arm64-full.AppImage
-          rm bases/linux-*-tauri.AppImage
-          for arch in x64 arm64; do
-            full="bases/linux-$arch-full.AppImage"
-            split -b 20M -d -a 3 "$full" "$full.part-"
-            rm "$full"
-          done
       - name: Build the Windows installers
         run: |
           desktop/installer/build.sh user bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-user.exe
