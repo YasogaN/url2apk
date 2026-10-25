@@ -85,6 +85,22 @@ jobs:
         working-directory: web
         run: pnpm build
 
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli --version 0.2.129 --locked
+      - name: Test the AppImage repacker
+        run: cargo test --manifest-path web/wasm/appimage-repack/Cargo.toml
+      - name: Build the browser module
+        run: ./web/wasm/appimage-repack/build.sh
+      - name: Check the committed module is current
+        run: git diff --exit-code -- web/public/wasm
+
   desktop:
     runs-on: ubuntu-22.04
     steps:
