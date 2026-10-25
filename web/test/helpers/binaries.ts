@@ -25,6 +25,16 @@ export function fixturePng(width = 256, height = 256): Uint8Array {
   return bytes;
 }
 
+
+export function minimalAppImage(): Uint8Array {
+  const bytes = new Uint8Array(64);
+  bytes.set([0x7f, 0x45, 0x4c, 0x46], 0);
+  bytes[8] = 0x41;
+  bytes[9] = 0x49;
+  bytes[10] = 0x02;
+  return bytes;
+}
+
 export function minimalPng(): Uint8Array {
   return fixturePng(1, 1);
 }
