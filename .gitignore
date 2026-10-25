@@ -1,5 +1,6 @@
 # Rust / Tauri
 desktop/target/
+desktop/app/gen/
 
 # Android / Gradle
 android/.gradle/
