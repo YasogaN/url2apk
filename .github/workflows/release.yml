@@ -1,0 +1,213 @@
+name: Release shells
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+jobs:
+  android-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install SDK packages
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort | tail -n1)"
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+      - name: Build and export the template
+        working-directory: android
+        run: |
+          ./gradlew :app:assembleRelease --no-daemon
+          tools/export-template.sh "$RUNNER_TEMP/shell.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-shell
+          path: ${{ runner.temp }}/shell.apk
+          if-no-files-found: error
+
+  linux-shell:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            arch: x64
+            target: x86_64-unknown-linux-gnu
+          - runner: ubuntu-22.04-arm
+            arch: arm64
+            target: aarch64-unknown-linux-gnu
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2
+      - name: Build the raw shell
+        working-directory: desktop
+        run: cargo build --release -p url2app-shell --target ${{ matrix.target }}
+      - name: Install the Tauri CLI
+        run: npm install --global @tauri-apps/cli@^2
+      - name: Build the bundled-WebKit AppImage
+        working-directory: desktop/app
+        run: tauri build --bundles appimage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: |
+            desktop/target/${{ matrix.target }}/release/url2app-shell
+            desktop/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+
+  windows-shell:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-2022
+            arch: x64
+            target: x86_64-pc-windows-msvc
+          - runner: windows-11-arm
+            arch: arm64
+            target: aarch64-pc-windows-msvc
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build the shell and helper
+        working-directory: desktop
+        run: |
+          cargo build --release -p url2app-shell --target ${{ matrix.target }}
+          cargo build --release -p url2app-installer-helper --target ${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}
+          path: |
+            desktop/target/${{ matrix.target }}/release/url2app-shell.exe
+            desktop/target/${{ matrix.target }}/release/url2app-installer-helper.exe
+          if-no-files-found: error
+
+  package:
+    needs: [linux-shell, windows-shell]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y squashfs-tools nsis
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: linux-*
+          path: artifacts/linux
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: windows-*
+          path: artifacts/windows
+      - name: Collect the shell builds
+        run: |
+          mkdir -p bases
+          cp "$(find artifacts/linux/linux-x64 -type f -name url2app-shell)" bases/linux-x64-shell
+          cp "$(find artifacts/linux/linux-x64 -type f -name '*.AppImage')" bases/linux-x64-tauri.AppImage
+          cp "$(find artifacts/linux/linux-arm64 -type f -name url2app-shell)" bases/linux-arm64-shell
+          cp "$(find artifacts/linux/linux-arm64 -type f -name '*.AppImage')" bases/linux-arm64-tauri.AppImage
+          cp "$(find artifacts/windows/windows-x64 -type f -name url2app-shell.exe)" bases/windows-x64-shell.exe
+          cp "$(find artifacts/windows/windows-x64 -type f -name url2app-installer-helper.exe)" bases/windows-x64-helper.exe
+          cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-shell.exe)" bases/windows-arm64-shell.exe
+          cp "$(find artifacts/windows/windows-arm64 -type f -name url2app-installer-helper.exe)" bases/windows-arm64-helper.exe
+          chmod +x bases/linux-*-shell
+      - name: Download the static AppImage runtimes
+        run: |
+          curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64" -o /tmp/runtime-x86_64
+          echo "617aa77314d57c8b8e4fae9c3f0b35af7b30d5529cb69e98f64f92510ed98a46  /tmp/runtime-x86_64" | sha256sum -c -
+          curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-aarch64" -o /tmp/runtime-aarch64
+          echo "9a72a744d221576c9347ec074243acc5c3c7568896b12714e0e82e9f0bf47900  /tmp/runtime-aarch64" | sha256sum -c -
+          chmod +x /tmp/runtime-x86_64 /tmp/runtime-aarch64
+      - name: Build the Linux AppImages
+        run: |
+          desktop/tools/build-appimage-lite.sh x86_64 bases/linux-x64-shell desktop/app/icons/icon.png /tmp/runtime-x86_64 bases/linux-x64-lite.AppImage
+          desktop/tools/build-appimage-lite.sh arm64 bases/linux-arm64-shell desktop/app/icons/icon.png /tmp/runtime-aarch64 bases/linux-arm64-lite.AppImage
+          desktop/tools/repack-appimage.sh bases/linux-x64-tauri.AppImage /tmp/runtime-x86_64 bases/linux-x64-full.AppImage
+          desktop/tools/repack-appimage.sh bases/linux-arm64-tauri.AppImage /tmp/runtime-aarch64 bases/linux-arm64-full.AppImage
+          rm bases/linux-*-tauri.AppImage
+      - name: Build the Windows installers
+        run: |
+          desktop/installer/build.sh user bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-user.exe
+          desktop/installer/build.sh system bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-system.exe
+          desktop/installer/build.sh user bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-user.exe
+          desktop/installer/build.sh system bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-system.exe
+      - name: Generate the manifest
+        run: node desktop/tools/manifest.mjs bases "$GITHUB_SHA" bases/shells.json
+      - name: Note oversized static assets
+        run: |
+          if find bases -type f -size +25M -print -quit | grep -q .; then
+            echo "::warning::Some shell bases exceed 25 MiB. Cloudflare static assets may reject them; move those files to R2."
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shells
+          path: bases
+          if-no-files-found: error
+
+  deploy:
+    needs: [package, android-template]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - uses: actions/download-artifact@v4
+        with:
+          name: shells
+          path: shell-bases
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-shell
+          path: web/public
+      - name: Stage the static shell assets
+        run: |
+          rm -rf web/public/shells
+          mkdir -p "web/public/shells/$GITHUB_SHA"
+          cp shell-bases/* "web/public/shells/$GITHUB_SHA/"
+          cp shell-bases/shells.json web/public/shells.json
+          rm "web/public/shells/$GITHUB_SHA/shells.json"
+      - name: Install web dependencies
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+      - name: Build the site
+        working-directory: web
+        run: pnpm build
+      - name: Deploy
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler deploy
