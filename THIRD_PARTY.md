@@ -1,6 +1,6 @@
 # Third-party notices
 
-This project is Apache-2.0. It depends on the following projects, whose licences remain their own. The exact versions are pinned in the Gradle build files and `web/pnpm-lock.yaml`.
+This project is Apache-2.0. It depends on the following projects, whose licences remain their own. The exact versions are pinned in the Gradle build files, `web/pnpm-lock.yaml`, and `desktop/Cargo.lock`.
 
 ## Android shell and tests
 
@@ -26,6 +26,30 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | Wrangler | Apache-2.0 / MIT |
 | TypeScript | Apache-2.0 |
 | IBM Plex Mono | SIL Open Font License 1.1 (see `web/public/fonts/OFL.txt`) |
+
+## Desktop shell and packaging
+
+| Project | Licence |
+| --- | --- |
+| Tauri, tauri-build, tao, wry | Apache-2.0 OR MIT |
+| WebView2 runtime (Windows, system-installed) | Microsoft Edge WebView2 terms |
+| serde, serde_json | Apache-2.0 OR MIT |
+| thiserror | Apache-2.0 OR MIT |
+| url | Apache-2.0 OR MIT |
+| dirs | Apache-2.0 OR MIT |
+| rfd | MIT |
+| open | MIT |
+| notify-rust | MIT |
+| webkit2gtk bindings | MIT |
+| WebKitGTK and GTK (system libraries; bundled only in the full AppImage) | LGPL-2.1-or-later |
+| windows-sys | Apache-2.0 OR MIT |
+| resedit | MIT |
+| NSIS | zlib/libpng |
+| AppImage type2-runtime | MIT |
+| @tauri-apps/cli | Apache-2.0 OR MIT |
+| jsdom | MIT |
+
+The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The bundled-WebKit AppImage contains those LGPL libraries, so distributing it carries the usual LGPL relinking and source-offer obligations.
 
 ## Standards and specifications
 

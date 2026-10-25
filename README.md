@@ -30,7 +30,7 @@ Firefox on Android can add a site to the home screen, but it is still a browser-
 
 URL to App takes a different route: a prebuilt WebView shell, patched in the tab. For Android that means a Kotlin WebView shell and a locally signed APK with your own icon and package. For Windows and Linux it means a URL-agnostic Tauri shell whose URL, name, icon and size are data, never compiled in. No login, no queue, no server-side build.
 
-The Android target is live. The Windows and Linux targets are in development on this branch. macOS is not supported yet; contributions are welcome.
+The Android target is live. The Windows and Linux targets are implemented in this branch and become available once the first shell release is published. macOS is not supported yet; contributions are welcome.
 
 ## Try it
 
@@ -45,8 +45,8 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## What you get
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
-- **Windows (in development):** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
-- **Linux (in development):** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build.
+- **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile. These downloads appear after the first desktop shell release.
+- **Linux:** a `.tar.gz` and an AppImage, with x86_64 and aarch64 builds. The AppImage is offered in a small system-WebKit build and a larger bundled-WebKit build. These downloads appear after the first desktop shell release.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -65,14 +65,14 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
 2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json`, or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
 3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
-4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site.
+4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. Cloudflare static assets have a 25 MiB per-file limit; the bundled-WebKit AppImage is the one base that can exceed it, so the release workflow warns and that variant needs R2 or must be dropped before a deploy.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** the Hono API, front-end domain helpers, APK pipeline and UI are under a 100% statements/branches/functions/lines gate.
-- **Desktop:** Windows and Linux shells, packaging and CI are in development. macOS is deferred.
+- **Web:** 484 tests; all `src/**` is under a 100% statements/branches/functions/lines gate.
+- **Desktop:** the Windows and Linux shells, browser packaging, installer, and release workflow are implemented. The live builder needs the first shell release; Windows manual validation is still pending. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers. The old `url2apk.yasogan.dev` domain redirects here.
 
 ## Self-host
@@ -95,6 +95,12 @@ cd android
 tools/export-template.sh
 ```
 
+```sh
+cd desktop
+cargo test -p url2app-shell-core -p url2app-installer-helper
+cargo check -p url2app-shell
+```
+
 `web/public/shell.apk` is a build artifact, not a checked-in file. CI exports it from the Android build and passes it to the web job; locally run `android/tools/export-template.sh` before `pnpm test:coverage` or `pnpm build`. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
 
 The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$ANDROID_HOME` (or via `AAPT2`, `APKSIGNER`, `ZIPALIGN`) and skip when they are absent. CI installs them.
@@ -104,12 +110,12 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | Path | Contents |
 | --- | --- |
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
-| `desktop/` | Tauri Desktop shell, packaging helpers and its tests (in development). |
+| `desktop/` | Tauri shell, core, installer helper, NSIS scripts, base-packaging tools and tests. |
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
 | `web/public/shell.apk` | Generated unsigned Android template (ignored by Git; exported locally or by CI). |
 | `web/public/shells/` | Generated desktop shell bases and manifest (ignored by Git; produced by CI). |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
-| `web/test-fixtures/` | Small synthetic PE, ELF and tar fixtures for the packaging tests. |
+| `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
 | `docs/` | README screenshots. |
 
 ## Signing and updates
@@ -118,7 +124,7 @@ Android identifies an app by package name and signing certificate. This builder 
 
 The private key is generated with WebCrypto and imported as non-extractable; it stays in IndexedDB. The portable copy is a `.p1x` file encrypted with PBKDF2-SHA256 + AES-GCM. Lose the key and the backup and you cannot install a replacement over the app; you would have to uninstall it and lose its data. Store the backup.
 
-Desktop packages are unsigned. They do not use the Android key and do not auto-update. Regenerating the app is the only update path for now.
+Desktop packages are unsigned. They do not use the Android key and do not auto-update. Regenerating the app is the only update path for now. The release workflow builds the shell bases, both NSIS installers, the AppImage variants and `shells.json`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets to deploy.
 
 ## Distribution
 
