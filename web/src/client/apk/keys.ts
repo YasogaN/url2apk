@@ -3,6 +3,7 @@ import * as x509 from "@peculiar/x509";
 import { bufferSource, concat } from "./bytes";
 import type { SigningMaterial } from "./sign";
 
+// Keep the legacy database name so existing users retain their keys.
 const DB_NAME = "url-to-apk";
 const DB_VERSION = 1;
 const STORE = "identity";
@@ -48,7 +49,7 @@ export async function createIdentity(
   const createdAt = Date.now();
   const cert = await x509.X509CertificateGenerator.createSelfSigned({
     serialNumber: serialNumber(),
-    name: "CN=URL to APK",
+    name: "CN=URL to App",
     notBefore: new Date(createdAt - 86_400_000),
     notAfter: new Date(createdAt + 3650 * 86_400_000),
     signingAlgorithm: ALGORITHM,
@@ -98,7 +99,7 @@ export async function importIdentity(
     throw new Error("That backup is incomplete.");
   }
   if (!MAGIC.every((byte, index) => backup[index] === byte)) {
-    throw new Error("That is not a URL to APK key backup.");
+    throw new Error("That is not a URL to App key backup.");
   }
   if (backup[4] !== VERSION) {
     throw new Error("Unsupported backup version.");

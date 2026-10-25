@@ -74,7 +74,7 @@ describe("key backup", () => {
     corrupt[0] = 0;
     await expect(
       importIdentity(corrupt, "test-password"),
-    ).rejects.toThrow("not a URL to APK");
+    ).rejects.toThrow("not a URL to App");
   });
 });
 
