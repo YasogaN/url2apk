@@ -119,6 +119,29 @@ describe("favicon api", () => {
   });
 });
 
+describe("domain migration", () => {
+  it("redirects the old domain to the new one", async () => {
+    const response = await app.request(
+      "https://url2apk.yasogan.dev/builder?target=linux",
+    );
+    expect(response.status).toBe(301);
+    expect(response.headers.get("location")).toBe(
+      "https://url2app.yasogan.dev/builder?target=linux",
+    );
+  });
+
+  it("does not redirect the new domain", async () => {
+    const fake = assets("new");
+    const response = await app.request(
+      "https://url2app.yasogan.dev/anything",
+      {},
+      { ASSETS: fake },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("new");
+  });
+});
+
 describe("static assets", () => {
   it("serves unknown paths from the assets binding", async () => {
     const fake = assets("hello");

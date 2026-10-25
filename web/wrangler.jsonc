@@ -1,9 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "url-to-apk",
+  "name": "url-to-app",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-10-19",
   "routes": [
+    {
+      "pattern": "url2app.yasogan.dev",
+      "custom_domain": true
+    },
     {
       "pattern": "url2apk.yasogan.dev",
       "custom_domain": true
@@ -12,7 +16,8 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
   },
   "observability": {
     "enabled": true

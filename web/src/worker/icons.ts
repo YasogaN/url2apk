@@ -19,7 +19,7 @@ const MAX_HTML_BYTES = 4 * 1024 * 1024;
 const MAX_MANIFEST_BYTES = 256 * 1024;
 const MAX_ICON_BYTES = 2 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
-const USER_AGENT = "url-to-apk/1.0 (+https://github.com/YasogaN/url2apk)";
+const USER_AGENT = "url-to-app/1.0 (+https://github.com/YasogaN/url2app)";
 const REDIRECTS = new Set([301, 302, 303, 307, 308]);
 
 /**
