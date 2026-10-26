@@ -61,6 +61,14 @@ describe("discovery files", () => {
     );
   });
 
+  it("caches hashed build output immutably", () => {
+    const headers = read("_headers");
+    expect(headers).toContain("/assets/*");
+    expect(headers).toContain(
+      "Cache-Control: public, max-age=31536000, immutable",
+    );
+  });
+
   it("includes baseline security headers", () => {
     const headers = read("_headers");
     expect(headers).toContain("Content-Security-Policy:");

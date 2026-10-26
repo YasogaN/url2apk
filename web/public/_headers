@@ -1,7 +1,6 @@
-# Cloudflare must not rewrite HTML, or it injects the Web Analytics beacon.
-# Compression, TLS, caching, WAF and other non-transform features still apply.
+# Shared policy for every response.
 /*
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: no-transform
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
@@ -9,3 +8,49 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
+
+# HTML must not be rewritten, or Cloudflare injects the Web Analytics beacon.
+/
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/index.html
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+# Non-hashed discovery files revalidate.
+/llms.txt
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/index.md
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/robots.txt
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/sitemap.xml
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/ai-catalog.json
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/.well-known/ai-catalog.json
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+# Large shell inputs and the manifest revalidate.
+/shell.apk
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/shells.json
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/shells/*
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+# Hashed build output is immutable.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/wasm/*
+  Cache-Control: public, max-age=31536000, immutable
