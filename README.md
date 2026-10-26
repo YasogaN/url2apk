@@ -93,7 +93,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 556 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
+- **Web:** 557 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
 - **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker and release workflow are implemented. The live builder is on release v1.2; the Windows installer has been validated on Windows. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers.
 
@@ -165,4 +165,4 @@ Wrap only sites you have the right to use. Do not impersonate a brand or distrib
 
 ## Licence
 
-Apache-2.0. See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md).
+Apache-2.0. See [LICENSE](LICENSE) and [THIRD_PARTY.md](THIRD_PARTY.md). Contributions follow [CONTRIBUTING.md](CONTRIBUTING.md); report vulnerabilities through [SECURITY.md](SECURITY.md).

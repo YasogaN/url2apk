@@ -104,6 +104,18 @@ describe("discovery files", () => {
     }
   });
 
+  it("publishes a valid security.txt with a legacy redirect", () => {
+    const text = read(".well-known/security.txt");
+    expect(text).toMatch(/^Contact: https:\/\//m);
+    expect(text).toMatch(/^Expires: /m);
+    expect(text).toContain(
+      "Canonical: https://url2app.yasogan.dev/.well-known/security.txt",
+    );
+    expect(read("_redirects")).toContain(
+      "/security.txt /.well-known/security.txt 301",
+    );
+  });
+
   it("publishes a 1200x630 social card", () => {
     const png = readFileSync(`${publicDir}/og.png`);
     expect(png.subarray(0, 8)).toEqual(

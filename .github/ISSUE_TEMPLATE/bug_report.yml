@@ -1,0 +1,65 @@
+name: Bug report
+description: Something is broken in the builder, a shell or a release artifact.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include signing keys, `.p1x` backups, passwords or other secrets. For a security issue, use the private advisory link on the new-issue page instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the failure and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the target, the site URL shape and the exact steps.
+      placeholder: |
+        1. Open the builder
+        2. Choose Android
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      options:
+        - Android APK
+        - Windows
+        - Linux
+        - Web builder
+        - Favicon API
+        - Release or CI
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The release tag, deployed version or commit hash.
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, OS and architecture
+      placeholder: Chrome 140 on Windows 11 x86_64, or Android 15 Pixel 8
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant console output. Remove secrets first.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed signing keys, backups, passwords and other secrets.
+          required: true
+        - label: I searched the existing issues.
+          required: true

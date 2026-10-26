@@ -1,0 +1,5 @@
+Contact: https://github.com/YasogaN/url2app/security/advisories/new
+Expires: 2027-10-27T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://url2app.yasogan.dev/.well-known/security.txt
+Policy: https://github.com/YasogaN/url2app/security/policy

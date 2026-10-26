@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a target, a packaging improvement or a docs change.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case, not only the proposed implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Explain the behavior you would like and which target or component it affects.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing tools, workarounds or designs you have tried.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Android
+        - Windows
+        - Linux
+        - Web builder
+        - Docs or SEO
+        - Release or CI
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues.
+          required: true

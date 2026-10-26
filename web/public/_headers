@@ -51,6 +51,9 @@
 /.well-known/ai-catalog.json
   Cache-Control: public, no-transform, max-age=0, must-revalidate
 
+/.well-known/security.txt
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
 # Large shell inputs and the manifest revalidate.
 /shell.apk
   Cache-Control: public, no-transform, max-age=0, must-revalidate
