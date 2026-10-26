@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>URL to App vs PWABuilder and Bubblewrap — URL to App</title>
+    <meta
+      name="description"
+      content="A factual comparison of URL to App, PWABuilder and Bubblewrap for turning a website into an Android or desktop app."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="URL to App" />
+    <meta property="og:url" content="https://url2app.yasogan.dev/pwabuilder-alternative" />
+    <meta property="og:title" content="URL to App vs PWABuilder and Bubblewrap" />
+    <meta
+      property="og:description"
+      content="When to use a browser-only WebView wrapper and when a Trusted Web Activity is the better choice."
+    />
+    <meta property="og:image" content="https://url2app.yasogan.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="URL to App vs PWABuilder and Bubblewrap" />
+    <meta
+      name="twitter:description"
+      content="When to use a browser-only WebView wrapper and when a Trusted Web Activity is the better choice."
+    />
+    <meta name="twitter:image" content="https://url2app.yasogan.dev/og.png" />
+    <link rel="canonical" href="https://url2app.yasogan.dev/pwabuilder-alternative" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/client/style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "URL to App vs PWABuilder and Bubblewrap",
+        "description": "A factual comparison of URL to App, PWABuilder and Bubblewrap.",
+        "url": "https://url2app.yasogan.dev/pwabuilder-alternative",
+        "mainEntityOfPage": "https://url2app.yasogan.dev/pwabuilder-alternative",
+        "datePublished": "2026-10-27",
+        "dateModified": "2026-10-27",
+        "image": "https://url2app.yasogan.dev/og.png",
+        "author": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- @include header -->
+
+    <main class="content-page">
+      <article class="wrap section">
+        <p class="eyebrow">COMPARISON</p>
+        <h1>A browser-only alternative to PWABuilder and Bubblewrap.</h1>
+        <p class="lede">
+          All three tools can turn a website into an Android app. They produce
+          different things, and the right choice depends on whether you need a
+          Play Store Trusted Web Activity or a locally signed WebView wrapper.
+        </p>
+
+        <h2>At a glance</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>URL to App</th>
+              <th>PWABuilder / Bubblewrap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Where is it built?</td>
+              <td>In the browser tab; no account or cloud build.</td>
+              <td>Usually a cloud build or a local toolchain.</td>
+            </tr>
+            <tr>
+              <td>Android output</td>
+              <td>A WebView APK signed with your local key.</td>
+              <td>A Trusted Web Activity, often prepared for Play Store distribution.</td>
+            </tr>
+            <tr>
+              <td>Desktop output</td>
+              <td>Windows Setup/portable, Linux AppImage/tarball.</td>
+              <td>Android-focused.</td>
+            </tr>
+            <tr>
+              <td>Signing</td>
+              <td>RSA-2048 key generated with WebCrypto, non-exportable, local backup.</td>
+              <td>Keystore and signing setup you manage.</td>
+            </tr>
+            <tr>
+              <td>Best for</td>
+              <td>Sideloaded personal wrappers and quick desktop packages.</td>
+              <td>PWAs that need a TWA, Play Store assets and a full PWA install flow.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>When PWABuilder or Bubblewrap is the better choice</h2>
+        <ul>
+          <li>You need a Trusted Web Activity for Google Play.</li>
+          <li>You have a real PWA with a manifest, service worker and install flow.</li>
+          <li>You want the app to share Chrome's profile and cookies through a TWA.</li>
+          <li>You can manage a keystore and a build pipeline.</li>
+        </ul>
+
+        <h2>When URL to App is the better choice</h2>
+        <ul>
+          <li>You want a local build with no account or upload queue.</li>
+          <li>You want a WebView wrapper and a signing key you control in the tab.</li>
+          <li>You also need a Windows or Linux package from the same URL.</li>
+          <li>You are sideloading a personal app, not submitting to Play.</li>
+        </ul>
+
+        <h2>What URL to App is not</h2>
+        <p>
+          It is not a Play Store publishing pipeline. It does not create a TWA,
+          does not manage a keystore for you and does not add PWA features such
+          as Web Push. Google sign-in still fails in embedded WebViews, and
+          some sites block WebView entirely.
+        </p>
+        <p>
+          Compare that with desktop wrappers too: Tauri CLI and Electron Forge
+          compile a new binary for every site. URL to App uses a prebuilt shell
+          and treats the URL, name and icon as data.
+        </p>
+
+        <p>
+          <a class="button" href="/#builder">Try the local builder</a>
+        </p>
+
+        <div class="related">
+          <p class="eyebrow">RELATED</p>
+          <ul>
+            <li><a href="/website-to-apk">Website to Android APK without a cloud build</a></li>
+            <li><a href="/website-to-desktop-app">Website to Windows or Linux desktop app</a></li>
+            <li><a href="/apk-signing">How local APK signing works</a></li>
+          </ul>
+        </div>
+      </article>
+    </main>
+
+    <!-- @include footer -->
+  </body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Turn a website into a Windows or Linux desktop app — URL to App</title>
+    <meta
+      name="description"
+      content="Wrap an HTTPS website as an unsigned Windows installer, portable app, Linux AppImage or tarball. Prebuilt Tauri shells, assembled in your browser."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="URL to App" />
+    <meta property="og:url" content="https://url2app.yasogan.dev/website-to-desktop-app" />
+    <meta property="og:title" content="Turn a website into a Windows or Linux desktop app" />
+    <meta
+      property="og:description"
+      content="Wrap an HTTPS website as an unsigned Windows installer, portable app, Linux AppImage or tarball."
+    />
+    <meta property="og:image" content="https://url2app.yasogan.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Turn a website into a Windows or Linux desktop app" />
+    <meta
+      name="twitter:description"
+      content="Wrap an HTTPS website as an unsigned Windows installer, portable app, Linux AppImage or tarball."
+    />
+    <meta name="twitter:image" content="https://url2app.yasogan.dev/og.png" />
+    <link rel="canonical" href="https://url2app.yasogan.dev/website-to-desktop-app" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/client/style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Turn a website into a Windows or Linux desktop app",
+        "description": "Wrap an HTTPS website as an unsigned Windows installer, portable app, Linux AppImage or tarball.",
+        "url": "https://url2app.yasogan.dev/website-to-desktop-app",
+        "mainEntityOfPage": "https://url2app.yasogan.dev/website-to-desktop-app",
+        "datePublished": "2026-10-27",
+        "dateModified": "2026-10-27",
+        "image": "https://url2app.yasogan.dev/og.png",
+        "author": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- @include header -->
+
+    <main class="content-page">
+      <article class="wrap section">
+        <p class="eyebrow">WINDOWS + LINUX</p>
+        <h1>A website as a Windows or Linux app.</h1>
+        <p class="lede">
+          URL to App wraps an HTTPS site in a small Tauri shell. The URL, app
+          name and icon are data, so the browser can assemble a per-site
+          package without compiling a new binary.
+        </p>
+
+        <h2>What you get</h2>
+        <ul>
+          <li><strong>Windows:</strong> a per-app <code>Setup.exe</code> with a current-user or all-users install, and a portable <code>.zip</code>.</li>
+          <li><strong>Linux:</strong> a <code>.tar.gz</code> and an AppImage, with x86_64 and aarch64 builds.</li>
+          <li><strong>AppImage variants:</strong> a small system-WebKit build and a larger bundled-WebKit build.</li>
+          <li><strong>Isolation:</strong> each app gets its own window title, shortcut, icon and WebView profile.</li>
+        </ul>
+
+        <h2>How the browser assembles it</h2>
+        <p>
+          The Windows portable build patches the PE icon and version resources.
+          The installer appends a config payload to the NSIS setup. The AppImage
+          uses a small Rust/WASM repacker to replace the embedded desktop entry
+          and icon, then appends the same config trailer. The tar and zip are
+          written with the right file modes.
+        </p>
+        <p>
+          The shell binaries are built once in CI and published as versioned
+          static assets. The browser fetches the selected base, verifies its
+          SHA-256 digest, patches it and downloads the result. Nothing is
+          compiled for your site.
+        </p>
+
+        <h2>Install it</h2>
+        <ol>
+          <li>Open the <a href="/#builder">builder</a> and choose Windows or Linux.</li>
+          <li>Pick the architecture and package type.</li>
+          <li>Generate the package. The shell is downloaded on demand.</li>
+          <li>On Windows, run Setup and clear the SmartScreen warning. On Linux, <code>chmod +x</code> the AppImage or extract the tarball.</li>
+        </ol>
+
+        <h2>What it is not</h2>
+        <ul>
+          <li>Desktop packages are unsigned and will trigger SmartScreen on Windows.</li>
+          <li>There is no auto-update. Regenerating the app is the update path for now.</li>
+          <li>Linux AppImages still need FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
+          <li>macOS is not supported yet.</li>
+          <li>The app loads the live URL and has no offline copy.</li>
+        </ul>
+        <p>
+          If you want a compile-time Tauri or Electron build with your own
+          plugins and updater, use Tauri CLI or Electron Forge directly. URL to
+          App is for wrapping a live site with no toolchain and no per-site
+          compiler run.
+        </p>
+
+        <p>
+          <a class="button" href="/#builder">Build a desktop app</a>
+        </p>
+
+        <div class="related">
+          <p class="eyebrow">RELATED</p>
+          <ul>
+            <li><a href="/website-to-apk">Website to Android APK without a cloud build</a></li>
+            <li><a href="/pwabuilder-alternative">URL to App vs PWABuilder and Bubblewrap</a></li>
+            <li><a href="/apk-signing">How local APK signing works</a></li>
+          </ul>
+        </div>
+      </article>
+    </main>
+
+    <!-- @include footer -->
+  </body>
+</html>

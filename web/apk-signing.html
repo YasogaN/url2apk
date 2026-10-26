@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How local APK signing works — URL to App</title>
+    <meta
+      name="description"
+      content="URL to App generates the Android signing key in your browser with WebCrypto and signs the APK locally. Learn where the key lives and how to keep the backup."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="URL to App" />
+    <meta property="og:url" content="https://url2app.yasogan.dev/apk-signing" />
+    <meta property="og:title" content="How local APK signing works" />
+    <meta
+      property="og:description"
+      content="The signing key is generated in your browser and never leaves the tab. Here is how the backup and signature work."
+    />
+    <meta property="og:image" content="https://url2app.yasogan.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How local APK signing works" />
+    <meta
+      name="twitter:description"
+      content="The signing key is generated in your browser and never leaves the tab. Here is how the backup and signature work."
+    />
+    <meta name="twitter:image" content="https://url2app.yasogan.dev/og.png" />
+    <link rel="canonical" href="https://url2app.yasogan.dev/apk-signing" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/client/style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "How local APK signing works",
+        "description": "How URL to App generates and stores the Android signing key, and how the APK signature is produced locally.",
+        "url": "https://url2app.yasogan.dev/apk-signing",
+        "mainEntityOfPage": "https://url2app.yasogan.dev/apk-signing",
+        "datePublished": "2026-10-27",
+        "dateModified": "2026-10-27",
+        "image": "https://url2app.yasogan.dev/og.png",
+        "author": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- @include header -->
+
+    <main class="content-page">
+      <article class="wrap section">
+        <p class="eyebrow">SIGNING</p>
+        <h1>Your key, your signature.</h1>
+        <p class="lede">
+          URL to App creates the Android signing key in your browser and signs
+          the APK there. The private key never leaves the tab, but the backup is
+          your responsibility.
+        </p>
+
+        <h2>The key is generated locally</h2>
+        <p>
+          The first Android build generates an RSA-2048 key with WebCrypto. The
+          private key is imported as non-extractable, so JavaScript cannot read
+          its raw bytes. It is stored in IndexedDB for later builds in the same
+          browser profile.
+        </p>
+        <p>
+          A self-signed X.509 certificate is generated for the key, and the
+          certificate plus the public key are stored alongside it. Android
+          identifies an installed app by package name and signing certificate,
+          not by the app label or icon.
+        </p>
+
+        <h2>The encrypted backup</h2>
+        <p>
+          Because the private key is non-extractable, the portable copy is a
+          <code>.p1x</code> file encrypted with PBKDF2-SHA256 and AES-GCM. The
+          backup password is the only thing that can unlock it. Keep the backup
+          and the password separate from the device.
+        </p>
+        <p>
+          If you lose the key and the backup, you cannot install a replacement
+          over the old app. You would have to uninstall the old app first, which
+          removes its local data.
+        </p>
+
+        <h2>The signature</h2>
+        <p>
+          The APK is signed with APK Signature Scheme v2 using the local key.
+          The signature covers the APK contents and makes the package installable
+          on Android without a Play Store account or a cloud signing service.
+        </p>
+        <p>
+          Every build currently writes version code 1. It is designed for a
+          fresh sideload, not for automatic updates. Rebuilding with the same
+          key lets Android replace the app; rebuilding with a different key does
+          not.
+        </p>
+
+        <h2>Practical rules</h2>
+        <ul>
+          <li>Download the <code>.p1x</code> backup on the first build and store it safely.</li>
+          <li>Reuse the same key for every rebuild of the same app.</li>
+          <li>Do not publish these personal wrappers to Google Play.</li>
+          <li>Treat the backup password as part of the key: losing it is the same as losing the key.</li>
+        </ul>
+
+        <p>
+          Read the <a href="https://github.com/YasogaN/url2app#signing-and-updates">signing and updates</a>
+          section of the README for the full details.
+        </p>
+
+        <p>
+          <a class="button" href="/#builder">Create a local key</a>
+        </p>
+
+        <div class="related">
+          <p class="eyebrow">RELATED</p>
+          <ul>
+            <li><a href="/website-to-apk">Website to Android APK without a cloud build</a></li>
+            <li><a href="/website-to-desktop-app">Website to Windows or Linux desktop app</a></li>
+            <li><a href="/pwabuilder-alternative">URL to App vs PWABuilder and Bubblewrap</a></li>
+          </ul>
+        </div>
+      </article>
+    </main>
+
+    <!-- @include footer -->
+  </body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Website to Android APK without a cloud build — URL to App</title>
+    <meta
+      name="description"
+      content="Turn an HTTPS website into a locally signed Android WebView APK in your browser. No account, no cloud build and no server-side compilation."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="URL to App" />
+    <meta property="og:url" content="https://url2app.yasogan.dev/website-to-apk" />
+    <meta property="og:title" content="Website to Android APK without a cloud build" />
+    <meta
+      property="og:description"
+      content="Package an HTTPS site as a locally signed Android WebView APK in your browser. No account, no cloud build."
+    />
+    <meta property="og:image" content="https://url2app.yasogan.dev/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Website to Android APK without a cloud build" />
+    <meta
+      name="twitter:description"
+      content="Package an HTTPS site as a locally signed Android WebView APK in your browser. No account, no cloud build."
+    />
+    <meta name="twitter:image" content="https://url2app.yasogan.dev/og.png" />
+    <link rel="canonical" href="https://url2app.yasogan.dev/website-to-apk" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/client/style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "Website to Android APK without a cloud build",
+        "description": "Turn an HTTPS website into a locally signed Android WebView APK in your browser.",
+        "url": "https://url2app.yasogan.dev/website-to-apk",
+        "mainEntityOfPage": "https://url2app.yasogan.dev/website-to-apk",
+        "datePublished": "2026-10-27",
+        "dateModified": "2026-10-27",
+        "image": "https://url2app.yasogan.dev/og.png",
+        "author": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "URL to App",
+          "url": "https://github.com/YasogaN/url2app"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- @include header -->
+
+    <main class="content-page">
+      <article class="wrap section">
+        <p class="eyebrow">ANDROID</p>
+        <h1>Website to Android APK, without a cloud build.</h1>
+        <p class="lede">
+          URL to App packages an HTTPS site as a small Android WebView APK in
+          your browser tab. There is no account, no upload queue and no
+          server-side build.
+        </p>
+
+        <h2>Why the cloud is optional</h2>
+        <p>
+          Most website-to-APK tools upload the URL to a server, build a wrapper
+          there and send back an APK. That works, but it adds an account, a
+          queue and a third party that sees your app. URL to App takes a
+          different route: it ships a prebuilt WebView shell and patches the
+          URL, name and icon locally.
+        </p>
+        <p>
+          The browser writes the app name into the binary manifest and
+          <code>resources.arsc</code>, replaces the launcher PNGs, writes
+          <code>assets/config.json</code> and builds the APK. It then generates a
+          local RSA-2048 key with WebCrypto and signs the result with APK
+          Signature Scheme v2. The private key never leaves the tab.
+        </p>
+
+        <h2>What the APK contains</h2>
+        <ul>
+          <li>A launcher icon, app-drawer entry and its own Android window.</li>
+          <li>Uploads, downloads, camera, microphone, geolocation and fullscreen video through System WebView.</li>
+          <li>A local error and retry screen, plus safe back navigation.</li>
+          <li>Your package name, your version code and your signature.</li>
+        </ul>
+
+        <h2>Install it</h2>
+        <ol>
+          <li>Open the <a href="/#builder">builder</a> and paste a full HTTPS URL.</li>
+          <li>Choose the app name and icon. The package name is derived from the domain.</li>
+          <li>Generate the APK. The first build creates the backing key and downloads its encrypted <code>.p1x</code> backup.</li>
+          <li>Allow unknown apps on the Android device and open the APK.</li>
+        </ol>
+        <p>
+          Keep the <code>.p1x</code> backup. Android identifies an app by package
+          name and signing certificate, so the same key is what lets a later
+          build install over the first one.
+        </p>
+
+        <h2>When not to use it</h2>
+        <ul>
+          <li>Google sign-in fails in embedded WebViews.</li>
+          <li>There is no offline copy; the app loads the live URL.</li>
+          <li>There is no Web Push, no browser extension support and no App Links.</li>
+          <li>Some sites deliberately block WebView, and DRM L1 or passkeys may be limited.</li>
+          <li>These are sideloaded personal builds, not Play Store submissions.</li>
+        </ul>
+        <p>
+          If you need a Trusted Web Activity, Play Store distribution or a full
+          PWA install flow, PWABuilder or Bubblewrap are the better tools. Read
+          the <a href="/pwabuilder-alternative">comparison</a> before you
+          choose.
+        </p>
+
+        <p>
+          <a class="button" href="/#builder">Build an Android app</a>
+        </p>
+
+        <div class="related">
+          <p class="eyebrow">RELATED</p>
+          <ul>
+            <li><a href="/website-to-desktop-app">Website to Windows or Linux desktop app</a></li>
+            <li><a href="/pwabuilder-alternative">URL to App vs PWABuilder and Bubblewrap</a></li>
+            <li><a href="/apk-signing">How local APK signing works</a></li>
+          </ul>
+        </div>
+      </article>
+    </main>
+
+    <!-- @include footer -->
+  </body>
+</html>

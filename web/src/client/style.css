@@ -1511,3 +1511,125 @@
     }
   }
 }
+
+@layer components {
+  .content-page h1 {
+    max-width: 52rem;
+    margin-top: 1rem;
+    font-size: clamp(2.1rem, 4.5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+
+  .content-page h2 {
+    max-width: 48rem;
+    margin-top: 3rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+  }
+
+  .content-page h3 {
+    max-width: 48rem;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .content-page p {
+    max-width: 48rem;
+    margin-top: 1rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+  }
+
+  .content-page ul,
+  .content-page ol {
+    max-width: 48rem;
+    margin-top: 1rem;
+    padding-left: 1.25rem;
+    line-height: 1.75;
+    color: var(--color-muted);
+  }
+
+  .content-page li {
+    margin-top: 0.4rem;
+  }
+
+  .content-page a {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .content-page .button {
+    margin-top: 2rem;
+    text-decoration: none;
+  }
+
+  .content-page table {
+    display: block;
+    width: 100%;
+    max-width: 48rem;
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .content-page th,
+  .content-page td {
+    border-top: 1px solid var(--color-line);
+    padding: 0.8rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .content-page th {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  .content-page td {
+    color: var(--color-muted);
+  }
+
+  .content-page code {
+    padding: 0.1em 0.3em;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  .content-page .related {
+    max-width: 48rem;
+    margin-top: 3rem;
+    border-top: 2px solid var(--color-strong);
+    padding-top: 1.5rem;
+  }
+
+  .content-page .related ul {
+    margin-top: 0.5rem;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .content-page .related li {
+    margin-top: 0.6rem;
+  }
+
+  @media (max-width: 767px) {
+    .content-page .section {
+      padding-block: 2.5rem;
+    }
+
+    .content-page h1 {
+      font-size: clamp(2rem, 9vw, 2.75rem);
+    }
+  }
+}

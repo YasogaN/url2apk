@@ -16,6 +16,19 @@
 /index.html
   Cache-Control: public, no-transform, max-age=0, must-revalidate
 
+# Extensionless guide pages.
+/website-to-apk
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/website-to-desktop-app
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/pwabuilder-alternative
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
+/apk-signing
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
+
 # Non-hashed discovery files revalidate.
 /llms.txt
   Cache-Control: public, no-transform, max-age=0, must-revalidate

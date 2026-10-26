@@ -3,9 +3,14 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const publicDir = fileURLToPath(new URL("../../public", import.meta.url));
+const webDir = fileURLToPath(new URL("../..", import.meta.url));
 
 function read(name: string): string {
   return readFileSync(`${publicDir}/${name}`, "utf8");
+}
+
+function readWeb(name: string): string {
+  return readFileSync(`${webDir}/${name}`, "utf8");
 }
 
 describe("discovery files", () => {
@@ -67,6 +72,36 @@ describe("discovery files", () => {
     expect(headers).toContain(
       "Cache-Control: public, max-age=31536000, immutable",
     );
+  });
+
+  it("lists every public page in the sitemap", () => {
+    const sitemap = read("sitemap.xml");
+    for (const page of [
+      "/",
+      "/website-to-apk",
+      "/website-to-desktop-app",
+      "/pwabuilder-alternative",
+      "/apk-signing",
+    ]) {
+      expect(sitemap).toContain(
+        `<loc>https://url2app.yasogan.dev${page}</loc>`,
+      );
+    }
+  });
+
+  it("gives every guide a canonical URL and an H1", () => {
+    for (const page of [
+      "website-to-apk.html",
+      "website-to-desktop-app.html",
+      "pwabuilder-alternative.html",
+      "apk-signing.html",
+    ]) {
+      const html = readWeb(page);
+      expect(html).toMatch(/<h1[^>]*>/);
+      expect(html).toContain(
+        `<link rel="canonical" href="https://url2app.yasogan.dev/${page.replace(".html", "")}" />`,
+      );
+    }
   });
 
   it("publishes a 1200x630 social card", () => {

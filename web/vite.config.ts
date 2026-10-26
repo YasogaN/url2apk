@@ -1,6 +1,38 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, type Plugin } from "vite";
+
+function page(name: string): string {
+  return fileURLToPath(new URL(`./${name}`, import.meta.url));
+}
+
+function readPartial(name: string): string {
+  return readFileSync(
+    fileURLToPath(new URL(`./partials/${name}.html`, import.meta.url)),
+    "utf8",
+  );
+}
+
+function includePartials(): Plugin {
+  const partials: Record<string, string> = {
+    header: readPartial("header"),
+    footer: readPartial("footer"),
+  };
+  return {
+    name: "include-partials",
+    transformIndexHtml: {
+      order: "pre",
+      handler(html) {
+        return html.replace(
+          /<!--\s*@include\s+([\w-]+)\s*-->/g,
+          (match, name: string) => partials[name] ?? match,
+        );
+      },
+    },
+  };
+}
 
 function escapePattern(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -17,34 +49,57 @@ function inlineStylesheet(): Plugin {
     enforce: "post",
     generateBundle(_options, bundle) {
       const outputs = Object.values(bundle);
-      const html = outputs.find(
+      const htmlAssets = outputs.filter(
         (output) => output.type === "asset" && output.fileName.endsWith(".html"),
       );
-      const css = outputs.find(
+      const cssAssets = outputs.filter(
         (output) => output.type === "asset" && output.fileName.endsWith(".css"),
       );
-      if (html?.type !== "asset" || css?.type !== "asset") {
-        return;
+      for (const css of cssAssets) {
+        if (css.type !== "asset") {
+          continue;
+        }
+        const cssSource = sourceText(css.source);
+        const link = new RegExp(
+          `<link[^>]*href="[^"]*${escapePattern(css.fileName)}"[^>]*>`,
+        );
+        for (const html of htmlAssets) {
+          if (html.type !== "asset") {
+            continue;
+          }
+          const htmlSource = sourceText(html.source);
+          if (!link.test(htmlSource)) {
+            continue;
+          }
+          html.source = htmlSource.replace(
+            link,
+            `<style>${cssSource}</style>`,
+          );
+        }
+        delete bundle[css.fileName];
       }
-      const link = new RegExp(
-        `<link[^>]*href="[^"]*${escapePattern(css.fileName)}"[^>]*>`,
-      );
-      const htmlSource = sourceText(html.source);
-      if (!link.test(htmlSource)) {
-        return;
-      }
-      html.source = htmlSource.replace(
-        link,
-        `<style>${sourceText(css.source)}</style>`,
-      );
-      delete bundle[css.fileName];
     },
   };
 }
 
 export default defineConfig({
-  plugins: [cloudflare(), tailwindcss(), inlineStylesheet()],
+  plugins: [cloudflare(), tailwindcss(), includePartials(), inlineStylesheet()],
   build: {
     target: "es2022",
+  },
+  environments: {
+    client: {
+      build: {
+        rollupOptions: {
+          input: {
+            index: page("index.html"),
+            "website-to-apk": page("website-to-apk.html"),
+            "website-to-desktop-app": page("website-to-desktop-app.html"),
+            "pwabuilder-alternative": page("pwabuilder-alternative.html"),
+            "apk-signing": page("apk-signing.html"),
+          },
+        },
+      },
+    },
   },
 });

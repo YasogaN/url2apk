@@ -37,6 +37,13 @@ PWABuilder and Bubblewrap build a Trusted Web Activity and usually need a cloud 
 
 No accounts, analytics, telemetry or third-party scripts. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint. Desktop builds download their prebuilt shell from this deployment and nothing else.
 
+## Guides
+
+- [Website to Android APK without a cloud build](https://url2app.yasogan.dev/website-to-apk)
+- [Website to Windows or Linux desktop app](https://url2app.yasogan.dev/website-to-desktop-app)
+- [URL to App vs PWABuilder and Bubblewrap](https://url2app.yasogan.dev/pwabuilder-alternative)
+- [How local APK signing works](https://url2app.yasogan.dev/apk-signing)
+
 ## Links
 
 - [Open the builder](https://url2app.yasogan.dev/)
