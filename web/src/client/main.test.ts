@@ -46,27 +46,32 @@ const mocks = vi.hoisted(() => {
   };
 });
 
-vi.mock("./apk/build", () => ({ buildApk: mocks.buildApk }));
-vi.mock("./apk/icons", () => ({ renderIconLayers: mocks.renderIconLayers }));
-vi.mock("./apk/keys", () => ({
-  createIdentity: mocks.createIdentity,
-  importIdentity: mocks.importIdentity,
-  loadIdentity: mocks.loadIdentity,
-  saveIdentity: mocks.saveIdentity,
-}));
-vi.mock("./desktop/appimage-repack", () => ({
-  repackAppImage: mocks.repackAppImage,
-}));
-vi.mock("./desktop/build", () => ({
-  buildDesktopArtifact: mocks.buildDesktopArtifact,
-}));
-vi.mock("./desktop/manifest", () => ({
-  loadManifest: mocks.loadManifest,
-  findBase: mocks.findBase,
-  fetchBase: mocks.fetchBase,
-  needsConfirmation: mocks.needsConfirmation,
-  formatBytes: mocks.formatBytes,
-}));
+vi.mock("./lazy", async () => {
+  const shellCache =
+    await vi.importActual<typeof import("./shell-cache")>("./shell-cache");
+  return {
+    loadKeys: vi.fn(async () => ({
+      createIdentity: mocks.createIdentity,
+      importIdentity: mocks.importIdentity,
+      loadIdentity: mocks.loadIdentity,
+      saveIdentity: mocks.saveIdentity,
+    })),
+    loadAndroidModules: vi.fn(async () => ({
+      buildApk: mocks.buildApk,
+      renderIconLayers: mocks.renderIconLayers,
+      loadShell: shellCache.loadShell,
+    })),
+    loadDesktopModules: vi.fn(async () => ({
+      buildDesktopArtifact: mocks.buildDesktopArtifact,
+      repackAppImage: mocks.repackAppImage,
+      fetchBase: mocks.fetchBase,
+      findBase: mocks.findBase,
+      formatBytes: mocks.formatBytes,
+      loadManifest: mocks.loadManifest,
+      needsConfirmation: mocks.needsConfirmation,
+    })),
+  };
+});
 vi.mock("./paint", () => ({
   paintLetter: mocks.paintLetter,
   paintImage: mocks.paintImage,

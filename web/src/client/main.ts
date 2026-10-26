@@ -1,28 +1,11 @@
-import { buildApk } from "./apk/build";
 import { bufferSource } from "./apk/bytes";
-import { renderIconLayers } from "./apk/icons";
-import {
-  createIdentity,
-  importIdentity,
-  loadIdentity,
-  saveIdentity,
-  type Identity,
-} from "./apk/keys";
-import { repackAppImage } from "./desktop/appimage-repack";
-import { buildDesktopArtifact } from "./desktop/build";
+import type { Identity } from "./apk/keys";
 import {
   buildDesktopConfig,
   type DesktopArch,
   type DesktopArtifact,
 } from "./desktop/config";
-import {
-  fetchBase,
-  findBase,
-  formatBytes,
-  loadManifest,
-  needsConfirmation,
-  type ShellManifest,
-} from "./desktop/manifest";
+import type { ShellManifest } from "./desktop/manifest";
 import {
   detectArch,
   detectHost,
@@ -38,8 +21,12 @@ import {
   suggestName,
 } from "./domain";
 import { createHero, type HeroController } from "./hero";
+import {
+  loadAndroidModules,
+  loadDesktopModules,
+  loadKeys,
+} from "./lazy";
 import { loadImage, paintImage, paintLetter } from "./paint";
-import { loadShell } from "./shell-cache";
 
 type IconSource = "letter" | "upload" | "fetch";
 type Target = PrimaryTarget;
@@ -341,6 +328,7 @@ async function ensureIdentity(): Promise<Identity | null> {
   if (password === null) {
     return null;
   }
+  const { createIdentity, saveIdentity } = await loadKeys();
   setStatus("Generating a local RSA-2048 key…");
   const created = await createIdentity(2048, password);
   identity = created;
@@ -364,6 +352,7 @@ async function loadTemplate(): Promise<Uint8Array> {
   if (template !== null) {
     return template;
   }
+  const { loadShell } = await loadAndroidModules();
   template = await loadShell(SHELL_TEMPLATE_URL, {
     message: SHELL_TEMPLATE_ERROR,
   });
@@ -383,6 +372,7 @@ async function buildAndroid(): Promise<void> {
 
   buildButton.disabled = true;
   try {
+    const modules = loadAndroidModules();
     const chosen = await ensureIdentity();
     if (chosen === null) {
       setStatus("Build cancelled.");
@@ -391,6 +381,7 @@ async function buildAndroid(): Promise<void> {
 
     setStatus("Preparing the shell…");
     const shell = await loadTemplate();
+    const { buildApk, renderIconLayers } = await modules;
     setStatus("Rendering the icon layers…");
     const icons = await renderIconLayers(iconImage, name);
     setStatus("Assembling and signing the APK…");
@@ -427,7 +418,8 @@ async function ensureManifest(): Promise<ShellManifest | null> {
     return manifest;
   }
   if (manifestLoading === null) {
-    manifestLoading = loadManifest()
+    manifestLoading = loadDesktopModules()
+      .then(({ loadManifest }) => loadManifest())
       .then((value) => {
         manifest = value;
         return value;
@@ -481,11 +473,20 @@ async function buildDesktop(): Promise<void> {
   const selectedArch = arch;
   buildButton.disabled = true;
   try {
+    const modules = loadDesktopModules();
     setStatus("Loading the shell catalog…");
     const catalog = await ensureManifest();
     if (catalog === null) {
       return;
     }
+    const {
+      fetchBase,
+      findBase,
+      formatBytes,
+      needsConfirmation,
+      buildDesktopArtifact,
+      repackAppImage,
+    } = await modules;
     const base = findBase(catalog, selectedArtifact, selectedArch);
     if (needsConfirmation(base)) {
       const proceed = window.confirm(
@@ -751,6 +752,7 @@ importFile.addEventListener("change", () => {
     }
     setStatus("Unlocking the key backup…");
     try {
+      const { importIdentity, saveIdentity } = await loadKeys();
       const imported = await importIdentity(new Uint8Array(buffer), password);
       identity = imported;
       try {
@@ -822,7 +824,8 @@ if (highEntropy?.getHighEntropyValues !== undefined) {
     });
 }
 renderTargetUi();
-void loadIdentity()
+void loadKeys()
+  .then(({ loadIdentity }) => loadIdentity())
   .then((stored) => {
     if (stored !== null) {
       identity = stored;
