@@ -1,0 +1,46 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "URL to App",
+    "identifier": "url2app.yasogan.dev",
+    "documentationUrl": "https://github.com/YasogaN/url2app#readme",
+    "logoUrl": "https://url2app.yasogan.dev/favicon.svg"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:yasogan.dev:url2app:builder",
+      "displayName": "URL to App builder",
+      "type": "text/html",
+      "mediaType": "text/html",
+      "url": "https://url2app.yasogan.dev/",
+      "description": "A browser-only, local-first tool that packages an HTTPS website as an Android WebView APK, an unsigned Windows installer or portable app, or a Linux AppImage or tarball.",
+      "tags": [
+        "android",
+        "windows",
+        "linux",
+        "apk",
+        "webview",
+        "tauri",
+        "app-packager",
+        "local-first"
+      ],
+      "capabilities": [
+        "PackageUrlAsAndroidApk",
+        "PackageUrlAsWindowsApp",
+        "PackageUrlAsLinuxApp"
+      ],
+      "representativeQueries": [
+        "turn a website into an Android APK in the browser",
+        "wrap a website as a Windows or Linux desktop app",
+        "make a local app from a URL without a cloud build"
+      ],
+      "version": "1.2.0",
+      "updatedAt": "2026-10-26T00:00:00Z",
+      "metadata": {
+        "license": "Apache-2.0",
+        "source": "https://github.com/YasogaN/url2app",
+        "llms": "https://url2app.yasogan.dev/llms.txt"
+      }
+    }
+  ]
+}
