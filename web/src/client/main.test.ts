@@ -79,6 +79,7 @@ vi.mock("./paint", () => ({
 }));
 
 const HTML = `
+<div id="builder">
 <form id="builder-form">
   <select id="target">
     <option value="android">Android</option>
@@ -120,6 +121,7 @@ const HTML = `
   <span data-spec-signing></span>
   <span data-spec-network></span>
 </form>
+</div>
 <dialog id="key-dialog">
   <form id="key-form">
     <h2 id="key-dialog-title"></h2>
@@ -187,8 +189,15 @@ function element<T>(selector: string): T {
   return document.querySelector(selector) as T;
 }
 
+function focusBuilder(): void {
+  element<HTMLElement>("#builder").dispatchEvent(
+    new Event("focusin", { bubbles: true }),
+  );
+}
+
 function typeUrl(value: string): void {
   const input = element<HTMLInputElement>("#site-url");
+  focusBuilder();
   input.value = value;
   input.dispatchEvent(new Event("input"));
 }
@@ -745,6 +754,25 @@ describe("Android build", () => {
     );
   });
 
+  it("loads a stored identity before the first build", async () => {
+    mocks.loadIdentity.mockResolvedValue(mocks.identity());
+    await boot({
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36",
+      platform: "Linux armv8l",
+    });
+    const input = element<HTMLInputElement>("#site-url");
+    input.value = "https://example.com";
+    input.dispatchEvent(new Event("input"));
+    await flush();
+    submit();
+    await flush();
+    expect(mocks.buildApk).toHaveBeenCalled();
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "APK signed and downloaded.",
+    );
+  });
+
   it("creates a key through the dialog", async () => {
     await boot({
       userAgent:
@@ -1170,6 +1198,7 @@ describe("keys", () => {
     mocks.loadIdentity.mockResolvedValue(mocks.identity());
     await boot();
     click("[data-backup-key]");
+    await flush();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
       "Backup downloaded.",
     );
@@ -1178,6 +1207,7 @@ describe("keys", () => {
   it("refuses to back up without an identity", async () => {
     await boot();
     click("[data-backup-key]");
+    await flush();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
       "Create a key with the first build first.",
     );
@@ -1285,9 +1315,20 @@ describe("keys", () => {
     expect(mocks.importIdentity).not.toHaveBeenCalled();
   });
 
+  it("loads the stored key on pointer down", async () => {
+    await boot();
+    element<HTMLElement>("#builder").dispatchEvent(
+      new Event("pointerdown", { bubbles: true }),
+    );
+    await flush();
+    expect(mocks.loadIdentity).toHaveBeenCalledTimes(1);
+  });
+
   it("reports a storage load failure", async () => {
     mocks.loadIdentity.mockRejectedValueOnce(new Error("no idb"));
     await boot();
+    focusBuilder();
+    await flush();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
       "IndexedDB is unavailable; the key will not persist.",
     );

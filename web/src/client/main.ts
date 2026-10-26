@@ -100,6 +100,7 @@ let nameTouched = false;
 let iconImage: HTMLImageElement | null = null;
 let iconSource: IconSource = "letter";
 let identity: Identity | null = null;
+let identityLoad: Promise<void> | null = null;
 let template: Uint8Array | null = null;
 let passwordResolver: ((value: string | null) => void) | null = null;
 let passwordMode: "create" | "import" = "create";
@@ -321,6 +322,10 @@ function closePassword(value: string | null): void {
 }
 
 async function ensureIdentity(): Promise<Identity | null> {
+  if (identity !== null) {
+    return identity;
+  }
+  await loadStoredIdentity();
   if (identity !== null) {
     return identity;
   }
@@ -723,16 +728,18 @@ keyDialog.addEventListener("close", () => {
 });
 
 backupKeyButton.addEventListener("click", () => {
-  if (identity === null) {
-    setStatus("Create a key with the first build first.", "error");
-    return;
-  }
-  downloadBytes(
-    identity.backup,
-    "url-to-app-key.p1x",
-    "application/octet-stream",
-  );
-  setStatus("Backup downloaded.");
+  void loadStoredIdentity().then(() => {
+    if (identity === null) {
+      setStatus("Create a key with the first build first.", "error");
+      return;
+    }
+    downloadBytes(
+      identity.backup,
+      "url-to-app-key.p1x",
+      "application/octet-stream",
+    );
+    setStatus("Backup downloaded.");
+  });
 });
 
 importKeyButton.addEventListener("click", () => {
@@ -823,15 +830,35 @@ if (highEntropy?.getHighEntropyValues !== undefined) {
       // Keep the user-agent fallback.
     });
 }
+function loadStoredIdentity(): Promise<void> {
+  identityLoad ??= loadKeys()
+    .then(({ loadIdentity }) => loadIdentity())
+    .then((stored) => {
+      if (stored !== null) {
+        identity = stored;
+      }
+      updateKeyStatus();
+    })
+    .catch(() => {
+      setStatus("IndexedDB is unavailable; the key will not persist.", "error");
+    });
+  return identityLoad;
+}
+
+const builderSection = requireElement<HTMLElement>("#builder");
+builderSection.addEventListener(
+  "focusin",
+  () => {
+    void loadStoredIdentity();
+  },
+  { once: true },
+);
+builderSection.addEventListener(
+  "pointerdown",
+  () => {
+    void loadStoredIdentity();
+  },
+  { once: true },
+);
+
 renderTargetUi();
-void loadKeys()
-  .then(({ loadIdentity }) => loadIdentity())
-  .then((stored) => {
-    if (stored !== null) {
-      identity = stored;
-    }
-    updateKeyStatus();
-  })
-  .catch(() => {
-    setStatus("IndexedDB is unavailable; the key will not persist.", "error");
-  });
