@@ -2,29 +2,15 @@ import { Hono } from "hono";
 import { findIcon } from "./icons";
 import { parseTarget } from "./target";
 
-export type Bindings = {
-  ASSETS: Fetcher;
-};
+export const app = new Hono();
 
-export const app = new Hono<{ Bindings: Bindings }>();
-
-const HTML_CACHE_CONTROL = "public, no-transform, max-age=0, must-revalidate";
-
-function withHtmlCacheControl(response: Response): Response {
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("text/html")) {
-    return response;
-  }
-  const headers = new Headers(response.headers);
-  headers.set("cache-control", HTML_CACHE_CONTROL);
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
-app.get("/api/health", (c) => c.json({ ok: true }));
+app.use("*", async (c, next) => {
+  await next();
+  c.header("cross-origin-opener-policy", "same-origin");
+  c.header("referrer-policy", "strict-origin-when-cross-origin");
+  c.header("x-content-type-options", "nosniff");
+  c.header("x-frame-options", "DENY");
+});
 
 app.get("/api/favicon", async (c) => {
   const raw = c.req.query("url");
@@ -53,9 +39,5 @@ app.get("/api/favicon", async (c) => {
     return c.json({ error: "The site could not be fetched." }, 502);
   }
 });
-
-app.all("*", async (c) =>
-  withHtmlCacheControl(await c.env.ASSETS.fetch(c.req.raw)),
-);
 
 export default app;

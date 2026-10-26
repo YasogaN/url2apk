@@ -12,18 +12,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const assets = (body = "asset"): Fetcher =>
-  ({
-    fetch: vi.fn(async () => new Response(body)),
-  }) as unknown as Fetcher;
-
 describe("favicon api", () => {
-  it("reports health", async () => {
-    const response = await app.request("/api/health");
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ok: true });
-  });
-
   it("requires a url", async () => {
     for (const path of [
       "/api/favicon",
@@ -80,7 +69,14 @@ describe("favicon api", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/png");
     expect(response.headers.get("cache-control")).toContain("max-age=86400");
+    expect(response.headers.get("cross-origin-opener-policy")).toBe(
+      "same-origin",
+    );
+    expect(response.headers.get("referrer-policy")).toBe(
+      "strict-origin-when-cross-origin",
+    );
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("x-frame-options")).toBe("DENY");
     expect(Array.from(new Uint8Array(await response.arrayBuffer()))).toEqual([
       1, 2,
     ]);
@@ -119,67 +115,3 @@ describe("favicon api", () => {
   });
 });
 
-describe("static assets", () => {
-  it("serves unknown paths from the assets binding", async () => {
-    const fake = assets("hello");
-    const response = await app.request(
-      "https://example.com/anything",
-      {},
-      { ASSETS: fake },
-    );
-    expect(response.status).toBe(200);
-    expect(await response.text()).toBe("hello");
-    expect(fake.fetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("also serves unknown api paths from assets", async () => {
-    const fake = assets("spa");
-    const response = await app.request("/api/unknown", {}, { ASSETS: fake });
-    expect(await response.text()).toBe("spa");
-  });
-
-  it("marks HTML responses as no-transform", async () => {
-    const fake = {
-      fetch: vi.fn(
-        async () =>
-          new Response("html", {
-            headers: {
-              "content-type": "text/html; charset=utf-8",
-              "cache-control": "public, max-age=0",
-            },
-          }),
-      ),
-    } as unknown as Fetcher;
-    const response = await app.request("/api/unknown", {}, { ASSETS: fake });
-    expect(response.headers.get("cache-control")).toBe(
-      "public, no-transform, max-age=0, must-revalidate",
-    );
-    expect(await response.text()).toBe("html");
-  });
-
-  it("leaves non-HTML responses untouched", async () => {
-    const fake = {
-      fetch: vi.fn(
-        async () =>
-          new Response("{}", {
-            headers: {
-              "content-type": "application/json",
-              "cache-control": "public, max-age=86400",
-            },
-          }),
-      ),
-    } as unknown as Fetcher;
-    const response = await app.request("/api/unknown", {}, { ASSETS: fake });
-    expect(response.headers.get("cache-control")).toBe("public, max-age=86400");
-  });
-
-  it("leaves responses without a content type untouched", async () => {
-    const bare = new Response("blob");
-    bare.headers.delete("content-type");
-    const fake = {
-      fetch: vi.fn(async () => bare),
-    } as unknown as Fetcher;
-    const response = await app.request("/anything", {}, { ASSETS: fake });
-    expect(response.headers.get("content-type")).toBeNull();
-  });
-});

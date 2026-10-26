@@ -60,4 +60,14 @@ describe("discovery files", () => {
       "Cache-Control: public, no-transform, max-age=0, must-revalidate",
     );
   });
+
+  it("includes baseline security headers", () => {
+    const headers = read("_headers");
+    expect(headers).toContain("Content-Security-Policy:");
+    expect(headers).toContain("X-Content-Type-Options: nosniff");
+    expect(headers).toContain("X-Frame-Options: DENY");
+    expect(headers).toContain(
+      "Referrer-Policy: strict-origin-when-cross-origin",
+    );
+  });
 });
