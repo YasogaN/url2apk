@@ -69,6 +69,15 @@ describe("discovery files", () => {
     );
   });
 
+  it("publishes a 1200x630 social card", () => {
+    const png = readFileSync(`${publicDir}/og.png`);
+    expect(png.subarray(0, 8)).toEqual(
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    );
+    expect(png.readUInt32BE(16)).toBe(1200);
+    expect(png.readUInt32BE(20)).toBe(630);
+  });
+
   it("includes baseline security headers", () => {
     const headers = read("_headers");
     expect(headers).toContain("Content-Security-Policy:");

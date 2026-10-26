@@ -32,6 +32,9 @@
 /ai-catalog.json
   Cache-Control: public, no-transform, max-age=0, must-revalidate
 
+/og.png
+  Cache-Control: public, no-transform, max-age=86400, must-revalidate
+
 /.well-known/ai-catalog.json
   Cache-Control: public, no-transform, max-age=0, must-revalidate
 
