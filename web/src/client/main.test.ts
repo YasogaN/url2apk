@@ -90,9 +90,9 @@ const HTML = `
   <select id="arch"><option value="x64">x64</option><option value="arm64">arm64</option></select>
   <select id="artifact"></select>
   <div data-desktop-only hidden></div>
-  <button type="button" data-icon-source="letter" aria-selected="true"></button>
-  <button type="button" data-icon-source="upload" aria-selected="false"></button>
-  <button type="button" data-icon-source="fetch" aria-selected="false"></button>
+  <button type="button" data-icon-source="letter" aria-pressed="true"></button>
+  <button type="button" data-icon-source="upload" aria-pressed="false"></button>
+  <button type="button" data-icon-source="fetch" aria-pressed="false"></button>
   <div data-icon-panel="letter"></div>
   <div data-icon-panel="upload" hidden></div>
   <div data-icon-panel="fetch" hidden></div>

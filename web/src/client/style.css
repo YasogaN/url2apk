@@ -24,8 +24,11 @@
   --color-line: #e5e7eb;
   --color-strong: #000000;
   --color-accent: #8b0000;
+  --color-accent-fill: #8b0000;
   --color-accent-strong: #a50000;
-  --color-success: #4caf50;
+  --color-on-accent: #ffffff;
+  --color-success: #2e7d32;
+  --color-success-dot: #2e7d32;
   --color-inverse: #000000;
   --color-inverse-ink: #ffffff;
   --font-sans: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas,
@@ -46,9 +49,11 @@
     --color-muted: #9ca3af;
     --color-line: #2f2f2f;
     --color-strong: #f5f5f5;
-    --color-accent: #d32f2f;
-    --color-accent-strong: #ef5350;
+    --color-accent: #ef5350;
+    --color-accent-fill: #c62828;
+    --color-accent-strong: #b71c1c;
     --color-success: #4caf50;
+    --color-success-dot: #1b5e20;
     --color-inverse: #f5f5f5;
     --color-inverse-ink: #0b0b0b;
   }
@@ -68,8 +73,8 @@
   }
 
   ::selection {
-    background: var(--color-accent);
-    color: #ffffff;
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
   :focus-visible {
@@ -560,7 +565,7 @@
     border-right: 0;
   }
 
-  .segmented button[aria-selected="true"] {
+  .segmented button[aria-pressed="true"] {
     background: var(--color-ink);
     color: var(--color-paper);
   }
@@ -1054,9 +1059,9 @@
   }
 
   .wordmark-arrow {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    color: #ffffff;
+    border-color: var(--color-accent-fill);
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
   .wordmark-slash {
@@ -1104,9 +1109,9 @@
   }
 
   .button:hover {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    color: #ffffff;
+    border-color: var(--color-accent-fill);
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
   .button-ghost {
@@ -1115,9 +1120,9 @@
   }
 
   .button-ghost:hover {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    color: #ffffff;
+    border-color: var(--color-accent-fill);
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
   .button:disabled:hover {
@@ -1194,7 +1199,7 @@
   }
 
   .builder-engine[data-state="ready"]::before {
-    background: var(--color-success);
+    background: var(--color-success-dot);
   }
 
   .field label,
@@ -1237,14 +1242,14 @@
     color: var(--color-accent);
   }
 
-  .segmented button[aria-selected="true"] {
-    background: var(--color-accent);
-    color: #ffffff;
+  .segmented button[aria-pressed="true"] {
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
-  .segmented button[aria-selected="true"]:hover {
+  .segmented button[aria-pressed="true"]:hover {
     background: var(--color-accent-strong);
-    color: #ffffff;
+    color: var(--color-on-accent);
   }
 
   .upload-button {
@@ -1253,9 +1258,9 @@
   }
 
   .upload-button:hover {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    color: #ffffff;
+    border-color: var(--color-accent-fill);
+    background: var(--color-accent-fill);
+    color: var(--color-on-accent);
   }
 
   .package-value {

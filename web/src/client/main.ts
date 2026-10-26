@@ -270,7 +270,7 @@ async function syncIdentity(): Promise<void> {
 function selectIconSource(source: IconSource): void {
   iconSource = source;
   for (const tab of tabs) {
-    tab.setAttribute("aria-selected", String(tab.dataset.iconSource === source));
+    tab.setAttribute("aria-pressed", String(tab.dataset.iconSource === source));
   }
   for (const panel of panels) {
     panel.hidden = panel.dataset.iconPanel !== source;

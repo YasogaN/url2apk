@@ -192,7 +192,7 @@
         </aside>
       </section>
 
-      <section class="wrap section" id="builder" aria-labelledby="builder-title">
+      <section class="wrap section" id="builder" tabindex="-1" aria-labelledby="builder-title">
         <div class="section-head">
           <p class="eyebrow">01 / BUILDER</p>
           <div>
@@ -272,27 +272,24 @@
 
               <fieldset class="field">
                 <legend>Icon</legend>
-                <div class="segmented" role="tablist" aria-label="Icon source">
+                <div class="segmented" role="group" aria-label="Icon source">
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected="true"
+                    aria-pressed="true"
                     data-icon-source="letter"
                   >
                     Letter
                   </button>
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected="false"
+                    aria-pressed="false"
                     data-icon-source="upload"
                   >
                     Upload
                   </button>
                   <button
                     type="button"
-                    role="tab"
-                    aria-selected="false"
+                    aria-pressed="false"
                     data-icon-source="fetch"
                   >
                     Fetch
