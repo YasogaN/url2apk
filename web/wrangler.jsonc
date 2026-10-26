@@ -7,10 +7,6 @@
     {
       "pattern": "url2app.yasogan.dev",
       "custom_domain": true
-    },
-    {
-      "pattern": "url2apk.yasogan.dev",
-      "custom_domain": true
     }
   ],
   "assets": {

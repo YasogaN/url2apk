@@ -8,8 +8,6 @@ export type Bindings = {
 
 export const app = new Hono<{ Bindings: Bindings }>();
 
-const OLD_HOST = "url2apk.yasogan.dev";
-const NEW_HOST = "url2app.yasogan.dev";
 const HTML_CACHE_CONTROL = "public, no-transform, max-age=0, must-revalidate";
 
 function withHtmlCacheControl(response: Response): Response {
@@ -25,16 +23,6 @@ function withHtmlCacheControl(response: Response): Response {
     headers,
   });
 }
-
-app.use("*", async (c, next) => {
-  const current = new URL(c.req.url);
-  if (current.hostname === OLD_HOST) {
-    current.protocol = "https:";
-    current.hostname = NEW_HOST;
-    return c.redirect(current.toString(), 301);
-  }
-  await next();
-});
 
 app.get("/api/health", (c) => c.json({ ok: true }));
 
