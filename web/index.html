@@ -13,12 +13,21 @@
     <meta name="theme-color" content="#0b0b0b" media="(prefers-color-scheme: dark)" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="URL to App" />
+    <meta property="og:url" content="https://url2app.yasogan.dev/" />
     <meta property="og:title" content="URL to App — a URL in, an app out" />
     <meta
       property="og:description"
       content="Package a website as a local app in your browser. Android, Windows and Linux. No account, no cloud build."
     />
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="URL to App — a URL in, an app out" />
+    <meta
+      name="twitter:description"
+      content="Package a website as a local app in your browser. Android, Windows and Linux. No account, no cloud build."
+    />
+    <link rel="canonical" href="https://url2app.yasogan.dev/" />
+    <link rel="alternate" type="text/markdown" href="/index.md" title="Markdown version" />
+    <link rel="describedby" type="text/markdown" href="/llms.txt" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/ibm-plex-mono-700.woff2" as="font" type="font/woff2" crossorigin />
@@ -27,14 +36,66 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
+        "@type": "SoftwareApplication",
         "name": "URL to App",
+        "alternateName": "url2app",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Android, Windows, Linux",
+        "url": "https://url2app.yasogan.dev/",
+        "sameAs": ["https://github.com/YasogaN/url2app"],
+        "codeRepository": "https://github.com/YasogaN/url2app",
+        "softwareVersion": "1.2",
         "isAccessibleForFree": true,
         "license": "https://www.apache.org/licenses/LICENSE-2.0",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "A local-first tool that packages a website as an Android, Windows or Linux app using a prebuilt WebView shell."
+        "description": "A local-first tool that packages a website as an Android, Windows or Linux app using a prebuilt WebView shell.",
+        "keywords": "URL to app, website to app, web to desktop app, URL to APK, website to APK, WebView wrapper, local app generator",
+        "featureList": [
+          "Package an HTTPS site as a local Android APK",
+          "Package an HTTPS site as a Windows installer or portable app",
+          "Package an HTTPS site as a Linux AppImage or tarball",
+          "Run the builder in the browser with no account or cloud build"
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Can I update it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Regenerate it. Android can reuse the key; desktop builds do not auto-update."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I install it?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Android: allow unknown apps. Windows: run Setup. Linux: chmod the AppImage or extract the tar."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need Chrome?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Android uses System WebView; desktop uses WebView2 or WebKitGTK."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does it work offline?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. It loads the live URL."
+            }
+          }
+        ]
       }
     </script>
   </head>
