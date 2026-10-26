@@ -22,6 +22,10 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 - Linux AppImages still need FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks.
 - macOS is not supported yet.
 
+## How it compares
+
+PWABuilder and Bubblewrap build a Trusted Web Activity and usually need a cloud build or a local toolchain. URL to App patches a prebuilt WebView shell in the browser and signs the APK locally, with no account or server-side build. Desktop wrappers such as Tauri CLI and Electron Forge compile a new binary for every site; URL to App uses a prebuilt shell and treats the URL, name and icon as data.
+
 ## How it works
 
 1. A prebuilt shell per platform: a Kotlin WebView shell for Android and a Tauri v2 shell for Windows and Linux.
