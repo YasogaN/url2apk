@@ -1,0 +1,25 @@
+# URL to App
+
+> URL to App is a browser-only, local-first tool that packages an HTTPS website as a small Android WebView APK, an unsigned Windows installer or portable app, or a Linux AppImage or tarball. No account, no cloud build, and no server-side compilation.
+
+URL to App runs at https://url2app.yasogan.dev. It uses a prebuilt shell for each target and patches the URL, app name and icon in the browser tab. Android builds are signed with a non-exportable local key. Desktop builds are unsigned and do not auto-update. macOS is not supported yet.
+
+## Start
+
+- [Open the builder](https://url2app.yasogan.dev/): Paste an HTTPS URL, choose Android, Windows or Linux, and generate the package locally.
+- [Markdown version of the page](https://url2app.yasogan.dev/index.md): The same landing-page facts in plain Markdown for agents.
+- [Source code](https://github.com/YasogaN/url2app): Apache-2.0 Kotlin, Rust/Tauri, TypeScript and Cloudflare Workers source.
+- [README and architecture](https://github.com/YasogaN/url2app#readme): How the prebuilt shells, browser patching and signing work.
+
+## What it does
+
+- [What you get](https://github.com/YasogaN/url2app#what-you-get): Android launcher icon and APK, Windows Setup.exe or portable zip, and Linux AppImage or tar.gz.
+- [How it works](https://github.com/YasogaN/url2app#how-it-works): Prebuilt shells, data-not-compilation patching, local signing, and CI-built bases.
+- [Limits](https://github.com/YasogaN/url2app#what-it-is-not): No Google sign-in, push, extensions, App Links, offline copy, macOS, or auto-updates.
+- [Privacy](https://github.com/YasogaN/url2app#privacy): No accounts, analytics or telemetry. The only third-party request is the optional favicon lookup.
+
+## Machine-readable
+
+- [AI catalog](https://url2app.yasogan.dev/.well-known/ai-catalog.json): ARD manifest for the builder.
+- [Sitemap](https://url2app.yasogan.dev/sitemap.xml): Canonical site URLs.
+- [Robots](https://url2app.yasogan.dev/robots.txt): Crawler rules.
