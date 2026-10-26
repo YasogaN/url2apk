@@ -52,4 +52,12 @@ describe("discovery files", () => {
       "<loc>https://url2app.yasogan.dev/</loc>",
     );
   });
+
+  it("keeps the no-transform policy for static documents", () => {
+    const headers = read("_headers");
+    expect(headers).toContain("/*");
+    expect(headers).toContain(
+      "Cache-Control: public, no-transform, max-age=0, must-revalidate",
+    );
+  });
 });

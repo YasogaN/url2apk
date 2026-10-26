@@ -150,7 +150,7 @@ describe("static assets", () => {
           }),
       ),
     } as unknown as Fetcher;
-    const response = await app.request("/", {}, { ASSETS: fake });
+    const response = await app.request("/api/unknown", {}, { ASSETS: fake });
     expect(response.headers.get("cache-control")).toBe(
       "public, no-transform, max-age=0, must-revalidate",
     );
