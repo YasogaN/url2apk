@@ -884,13 +884,20 @@
 
   .footer-links {
     display: flex;
+    flex: none;
     flex-wrap: wrap;
-    gap: 1rem;
+    align-items: center;
+    max-width: 100%;
+    gap: 0.75rem;
     font-family: var(--font-mono);
     font-size: 0.625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-muted);
+  }
+
+  .footer-links a {
+    white-space: nowrap;
   }
 
   .footer-links a:hover {
@@ -901,12 +908,13 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    line-height: 1;
   }
 
   .footer-github svg {
     display: block;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   .footer-rule {
