@@ -250,6 +250,10 @@
     white-space: nowrap;
   }
 
+  .hero-tail {
+    white-space: nowrap;
+  }
+
   .hero-target::after {
     content: "";
     display: inline-block;
