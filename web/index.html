@@ -94,6 +94,22 @@
               "@type": "Answer",
               "text": "No. It loads the live URL."
             }
+          },
+          {
+            "@type": "Question",
+            "name": "How is this different from PWABuilder or Bubblewrap?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PWABuilder and Bubblewrap build a Trusted Web Activity and usually need a cloud build or a local toolchain. URL to App patches a prebuilt WebView shell in the browser and signs the APK locally, with no account or server-side build."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it open source?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. The Android, desktop and web sources are Apache-2.0 on GitHub."
+            }
           }
         ]
       }
@@ -468,6 +484,20 @@
           <details>
             <summary>Does it work offline?</summary>
             <p>No. It loads the live URL.</p>
+          </details>
+          <details>
+            <summary>How is this different from PWABuilder or Bubblewrap?</summary>
+            <p>
+              PWABuilder and Bubblewrap build a Trusted Web Activity and usually need a cloud build or a local toolchain.
+              URL to App patches a prebuilt WebView shell in the browser and signs the APK locally, with no account or server-side build.
+            </p>
+          </details>
+          <details>
+            <summary>Is it open source?</summary>
+            <p>
+              Yes. The Android, desktop and web sources are Apache-2.0 on
+              <a href="https://github.com/YasogaN/url2app" rel="noreferrer">GitHub</a>.
+            </p>
           </details>
         </div>
       </section>
