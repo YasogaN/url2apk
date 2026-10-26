@@ -11,58 +11,58 @@
 
 # HTML must not be rewritten, or Cloudflare injects the Web Analytics beacon.
 /
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /index.html
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Extensionless guide pages.
 /website-to-apk
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /website-to-desktop-app
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /pwabuilder-alternative
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /apk-signing
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Non-hashed discovery files revalidate.
 /llms.txt
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /index.md
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /robots.txt
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /sitemap.xml
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /ai-catalog.json
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /og.png
-  Cache-Control: public, no-transform, max-age=86400, must-revalidate
+  Cache-Control: public, max-age=86400, must-revalidate
 
 /.well-known/ai-catalog.json
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /.well-known/security.txt
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Large shell inputs and the manifest revalidate.
 /shell.apk
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /shells.json
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 /shells/*
-  Cache-Control: public, no-transform, max-age=0, must-revalidate
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Hashed build output is immutable.
 /assets/*

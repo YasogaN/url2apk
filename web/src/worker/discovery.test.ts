@@ -61,8 +61,9 @@ describe("discovery files", () => {
   it("keeps the no-transform policy for static documents", () => {
     const headers = read("_headers");
     expect(headers).toContain("/*");
+    expect(headers).toContain("Cache-Control: no-transform");
     expect(headers).toContain(
-      "Cache-Control: public, no-transform, max-age=0, must-revalidate",
+      "Cache-Control: public, max-age=0, must-revalidate",
     );
   });
 
