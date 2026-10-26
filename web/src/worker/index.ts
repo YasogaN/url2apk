@@ -10,6 +10,21 @@ export const app = new Hono<{ Bindings: Bindings }>();
 
 const OLD_HOST = "url2apk.yasogan.dev";
 const NEW_HOST = "url2app.yasogan.dev";
+const HTML_CACHE_CONTROL = "public, no-transform, max-age=0, must-revalidate";
+
+function withHtmlCacheControl(response: Response): Response {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html")) {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", HTML_CACHE_CONTROL);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 app.use("*", async (c, next) => {
   const current = new URL(c.req.url);
@@ -51,6 +66,8 @@ app.get("/api/favicon", async (c) => {
   }
 });
 
-app.all("*", (c) => c.env.ASSETS.fetch(c.req.raw));
+app.all("*", async (c) =>
+  withHtmlCacheControl(await c.env.ASSETS.fetch(c.req.raw)),
+);
 
 export default app;

@@ -160,4 +160,49 @@ describe("static assets", () => {
     const response = await app.request("/api/unknown", {}, { ASSETS: fake });
     expect(await response.text()).toBe("spa");
   });
+
+  it("marks HTML responses as no-transform", async () => {
+    const fake = {
+      fetch: vi.fn(
+        async () =>
+          new Response("html", {
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+              "cache-control": "public, max-age=0",
+            },
+          }),
+      ),
+    } as unknown as Fetcher;
+    const response = await app.request("/", {}, { ASSETS: fake });
+    expect(response.headers.get("cache-control")).toBe(
+      "public, no-transform, max-age=0, must-revalidate",
+    );
+    expect(await response.text()).toBe("html");
+  });
+
+  it("leaves non-HTML responses untouched", async () => {
+    const fake = {
+      fetch: vi.fn(
+        async () =>
+          new Response("{}", {
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=86400",
+            },
+          }),
+      ),
+    } as unknown as Fetcher;
+    const response = await app.request("/api/unknown", {}, { ASSETS: fake });
+    expect(response.headers.get("cache-control")).toBe("public, max-age=86400");
+  });
+
+  it("leaves responses without a content type untouched", async () => {
+    const bare = new Response("blob");
+    bare.headers.delete("content-type");
+    const fake = {
+      fetch: vi.fn(async () => bare),
+    } as unknown as Fetcher;
+    const response = await app.request("/anything", {}, { ASSETS: fake });
+    expect(response.headers.get("content-type")).toBeNull();
+  });
 });

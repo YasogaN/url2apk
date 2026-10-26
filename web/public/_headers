@@ -1,0 +1,4 @@
+# Cloudflare must not rewrite HTML, or it injects the Web Analytics beacon.
+# Compression, TLS, caching, WAF and other non-transform features still apply.
+/*
+  Cache-Control: public, no-transform, max-age=0, must-revalidate
