@@ -4,6 +4,10 @@
 
 The live builder at [url2app.yasogan.dev](https://url2app.yasogan.dev) and the latest tagged release are supported. Older releases may not receive fixes.
 
+## Bundled WebKit
+
+The bundled-WebKit Linux AppImage records its WebKitGTK package version in `shells.json`. Security updates are rebuilt independently of a shell release with the **Update bundled WebKit** workflow. Installed apps do not update themselves; regenerate the app to pick up a patched base.
+
 ## Reporting a vulnerability
 
 Use GitHub's private vulnerability reporting instead of opening a public issue:
