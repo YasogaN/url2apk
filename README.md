@@ -93,7 +93,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 559 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
+- **Web:** 566 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
 - **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker and release workflow are implemented. The live builder is on release v1.3; the Windows installer has been validated on Windows. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers.
 
@@ -149,6 +149,8 @@ The private key is generated with WebCrypto and imported as non-extractable; it 
 
 Desktop packages are unsigned. They do not use the Android key and do not auto-update. Regenerating the app is the only update path for now. The release workflow builds the shell bases, both NSIS installers, the AppImage variants and `shells.json`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets to deploy.
 
+The bundled-WebKit AppImage is updated separately from the shell. `shells.json` records the WebKitGTK package version, and the **Update bundled WebKit** workflow compares it with the current Ubuntu security repository. When a newer package is available, or when `force` is set, the workflow builds only the two full AppImages from the deployed shell commit, re-stages the unchanged shell bases, rewrites only the `linux-appimage-full` manifest entries, and redeploys the site. Run it from Actions when Ubuntu publishes a WebKitGTK security update; leave `deploy` off to build the artifacts without publishing.
+
 ## Distribution
 
 These are personal sideloaded builds. Android will warn about unknown apps, Play Protect may flag them, and Google's developer verification is rolling out (30 September 2026 in Brazil, Indonesia, Singapore and Thailand; global in 2027). Unverified sideloads may need ADB or the advanced flow. Do not publish these wrappers to Google Play; they do not meet the minimum-functionality policy.
@@ -157,7 +159,7 @@ Windows builds will trigger SmartScreen until they earn reputation; users need t
 
 ## Privacy
 
-No accounts, analytics, telemetry or third-party scripts. HTML responses send `Cache-Control: public, no-transform` so Cloudflare cannot inject its Web Analytics beacon. The package is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects. Desktop builds download their prebuilt shell from this deployment and nothing else.
+No accounts, analytics, telemetry or third-party scripts. HTML responses send `Cache-Control: public, no-transform` so Cloudflare cannot inject its Web Analytics beacon. HTTPS responses send a two-year `Strict-Transport-Security` policy with `includeSubDomains` and `preload`. The package is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects. Desktop builds download their prebuilt shell from this deployment and nothing else.
 
 ## Responsible use
 
