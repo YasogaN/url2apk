@@ -71,6 +71,10 @@ jobs:
         run: npm install --global @tauri-apps/cli@^2
       - name: Build the bundled-WebKit AppImage
         working-directory: desktop/app
+        env:
+          # linuxdeploy's bundled strip cannot parse newer WebKitGTK
+          # libraries (.relr.dyn sections) and aborts the bundle.
+          NO_STRIP: "true"
         run: tauri build --bundles appimage
       - name: Download the static AppImage runtime
         run: |
