@@ -105,6 +105,22 @@ describe("discovery files", () => {
     }
   });
 
+  it("publishes a dedicated not-found page", () => {
+    const html = readWeb("404.html");
+    expect(html).toContain("<h1>This page is not installed.</h1>");
+    expect(html).toContain('<meta name="robots" content="noindex,nofollow" />');
+    expect(html).toContain("<!-- @include header -->");
+    expect(html).toContain("<!-- @include footer -->");
+    expect(readWeb("vite.config.ts")).toContain('"404": page("404.html")');
+    expect(read("_headers")).toContain("/404.html");
+  });
+
+  it("serves a real 404 instead of the SPA shell", () => {
+    const config = readWeb("wrangler.jsonc");
+    expect(config).toContain('"not_found_handling": "404-page"');
+    expect(config).not.toContain("single-page-application");
+  });
+
   it("publishes a valid security.txt with a legacy redirect", () => {
     const text = read(".well-known/security.txt");
     expect(text).toMatch(/^Contact: https:\/\//m);
