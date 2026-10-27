@@ -150,5 +150,8 @@ describe("discovery files", () => {
     expect(headers).toContain(
       "Referrer-Policy: strict-origin-when-cross-origin",
     );
+    expect(headers).toContain(
+      "Strict-Transport-Security: max-age=63072000; includeSubDomains; preload",
+    );
   });
 });
