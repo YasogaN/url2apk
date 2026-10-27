@@ -75,6 +75,9 @@ describe("favicon api", () => {
     expect(response.headers.get("referrer-policy")).toBe(
       "strict-origin-when-cross-origin",
     );
+    expect(response.headers.get("strict-transport-security")).toBe(
+      "max-age=63072000; includeSubDomains; preload",
+    );
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(response.headers.get("x-frame-options")).toBe("DENY");
     expect(Array.from(new Uint8Array(await response.arrayBuffer()))).toEqual([

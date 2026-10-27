@@ -8,6 +8,10 @@ app.use("*", async (c, next) => {
   await next();
   c.header("cross-origin-opener-policy", "same-origin");
   c.header("referrer-policy", "strict-origin-when-cross-origin");
+  c.header(
+    "strict-transport-security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
   c.header("x-content-type-options", "nosniff");
   c.header("x-frame-options", "DENY");
 });
