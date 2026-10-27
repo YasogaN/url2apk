@@ -2,12 +2,9 @@
 import { writeFileSync } from "node:fs";
 import { readArtifact } from "./manifest-lib.mjs";
 
-const [directory, version, output, webkitVersion, webkitPackage] =
-  process.argv.slice(2);
+const [directory, version, output] = process.argv.slice(2);
 if (!directory || !version || !output) {
-  console.error(
-    "usage: manifest.mjs <bases-dir> <version> <shells.json> [webkit-version] [webkit-package]",
-  );
+  console.error("usage: manifest.mjs <bases-dir> <version> <shells.json>");
   process.exit(2);
 }
 
@@ -17,7 +14,7 @@ const FILES = {
   "windows-setup-system": { x64: "windows-x64-setup-system.exe", arm64: "windows-arm64-setup-system.exe" },
   "linux-tar": { x64: "linux-x64-shell", arm64: "linux-arm64-shell" },
   "linux-appimage": { x64: "linux-x64-lite.AppImage", arm64: "linux-arm64-lite.AppImage" },
-  "linux-appimage-full": { x64: "linux-x64-full.AppImage", arm64: "linux-arm64-full.AppImage" },
+  "linux-flatpak": { x64: "linux-x64-flatpak.tar", arm64: "linux-arm64-flatpak.tar" },
 };
 
 const urlPrefix = `/shells/${version}`;
@@ -28,17 +25,5 @@ for (const [artifact, arches] of Object.entries(FILES)) {
     artifacts[artifact][arch] = readArtifact(directory, name, urlPrefix);
   }
 }
-const manifest = {
-  version,
-  ...(webkitVersion === undefined
-    ? {}
-    : {
-        webkit: {
-          version: webkitVersion,
-          ...(webkitPackage === undefined ? {} : { package: webkitPackage }),
-        },
-      }),
-  artifacts,
-};
-writeFileSync(output, `${JSON.stringify(manifest, null, 2)}\n`);
+writeFileSync(output, `${JSON.stringify({ version, artifacts }, null, 2)}\n`);
 console.log(`Wrote ${output}`);

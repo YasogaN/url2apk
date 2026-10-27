@@ -63,19 +63,10 @@ jobs:
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 squashfs-tools
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf squashfs-tools flatpak
       - name: Build the raw shell
         working-directory: desktop
         run: cargo build --release -p url2app-shell --target ${{ matrix.target }}
-      - name: Install the Tauri CLI
-        run: npm install --global @tauri-apps/cli@^2
-      - name: Build the bundled-WebKit AppImage
-        working-directory: desktop/app
-        env:
-          # linuxdeploy's bundled strip cannot parse newer WebKitGTK
-          # libraries (.relr.dyn sections) and aborts the bundle.
-          NO_STRIP: "true"
-        run: tauri build --bundles appimage
       - name: Download the static AppImage runtime
         run: |
           curl -fsSL "https://github.com/AppImage/type2-runtime/releases/download/continuous/${{ matrix.runtime }}" -o "$RUNNER_TEMP/runtime"
@@ -84,17 +75,10 @@ jobs:
       - name: Build the AppImages
         run: |
           mkdir -p bases out
-          source="$(find desktop/target/release/bundle/appimage -maxdepth 1 -type f -name '*.AppImage' | head -n1)"
           desktop/tools/build-appimage-lite.sh "${{ matrix.arch }}" "desktop/target/${{ matrix.target }}/release/url2app-shell" desktop/app/icons/icon.png "$RUNNER_TEMP/runtime" "bases/linux-${{ matrix.arch }}-lite.AppImage"
-          desktop/tools/repack-appimage.sh "$source" "$RUNNER_TEMP/runtime" "bases/linux-${{ matrix.arch }}-full.AppImage"
-          full="bases/linux-${{ matrix.arch }}-full.AppImage"
-          split -b 20M -d -a 3 "$full" "$full.part-"
-          rm "$full"
+          desktop/tools/build-flatpak-base.sh "${{ matrix.arch }}" "desktop/target/${{ matrix.target }}/release/url2app-shell" desktop/app/icons/icon.png "out/linux-${{ matrix.arch }}-flatpak.tar"
           cp "desktop/target/${{ matrix.target }}/release/url2app-shell" out/url2app-shell
           cp "bases/linux-${{ matrix.arch }}-lite.AppImage" out/
-          cp bases/linux-${{ matrix.arch }}-full.AppImage.part-* out/
-          pkg-config --modversion webkit2gtk-4.1 > out/webkit-version.txt
-          dpkg-query -W -f='${Version}' libwebkit2gtk-4.1-0 >> out/webkit-version.txt
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
@@ -156,10 +140,10 @@ jobs:
           mkdir -p bases
           cp artifacts/linux/linux-x64/url2app-shell bases/linux-x64-shell
           cp artifacts/linux/linux-x64/linux-x64-lite.AppImage bases/
-          cp artifacts/linux/linux-x64/linux-x64-full.AppImage.part-* bases/
+          cp artifacts/linux/linux-x64/linux-x64-flatpak.tar bases/
           cp artifacts/linux/linux-arm64/url2app-shell bases/linux-arm64-shell
           cp artifacts/linux/linux-arm64/linux-arm64-lite.AppImage bases/
-          cp artifacts/linux/linux-arm64/linux-arm64-full.AppImage.part-* bases/
+          cp artifacts/linux/linux-arm64/linux-arm64-flatpak.tar bases/
           cp artifacts/windows/windows-x64/url2app-shell.exe bases/windows-x64-shell.exe
           cp artifacts/windows/windows-x64/url2app-installer-helper.exe bases/windows-x64-helper.exe
           cp artifacts/windows/windows-arm64/url2app-shell.exe bases/windows-arm64-shell.exe
@@ -171,24 +155,8 @@ jobs:
           desktop/installer/build.sh system bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-system.exe
           desktop/installer/build.sh user bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-user.exe
           desktop/installer/build.sh system bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-system.exe
-      - name: Read the bundled WebKit version
-        run: |
-          webkit_version="$(sed -n '1p' artifacts/linux/linux-x64/webkit-version.txt)"
-          webkit_package="$(sed -n '2p' artifacts/linux/linux-x64/webkit-version.txt)"
-          arm_version="$(sed -n '1p' artifacts/linux/linux-arm64/webkit-version.txt)"
-          arm_package="$(sed -n '2p' artifacts/linux/linux-arm64/webkit-version.txt)"
-          test -n "$webkit_version"
-          test -n "$webkit_package"
-          if [ "$webkit_package" != "$arm_package" ]; then
-            echo "::error::The x64 and arm64 AppImages bundled different WebKit packages: $webkit_package and $arm_package"
-            exit 1
-          fi
-          {
-            echo "WEBKIT_VERSION=$webkit_version"
-            echo "WEBKIT_PACKAGE=$webkit_package"
-          } >> "$GITHUB_ENV"
       - name: Generate the manifest
-        run: node desktop/tools/manifest.mjs bases "$GITHUB_SHA" bases/shells.json "$WEBKIT_VERSION" "$WEBKIT_PACKAGE"
+        run: node desktop/tools/manifest.mjs bases "$GITHUB_SHA" bases/shells.json
       - name: Note oversized static assets
         run: |
           if find bases -type f -size +25M -print -quit | grep -q .; then
