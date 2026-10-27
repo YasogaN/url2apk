@@ -119,6 +119,42 @@ export function packageName(url: URL): string {
     .replace(/[._]+$/, "");
 }
 
+const FLATPAK_ID_MAX = 80;
+
+function fnv1a64(value: string): string {
+  let hash = 0xcbf29ce484222325n;
+  const prime = 0x100000001b3n;
+  for (const byte of new TextEncoder().encode(value)) {
+    hash ^= BigInt(byte);
+    hash = (hash * prime) & 0xffffffffffffffffn;
+  }
+  return hash.toString(16).padStart(16, "0");
+}
+
+/**
+ * Flatpak app ID derived from the wrapped host, mirroring the Android package
+ * name. Flatpak requires at least three dot-separated components, so a
+ * two-component package gets the `app.` prefix. The 80-character cap keeps
+ * the generated desktop and icon file names inside the ustar name field; a
+ * host hash keeps long IDs distinct.
+ */
+export function flatpakAppId(url: URL): string {
+  const base = packageName(url);
+  const id = base.split(".").length >= 3 ? base : `app.${base}`;
+  if (id.length <= FLATPAK_ID_MAX) {
+    return id;
+  }
+  const labels = id.split(".");
+  const suffix = `a${fnv1a64(url.hostname).slice(0, 8)}`;
+  const maxPrefix = FLATPAK_ID_MAX - suffix.length - 1;
+  let prefix = labels.slice(0, 3).join(".").slice(0, maxPrefix);
+  prefix = prefix.replace(/[._-]+$/, "");
+  if (prefix.split(".").length < 3) {
+    prefix = `app.${labels[0].slice(0, 20)}`;
+  }
+  return `${prefix}.${suffix}`;
+}
+
 function sanitizeLabel(value: string): string {
   let label = value
     .replace(/[^a-z0-9_]/g, "_")

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatVersionCode,
   initials,
+  flatpakAppId,
   normalizeUrl,
   packageName,
   suggestName,
@@ -95,6 +96,42 @@ describe("packageName", () => {
   it("is stable for the same url", () => {
     const url = new URL("https://example.com/");
     expect(packageName(url)).toBe(packageName(url));
+  });
+});
+
+describe("flatpakAppId", () => {
+  it.each([
+    ["https://example.com/", "app.com.example"],
+    ["https://www.example.com/", "app.com.example"],
+    ["https://news.ycombinator.com/", "com.ycombinator.news"],
+    ["https://www.bbc.co.uk/", "uk.co.bbc"],
+    ["https://my-app.example.com/", "com.example.my_app"],
+    ["https://192.168.1.1/", "a1.a1.a168.a192"],
+    ["https://example.com./", "app.com.example"],
+  ])("maps %s to %s", (raw, expected) => {
+    expect(flatpakAppId(new URL(raw))).toBe(expected);
+  });
+
+  it("caps long IDs and keeps them distinct", () => {
+    const long = `${"a".repeat(200)}.example.com`;
+    const one = flatpakAppId(new URL(`https://${long}/`));
+    const two = flatpakAppId(new URL(`https://${long}b/`));
+    expect(one.length).toBeLessThanOrEqual(80);
+    expect(two.length).toBeLessThanOrEqual(80);
+    expect(one).not.toBe(two);
+    expect(one.split(".").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("keeps a valid component count when the long prefix collapses", () => {
+    const host = `abcde.${"b".repeat(60)}.${"t".repeat(60)}`;
+    const id = flatpakAppId(new URL(`https://${host}/`));
+    expect(id.length).toBeLessThanOrEqual(80);
+    expect(id.split(".").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("is stable for the same url", () => {
+    const url = new URL("https://example.com/");
+    expect(flatpakAppId(url)).toBe(flatpakAppId(url));
   });
 });
 
