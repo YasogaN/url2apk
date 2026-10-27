@@ -217,6 +217,9 @@ jobs:
           name: web-dist
           path: web/dist
           if-no-files-found: error
+          # upload-artifact skips dotfiles by default, which would drop the
+          # .well-known discovery documents and the .assetsignore file.
+          include-hidden-files: true
 
   publish:
     needs: [build-web]
@@ -237,6 +240,13 @@ jobs:
         with:
           name: web-dist
           path: web/dist
+      - name: Verify the discovery files survived the artifact
+        working-directory: web
+        run: |
+          test -s dist/client/.well-known/security.txt
+          test -s dist/client/.well-known/ai-catalog.json
+          grep -q '^Contact: https://' dist/client/.well-known/security.txt
+          cmp dist/client/.well-known/ai-catalog.json dist/client/ai-catalog.json
       - name: Install web dependencies
         working-directory: web
         run: pnpm install --frozen-lockfile
