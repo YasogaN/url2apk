@@ -12,7 +12,9 @@
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client",
-    "not_found_handling": "single-page-application",
+    // There is no client-side router, so a missing path is a real 404 rather
+    // than a 200 response with the landing page.
+    "not_found_handling": "404-page",
     "run_worker_first": ["/api/favicon"]
   },
   "observability": {
