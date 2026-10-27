@@ -163,6 +163,33 @@ describe("parseManifest", () => {
     });
   });
 
+  it("accepts the bundled WebKit version", () => {
+    expect(
+      parseManifest({
+        version: "1",
+        webkit: {
+          version: "2.50.4",
+          package: "2.50.4-0ubuntu0.22.04.1",
+        },
+        artifacts: {},
+      }),
+    ).toEqual({
+      version: "1",
+      webkit: {
+        version: "2.50.4",
+        package: "2.50.4-0ubuntu0.22.04.1",
+      },
+      artifacts: {},
+    });
+    expect(
+      parseManifest({
+        version: "1",
+        webkit: { version: "2.50.4" },
+        artifacts: {},
+      }).webkit,
+    ).toEqual({ version: "2.50.4" });
+  });
+
   it.each([
     ["null", null],
     ["a string", "manifest"],
@@ -170,6 +197,27 @@ describe("parseManifest", () => {
     ["an empty version", { version: "", artifacts: {} }],
     ["missing artifacts", { version: "1" }],
     ["null artifacts", { version: "1", artifacts: null }],
+    ["null webkit", { version: "1", webkit: null, artifacts: {} }],
+    [
+      "a non-object webkit",
+      { version: "1", webkit: "2.50.4", artifacts: {} },
+    ],
+    [
+      "an empty webkit version",
+      { version: "1", webkit: { version: "" }, artifacts: {} },
+    ],
+    [
+      "a non-string webkit version",
+      { version: "1", webkit: { version: 1 }, artifacts: {} },
+    ],
+    [
+      "an empty webkit package",
+      { version: "1", webkit: { version: "2.50.4", package: "" }, artifacts: {} },
+    ],
+    [
+      "a non-string webkit package",
+      { version: "1", webkit: { version: "2.50.4", package: 2 }, artifacts: {} },
+    ],
     [
       "a zero squashfs offset",
       {

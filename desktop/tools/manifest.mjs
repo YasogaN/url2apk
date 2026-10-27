@@ -2,9 +2,12 @@
 import { writeFileSync } from "node:fs";
 import { readArtifact } from "./manifest-lib.mjs";
 
-const [directory, version, output] = process.argv.slice(2);
+const [directory, version, output, webkitVersion, webkitPackage] =
+  process.argv.slice(2);
 if (!directory || !version || !output) {
-  console.error("usage: manifest.mjs <bases-dir> <version> <shells.json>");
+  console.error(
+    "usage: manifest.mjs <bases-dir> <version> <shells.json> [webkit-version] [webkit-package]",
+  );
   process.exit(2);
 }
 
@@ -25,5 +28,17 @@ for (const [artifact, arches] of Object.entries(FILES)) {
     artifacts[artifact][arch] = readArtifact(directory, name, urlPrefix);
   }
 }
-writeFileSync(output, `${JSON.stringify({ version, artifacts }, null, 2)}\n`);
+const manifest = {
+  version,
+  ...(webkitVersion === undefined
+    ? {}
+    : {
+        webkit: {
+          version: webkitVersion,
+          ...(webkitPackage === undefined ? {} : { package: webkitPackage }),
+        },
+      }),
+  artifacts,
+};
+writeFileSync(output, `${JSON.stringify(manifest, null, 2)}\n`);
 console.log(`Wrote ${output}`);

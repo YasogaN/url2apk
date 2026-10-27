@@ -93,6 +93,8 @@ jobs:
           cp "desktop/target/${{ matrix.target }}/release/url2app-shell" out/url2app-shell
           cp "bases/linux-${{ matrix.arch }}-lite.AppImage" out/
           cp bases/linux-${{ matrix.arch }}-full.AppImage.part-* out/
+          pkg-config --modversion webkit2gtk-4.1 > out/webkit-version.txt
+          dpkg-query -W -f='${Version}' libwebkit2gtk-4.1-0 >> out/webkit-version.txt
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
@@ -169,8 +171,24 @@ jobs:
           desktop/installer/build.sh system bases/windows-x64-shell.exe bases/windows-x64-helper.exe bases/windows-x64-setup-system.exe
           desktop/installer/build.sh user bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-user.exe
           desktop/installer/build.sh system bases/windows-arm64-shell.exe bases/windows-arm64-helper.exe bases/windows-arm64-setup-system.exe
+      - name: Read the bundled WebKit version
+        run: |
+          webkit_version="$(sed -n '1p' artifacts/linux/linux-x64/webkit-version.txt)"
+          webkit_package="$(sed -n '2p' artifacts/linux/linux-x64/webkit-version.txt)"
+          arm_version="$(sed -n '1p' artifacts/linux/linux-arm64/webkit-version.txt)"
+          arm_package="$(sed -n '2p' artifacts/linux/linux-arm64/webkit-version.txt)"
+          test -n "$webkit_version"
+          test -n "$webkit_package"
+          if [ "$webkit_package" != "$arm_package" ]; then
+            echo "::error::The x64 and arm64 AppImages bundled different WebKit packages: $webkit_package and $arm_package"
+            exit 1
+          fi
+          {
+            echo "WEBKIT_VERSION=$webkit_version"
+            echo "WEBKIT_PACKAGE=$webkit_package"
+          } >> "$GITHUB_ENV"
       - name: Generate the manifest
-        run: node desktop/tools/manifest.mjs bases "$GITHUB_SHA" bases/shells.json
+        run: node desktop/tools/manifest.mjs bases "$GITHUB_SHA" bases/shells.json "$WEBKIT_VERSION" "$WEBKIT_PACKAGE"
       - name: Note oversized static assets
         run: |
           if find bases -type f -size +25M -print -quit | grep -q .; then
