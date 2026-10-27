@@ -13,7 +13,7 @@
       "type": "text/html",
       "mediaType": "text/html",
       "url": "https://url2app.yasogan.dev/",
-      "description": "A browser-only, local-first tool that packages an HTTPS website as an Android WebView APK, an unsigned Windows installer or portable app, or a Linux AppImage or tarball.",
+      "description": "A browser-only, local-first tool that packages an HTTPS website as an Android WebView APK, an unsigned Windows installer or portable app, or a Linux Flatpak, AppImage or tarball.",
       "tags": [
         "android",
         "windows",

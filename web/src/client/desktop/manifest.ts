@@ -22,10 +22,6 @@ export type ShellArtifacts = Partial<
 
 export type ShellManifest = {
   version: string;
-  webkit?: {
-    version: string;
-    package?: string;
-  };
   artifacts: ShellArtifacts;
 };
 
@@ -46,7 +42,7 @@ const ARTIFACTS: DesktopArtifact[] = [
   "windows-portable",
   "linux-tar",
   "linux-appimage",
-  "linux-appimage-full",
+  "linux-flatpak",
 ];
 const ARCHES: DesktopArch[] = ["x64", "arm64"];
 
@@ -154,28 +150,7 @@ export function parseManifest(value: unknown): ShellManifest {
     }
     artifacts[artifact] = perArch;
   }
-  const parsed: ShellManifest = { version: record.version, artifacts };
-  if (record.webkit !== undefined) {
-    const webkit = record.webkit;
-    if (typeof webkit !== "object" || webkit === null) {
-      throw invalidManifest();
-    }
-    const fields = webkit as Record<string, unknown>;
-    if (typeof fields.version !== "string" || fields.version === "") {
-      throw invalidManifest();
-    }
-    if (
-      fields.package !== undefined &&
-      (typeof fields.package !== "string" || fields.package === "")
-    ) {
-      throw invalidManifest();
-    }
-    parsed.webkit = {
-      version: fields.version,
-      ...(fields.package === undefined ? {} : { package: fields.package }),
-    };
-  }
-  return parsed;
+  return { version: record.version, artifacts };
 }
 
 export async function loadManifest(

@@ -41,7 +41,7 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | open | MIT |
 | notify-rust | MIT |
 | webkit2gtk bindings | MIT |
-| WebKitGTK and GTK (system libraries; bundled only in the full AppImage) | LGPL-2.1-or-later |
+| WebKitGTK and GTK (system libraries for the AppImage and tarball; supplied by the GNOME runtime for Flatpak) | LGPL-2.1-or-later |
 | windows-sys | Apache-2.0 OR MIT |
 | resedit | MIT |
 | NSIS | zlib/libpng |
@@ -51,7 +51,7 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | backhand (vendored for WASM) | MIT OR Apache-2.0 |
 | wasm-bindgen | MIT OR Apache-2.0 |
 
-The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The bundled-WebKit AppImage contains those LGPL libraries, so distributing it carries the usual LGPL relinking and source-offer obligations.
+The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The Flatpak uses the WebKitGTK and GTK libraries from the GNOME runtime; the generated bundle contains only the shell and its config.
 
 ## Standards and specifications
 

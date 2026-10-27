@@ -26,26 +26,18 @@ function repacker(
 
 describe("appImageDesktopEntry", () => {
   it("writes the lite entry", () => {
-    expect(appImageDesktopEntry(config, "lite")).toContain("Exec=shell\n");
-    expect(appImageDesktopEntry(config, "lite")).toContain(
+    expect(appImageDesktopEntry(config)).toContain("Exec=shell\n");
+    expect(appImageDesktopEntry(config)).toContain(
       "StartupWMClass=shell\n",
     );
-    expect(appImageDesktopEntry(config, "lite")).toContain(
+    expect(appImageDesktopEntry(config)).toContain(
       "Name=Example\n",
     );
-    expect(appImageDesktopEntry(config, "lite")).toContain(
+    expect(appImageDesktopEntry(config)).toContain(
       "Comment=Open https://example.com/\n",
     );
   });
 
-  it("writes the full entry", () => {
-    expect(appImageDesktopEntry(config, "full")).toContain(
-      "Exec=url2app-shell\n",
-    );
-    expect(appImageDesktopEntry(config, "full")).toContain(
-      "StartupWMClass=url2app-shell\n",
-    );
-  });
 });
 
 describe("repackAppImage", () => {
@@ -53,7 +45,7 @@ describe("repackAppImage", () => {
     const module = repacker(new Uint8Array([7, 8]));
     const image = new Uint8Array([1, 2, 3, 4, 5]);
     const icon = new Uint8Array([9]);
-    const output = await repackAppImage(image, 3, config, icon, "lite", {
+    const output = await repackAppImage(image, 3, config, icon, {
       load: async () => module,
     });
     expect(output).toEqual(new Uint8Array([1, 2, 3, 7, 8]));
@@ -73,7 +65,7 @@ describe("repackAppImage", () => {
     ["non-finite", Number.NaN],
   ])("rejects a %s offset", async (_name, offset) => {
     await expect(
-      repackAppImage(new Uint8Array([1, 2, 3]), offset, config, new Uint8Array([9]), "lite"),
+      repackAppImage(new Uint8Array([1, 2, 3]), offset, config, new Uint8Array([9])),
     ).rejects.toThrow("offset is invalid");
   });
 
@@ -85,7 +77,6 @@ describe("repackAppImage", () => {
         1,
         config,
         new Uint8Array([9]),
-        "lite",
         { load: async () => module },
       ),
     ).rejects.toThrow("empty image");
@@ -98,7 +89,6 @@ describe("repackAppImage", () => {
         1,
         config,
         new Uint8Array([9]),
-        "lite",
         {
           load: async () => {
             throw new Error("load failed");

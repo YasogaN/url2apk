@@ -1,4 +1,5 @@
 import { gzipSync, gunzipSync } from "fflate";
+import { bufferSource } from "../apk/bytes";
 import { flatpakAppId } from "../domain";
 import { packageBase, serializeConfig, type DesktopArch, type DesktopConfig } from "./config";
 import { createTar, parseTar, type FlatpakTarEntry } from "./flatpak-tar";
@@ -43,7 +44,7 @@ function base64(bytes: Uint8Array): string {
 }
 
 async function sha256(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const digest = await crypto.subtle.digest("SHA-256", bufferSource(bytes));
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");

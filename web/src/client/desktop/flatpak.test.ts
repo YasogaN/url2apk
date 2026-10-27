@@ -1,6 +1,7 @@
 import { gunzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 import { fixturePng } from "../../../test/helpers/binaries";
+import { bufferSource } from "../apk/bytes";
 import { flatpakBase } from "../../../test/helpers/flatpak";
 import { flatpakAppId } from "../domain";
 import { serializeConfig, type DesktopConfig } from "./config";
@@ -37,7 +38,7 @@ function text(bytes: Uint8Array): string {
 }
 
 async function digest(bytes: Uint8Array): Promise<string> {
-  const hash = await crypto.subtle.digest("SHA-256", bytes);
+  const hash = await crypto.subtle.digest("SHA-256", bufferSource(bytes));
   return Array.from(new Uint8Array(hash), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");

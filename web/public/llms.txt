@@ -1,6 +1,6 @@
 # URL to App
 
-> URL to App is a browser-only, local-first tool that packages an HTTPS website as a small Android WebView APK, an unsigned Windows installer or portable app, or a Linux AppImage or tarball. No account, no cloud build, and no server-side compilation.
+> URL to App is a browser-only, local-first tool that packages an HTTPS website as a small Android WebView APK, an unsigned Windows installer or portable app, or a Linux Flatpak, AppImage or tarball. No account, no cloud build, and no server-side compilation.
 
 URL to App runs at https://url2app.yasogan.dev. It uses a prebuilt shell for each target and patches the URL, app name and icon in the browser tab. Android builds are signed with a non-exportable local key. Desktop builds are unsigned and do not auto-update. macOS is not supported yet.
 
@@ -13,7 +13,7 @@ URL to App runs at https://url2app.yasogan.dev. It uses a prebuilt shell for eac
 
 ## What it does
 
-- [What you get](https://github.com/YasogaN/url2app#what-you-get): Android launcher icon and APK, Windows Setup.exe or portable zip, and Linux AppImage or tar.gz.
+- [What you get](https://github.com/YasogaN/url2app#what-you-get): Android launcher icon and APK, Windows Setup.exe or portable zip, and Linux Flatpak, AppImage or tar.gz.
 - [How it works](https://github.com/YasogaN/url2app#how-it-works): Prebuilt shells, data-not-compilation patching, local signing, and CI-built bases.
 - [Limits](https://github.com/YasogaN/url2app#what-it-is-not): No Google sign-in, push, extensions, App Links, offline copy, macOS, or auto-updates.
 - [Comparison and FAQ](https://url2app.yasogan.dev/#faq): How it differs from PWABuilder, Bubblewrap, Tauri CLI and Electron Forge.
@@ -22,7 +22,7 @@ URL to App runs at https://url2app.yasogan.dev. It uses a prebuilt shell for eac
 ## Guides
 
 - [Website to Android APK without a cloud build](https://url2app.yasogan.dev/website-to-apk): Local WebView APK packaging, install steps and limits.
-- [Website to Windows or Linux desktop app](https://url2app.yasogan.dev/website-to-desktop-app): Prebuilt Tauri shells, Setup.exe, AppImage and tarball outputs.
+- [Website to Windows or Linux desktop app](https://url2app.yasogan.dev/website-to-desktop-app): Prebuilt Tauri shells, Setup.exe, Flatpak, AppImage and tarball outputs.
 - [URL to App vs PWABuilder and Bubblewrap](https://url2app.yasogan.dev/pwabuilder-alternative): When a Trusted Web Activity is the better choice and when a local WebView wrapper is.
 - [How local APK signing works](https://url2app.yasogan.dev/apk-signing): WebCrypto key generation, the encrypted .p1x backup and APK Signature Scheme v2.
 

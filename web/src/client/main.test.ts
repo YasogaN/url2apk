@@ -344,7 +344,7 @@ describe("startup", () => {
     expect(element<HTMLElement>("[data-key-row]").hidden).toBe(true);
     expect(element<HTMLSelectElement>("#artifact").options).toHaveLength(3);
     expect(element<HTMLSelectElement>("#artifact").value).toBe(
-      "linux-appimage",
+      "linux-flatpak",
     );
     expect(element<HTMLElement>("[data-hero-target]").textContent).toBe(
       "Linux",
@@ -974,6 +974,7 @@ describe("desktop build", () => {
 
   it("builds a desktop download", async () => {
     await prepareDesktop();
+    selectArtifact("linux-appimage");
     submit();
     await flush();
     expect(mocks.loadManifest).toHaveBeenCalled();
@@ -983,7 +984,6 @@ describe("desktop build", () => {
       4,
       expect.any(Object),
       expect.any(Uint8Array),
-      "lite",
     );
     expect(mocks.buildDesktopArtifact).toHaveBeenCalled();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
@@ -991,17 +991,16 @@ describe("desktop build", () => {
     );
   });
 
-  it("repacks the full AppImage variant", async () => {
+  it("builds the default Flatpak without repacking", async () => {
     await prepareDesktop();
-    selectArtifact("linux-appimage-full");
     submit();
     await flush();
-    expect(mocks.repackAppImage).toHaveBeenCalledWith(
-      new Uint8Array([9]),
-      4,
-      expect.any(Object),
-      expect.any(Uint8Array),
-      "full",
+    expect(mocks.repackAppImage).not.toHaveBeenCalled();
+    expect(mocks.buildDesktopArtifact).toHaveBeenCalledWith(
+      expect.objectContaining({ artifact: "linux-flatpak" }),
+    );
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "app.zip downloaded. Install with: flatpak install --user --image oci-archive:app.zip",
     );
   });
 
@@ -1015,13 +1014,14 @@ describe("desktop build", () => {
   });
 
   it("rejects an AppImage base without an offset", async () => {
+    await prepareDesktop();
+    selectArtifact("linux-appimage");
     mocks.findBase.mockReturnValue({
       url: "/shells/base",
       size: 1,
       sha256: "a".repeat(64),
       squashfsOffset: undefined,
     });
-    await prepareDesktop();
     submit();
     await flush();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
@@ -1032,6 +1032,7 @@ describe("desktop build", () => {
   it("reports an AppImage repack failure", async () => {
     mocks.repackAppImage.mockRejectedValueOnce(new Error("repack failed"));
     await prepareDesktop();
+    selectArtifact("linux-appimage");
     submit();
     await flush();
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(

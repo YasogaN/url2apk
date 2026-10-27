@@ -9,8 +9,6 @@ import { appendPayload } from "./trailer";
 const ELF_MAGIC = [0x7f, 0x45, 0x4c, 0x46] as const;
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const;
 
-export type AppImageVariant = "lite" | "full";
-
 export type AppImageBundle = {
   bytes: Uint8Array;
   filename: string;
@@ -38,7 +36,6 @@ export function buildAppImage(
   icon: Uint8Array,
   image: Uint8Array,
   arch: DesktopArch,
-  variant: AppImageVariant,
 ): AppImageBundle {
   if (image.length === 0) {
     throw new Error("The AppImage base is empty.");
@@ -54,10 +51,9 @@ export function buildAppImage(
   }
 
   const base = packageBase(config);
-  const suffix = variant === "full" ? "-portable" : "";
   return {
     bytes: appendPayload(image, serializeConfig(config), icon),
-    filename: `${base}-${arch}${suffix}.AppImage`,
+    filename: `${base}-${arch}.AppImage`,
     base,
   };
 }

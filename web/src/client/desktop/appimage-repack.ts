@@ -1,4 +1,3 @@
-import type { AppImageVariant } from "./appimage";
 import type { DesktopConfig } from "./config";
 
 const WASM_MODULE_URL = "/wasm/url2app_appimage_repack.js";
@@ -31,20 +30,17 @@ export function loadAppImageRepacker(): Promise<AppImageRepacker> {
 }
 /* v8 ignore stop */
 
-export function appImageDesktopEntry(
-  config: DesktopConfig,
-  variant: AppImageVariant,
-): string {
+export function appImageDesktopEntry(config: DesktopConfig): string {
   return [
     "[Desktop Entry]",
     "Type=Application",
     `Name=${config.name}`,
     `Comment=Open ${config.url}`,
-    `Exec=${variant === "full" ? "url2app-shell" : "shell"}`,
+    "Exec=shell",
     "Icon=url2app-shell",
     "Terminal=false",
     "Categories=Utility;",
-    `StartupWMClass=${variant === "full" ? "url2app-shell" : "shell"}`,
+    "StartupWMClass=shell",
     "",
   ].join("\n");
 }
@@ -54,7 +50,6 @@ export async function repackAppImage(
   squashfsOffset: number,
   config: DesktopConfig,
   icon: Uint8Array,
-  variant: AppImageVariant,
   options: RepackOptions = {},
 ): Promise<Uint8Array> {
   if (
@@ -68,7 +63,7 @@ export async function repackAppImage(
   const repacker = await (options.load ?? loadAppImageRepacker)();
   const replacement = repacker.repack(
     image.subarray(squashfsOffset),
-    new TextEncoder().encode(appImageDesktopEntry(config, variant)),
+    new TextEncoder().encode(appImageDesktopEntry(config)),
     icon,
   );
   if (replacement.length === 0) {

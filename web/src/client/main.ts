@@ -125,8 +125,8 @@ const LINUX_ARTIFACTS: ReadonlyArray<{
   value: DesktopArtifact;
   label: string;
 }> = [
+  { value: "linux-flatpak", label: "Flatpak · shared WebKit runtime" },
   { value: "linux-appimage", label: "AppImage · system WebKit" },
-  { value: "linux-appimage-full", label: "AppImage · bundled WebKit" },
   { value: "linux-tar", label: "tar.gz" },
 ];
 
@@ -507,10 +507,7 @@ async function buildDesktop(): Promise<void> {
     setStatus("Rendering the icon…");
     const icon = await canvasPng();
     let image = shell;
-    if (
-      selectedArtifact === "linux-appimage" ||
-      selectedArtifact === "linux-appimage-full"
-    ) {
+    if (selectedArtifact === "linux-appimage") {
       if (base.squashfsOffset === undefined) {
         throw new Error("The AppImage base is missing its filesystem offset.");
       }
@@ -520,11 +517,10 @@ async function buildDesktop(): Promise<void> {
         base.squashfsOffset,
         configResult.config,
         icon,
-        selectedArtifact === "linux-appimage" ? "lite" : "full",
       );
     }
     setStatus("Assembling the package…");
-    const result = buildDesktopArtifact({
+    const result = await buildDesktopArtifact({
       config: configResult.config,
       icon,
       artifact: selectedArtifact,
@@ -532,7 +528,11 @@ async function buildDesktop(): Promise<void> {
       base: image,
     });
     downloadBytes(result.bytes, result.filename, "application/octet-stream");
-    setStatus(`${result.filename} downloaded.`);
+    setStatus(
+      selectedArtifact === "linux-flatpak"
+        ? `${result.filename} downloaded. Install with: flatpak install --user --image oci-archive:${result.filename}`
+        : `${result.filename} downloaded.`,
+    );
   } catch (error) {
     setStatus(
       error instanceof Error

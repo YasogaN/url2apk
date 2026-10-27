@@ -4,6 +4,7 @@ import type {
   DesktopArtifact,
   DesktopConfig,
 } from "./config";
+import { buildFlatpak } from "./flatpak";
 import { buildWindowsInstaller } from "./installer";
 import { buildLinuxBundle } from "./linux";
 import { patchWindowsExe } from "./pe";
@@ -22,9 +23,9 @@ export type DesktopBuildResult = {
   filename: string;
 };
 
-export function buildDesktopArtifact(
+export async function buildDesktopArtifact(
   request: DesktopBuildRequest,
-): DesktopBuildResult {
+): Promise<DesktopBuildResult> {
   const { config, icon, artifact, arch, base } = request;
   switch (artifact) {
     case "windows-portable": {
@@ -42,12 +43,10 @@ export function buildDesktopArtifact(
       return { bytes: bundle.archive, filename: bundle.filename };
     }
     case "linux-appimage": {
-      const bundle = buildAppImage(config, icon, base, arch, "lite");
+      const bundle = buildAppImage(config, icon, base, arch);
       return { bytes: bundle.bytes, filename: bundle.filename };
     }
-    case "linux-appimage-full": {
-      const bundle = buildAppImage(config, icon, base, arch, "full");
-      return { bytes: bundle.bytes, filename: bundle.filename };
-    }
+    case "linux-flatpak":
+      return buildFlatpak(config, icon, base, arch);
   }
 }
