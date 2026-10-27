@@ -93,6 +93,7 @@ export default defineConfig({
         rollupOptions: {
           input: {
             index: page("index.html"),
+            "404": page("404.html"),
             "website-to-apk": page("website-to-apk.html"),
             "website-to-desktop-app": page("website-to-desktop-app.html"),
             "pwabuilder-alternative": page("pwabuilder-alternative.html"),

@@ -29,6 +29,10 @@
 /apk-signing
   Cache-Control: public, max-age=0, must-revalidate
 
+# The not-found page must stay revalidated too.
+/404.html
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Non-hashed discovery files revalidate.
 /llms.txt
   Cache-Control: public, max-age=0, must-revalidate
