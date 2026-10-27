@@ -89,6 +89,9 @@ jobs:
         run: |
           pnpm exec wrangler dev --config dist/url_to_app/wrangler.json --port 8787 --ip 127.0.0.1 > /tmp/wrangler.log 2>&1 &
           npx --yes wait-on@8 http://127.0.0.1:8787/ --timeout 30000
+      - name: Check discovery and not-found responses
+        working-directory: web
+        run: pnpm check:site http://127.0.0.1:8787
       - name: Check the Lighthouse budgets
         working-directory: web
         run: |

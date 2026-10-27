@@ -9,6 +9,7 @@
     "deploy": "vite build && wrangler deploy",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "check:site": "node tools/check-site.mjs",
     "typecheck": "tsc --noEmit",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
