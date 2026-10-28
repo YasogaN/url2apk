@@ -75,7 +75,7 @@
         <h2>What you get</h2>
         <ul>
           <li><strong>Windows:</strong> a per-app <code>Setup.exe</code> with a current-user or all-users install, and a portable <code>.zip</code>.</li>
-          <li><strong>Linux:</strong> a Flatpak, a system-WebKit AppImage and a <code>.tar.gz</code>, with x86_64 and aarch64 builds.</li>
+          <li><strong>Linux:</strong> a Flatpak OCI archive, a system-WebKit AppImage and a <code>.tar.gz</code>, with x86_64 and aarch64 builds.</li>
           <li><strong>Flatpak first:</strong> the shared GNOME runtime supplies WebKitGTK, so security updates do not require rebuilding each generated app.</li>
           <li><strong>Isolation:</strong> each app gets its own window title, shortcut, icon and WebView profile.</li>
         </ul>
@@ -109,7 +109,7 @@
         <ul>
           <li>Desktop packages are unsigned and will trigger SmartScreen on Windows.</li>
           <li>There is no auto-update for the generated shell. Regenerating the app is the update path; the Flatpak runtime updates WebKitGTK independently.</li>
-          <li>Flatpak needs Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
+          <li>Flatpak OCI archives need Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
           <li>macOS is not supported yet.</li>
           <li>The app loads the live URL and has no offline copy.</li>
         </ul>

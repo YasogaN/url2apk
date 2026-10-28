@@ -125,7 +125,7 @@ const LINUX_ARTIFACTS: ReadonlyArray<{
   value: DesktopArtifact;
   label: string;
 }> = [
-  { value: "linux-flatpak", label: "Flatpak · shared WebKit runtime" },
+  { value: "linux-flatpak", label: "Flatpak · OCI archive" },
   { value: "linux-appimage", label: "AppImage · system WebKit" },
   { value: "linux-tar", label: "tar.gz" },
 ];

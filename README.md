@@ -70,7 +70,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
 - **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile. The installer takes its title from the generated app name and installs under `<app-name>-<short id>` instead of an opaque internal ID.
-- **Linux:** a Flatpak, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak is the recommended target: it uses the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime instead of a per-app rebuild. The AppImage and tarball use the host WebKitGTK.
+- **Linux:** a Flatpak OCI archive, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak is the recommended target: it uses the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime instead of a per-app rebuild. The builder downloads the OCI archive and the target note shows the exact `flatpak install --user --image` command. The AppImage and tarball use the host WebKitGTK.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -81,7 +81,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 - No App Links or domain capture; links to the site still open in your default browser.
 - DRM L1 and passkeys are limited, and some sites block WebView.
 - Windows builds are unsigned and will show SmartScreen warnings. They do not update themselves.
-- Flatpak bundles require Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks. Downloads need the executable bit.
+- Flatpak OCI archives require Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks. Downloads need the executable bit.
 - macOS is not supported yet. The current builder will show a contribution note instead of a macOS download.
 
 ## How it works
