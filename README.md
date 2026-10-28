@@ -139,6 +139,7 @@ To rebuild the checked-in WASM modules after changing their Rust sources, run `.
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
 | `desktop/` | Tauri shell, core, installer helper, NSIS scripts, base-packaging tools and tests. `tools/build-flatpak-base.sh` builds the Flatpak OCI base. |
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
+| `web/pages/` | HTML entry pages for the builder, guides and the 404 page. |
 | `web/src/client/` | Browser-side packagers, including the APK, PE, AppImage, Flatpak OCI and classic Flatpak paths. |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `web/src/client/desktop/` | Windows, AppImage and Flatpak builders, tar/GVariant helpers and the shell manifest client. |

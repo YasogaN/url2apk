@@ -13,6 +13,10 @@ function readWeb(name: string): string {
   return readFileSync(`${webDir}/${name}`, "utf8");
 }
 
+function readPage(name: string): string {
+  return readFileSync(`${webDir}/pages/${name}`, "utf8");
+}
+
 describe("discovery files", () => {
   it("publishes an llms.txt with one heading and links", () => {
     const text = read("llms.txt");
@@ -108,7 +112,7 @@ describe("discovery files", () => {
       "pwabuilder-alternative.html",
       "apk-signing.html",
     ]) {
-      const html = readWeb(page);
+      const html = readPage(page);
       expect(html).toMatch(/<h1[^>]*>/);
       expect(html).toContain(
         `<link rel="canonical" href="https://url2app.yasogan.dev/${page.replace(".html", "")}" />`,
@@ -117,7 +121,7 @@ describe("discovery files", () => {
   });
 
   it("publishes a dedicated not-found page", () => {
-    const html = readWeb("404.html");
+    const html = readPage("404.html");
     expect(html).toContain("<h1>This page is not installed.</h1>");
     expect(html).toContain('<meta name="robots" content="noindex,nofollow" />');
     expect(html).toContain("<!-- @include header -->");
