@@ -17,7 +17,7 @@ pnpm test:coverage
 pnpm build
 ```
 
-The Android and desktop shells have their own requirements and test commands in the README. `web/public/shell.apk` is generated, not committed; run `android/tools/export-template.sh` before a local web build or test run.
+The Android and desktop shells have their own requirements and test commands in the README. `web/public/shell.apk` is generated, not committed; run `android/tools/export-template.sh` before a local web build or test run. The release moves that template into `web/public/shells/<sha>/shell.apk` and lists it under `android` in `shells.json`.
 
 ## Tests and coverage
 

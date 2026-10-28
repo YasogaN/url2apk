@@ -102,6 +102,20 @@ describe("parseManifest", () => {
     });
   });
 
+  it("accepts an Android template", () => {
+    expect(
+      parseManifest({
+        version: "1",
+        android: base,
+        artifacts: {},
+      }),
+    ).toEqual({
+      version: "1",
+      android: base,
+      artifacts: {},
+    });
+  });
+
   it("accepts a chunked base", () => {
     const parts = [
       { url: "/shells/part-0", size: 2, sha256: "a".repeat(64) },
@@ -170,6 +184,7 @@ describe("parseManifest", () => {
     ["an empty version", { version: "", artifacts: {} }],
     ["missing artifacts", { version: "1" }],
     ["null artifacts", { version: "1", artifacts: null }],
+    ["an invalid Android template", { version: "1", android: null, artifacts: {} }],
     [
       "a zero squashfs offset",
       {

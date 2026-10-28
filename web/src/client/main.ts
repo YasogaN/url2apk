@@ -31,7 +31,6 @@ import { loadImage, paintImage, paintLetter } from "./paint";
 type IconSource = "letter" | "upload" | "fetch";
 type Target = PrimaryTarget;
 
-const SHELL_TEMPLATE_URL = "/shell.apk";
 const SHELL_TEMPLATE_ERROR = "The Android shell template could not be loaded.";
 
 function requireElement<T>(selector: string): T {
@@ -357,8 +356,12 @@ async function loadTemplate(): Promise<Uint8Array> {
   if (template !== null) {
     return template;
   }
+  const catalog = await ensureManifest();
+  if (catalog === null || catalog.android === undefined) {
+    throw new Error(SHELL_TEMPLATE_ERROR);
+  }
   const { loadShell } = await loadAndroidModules();
-  template = await loadShell(SHELL_TEMPLATE_URL, {
+  template = await loadShell(catalog.android.url, {
     message: SHELL_TEMPLATE_ERROR,
   });
   return template;

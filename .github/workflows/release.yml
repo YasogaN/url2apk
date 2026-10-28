@@ -116,7 +116,7 @@ jobs:
           if-no-files-found: error
 
   package:
-    needs: [linux-shell, windows-shell]
+    needs: [linux-shell, windows-shell, android-template]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -135,9 +135,14 @@ jobs:
         with:
           pattern: windows-*
           path: artifacts/windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-shell
+          path: android-shell
       - name: Collect the shell builds
         run: |
           mkdir -p bases
+          cp android-shell/shell.apk bases/shell.apk
           cp artifacts/linux/linux-x64/url2app-shell bases/linux-x64-shell
           cp artifacts/linux/linux-x64/linux-x64-lite.AppImage bases/
           cp artifacts/linux/linux-x64/linux-x64-flatpak.tar bases/
@@ -185,10 +190,6 @@ jobs:
         with:
           name: shells
           path: shell-bases
-      - uses: actions/download-artifact@v4
-        with:
-          name: android-shell
-          path: web/public
       - name: Stage the static shell assets
         run: |
           rm -rf web/public/shells

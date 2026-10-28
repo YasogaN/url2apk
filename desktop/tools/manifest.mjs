@@ -18,6 +18,7 @@ const FILES = {
 };
 
 const urlPrefix = `/shells/${version}`;
+const android = readArtifact(directory, "shell.apk", urlPrefix);
 const artifacts = {};
 for (const [artifact, arches] of Object.entries(FILES)) {
   artifacts[artifact] = {};
@@ -25,5 +26,8 @@ for (const [artifact, arches] of Object.entries(FILES)) {
     artifacts[artifact][arch] = readArtifact(directory, name, urlPrefix);
   }
 }
-writeFileSync(output, `${JSON.stringify({ version, artifacts }, null, 2)}\n`);
+writeFileSync(
+  output,
+  `${JSON.stringify({ version, android, artifacts }, null, 2)}\n`,
+);
 console.log(`Wrote ${output}`);

@@ -25,7 +25,15 @@ const mocks = vi.hoisted(() => {
       filename: "app.zip",
     })),
     repackAppImage: vi.fn(async () => new Uint8Array([6])),
-    loadManifest: vi.fn(async () => ({ version: "1", artifacts: {} })),
+    loadManifest: vi.fn(async () => ({
+      version: "1",
+      android: {
+        url: "/shells/test/shell.apk",
+        size: 3,
+        sha256: "a".repeat(64),
+      },
+      artifacts: {},
+    })),
     findBase: vi.fn((): {
       url: string;
       size: number;
@@ -247,7 +255,15 @@ beforeEach(() => {
     bytes: new Uint8Array([4]),
     filename: "app.zip",
   });
-  mocks.loadManifest.mockResolvedValue({ version: "1", artifacts: {} });
+  mocks.loadManifest.mockResolvedValue({
+    version: "1",
+    android: {
+      url: "/shells/test/shell.apk",
+      size: 3,
+      sha256: "a".repeat(64),
+    },
+    artifacts: {},
+  });
   mocks.findBase.mockReturnValue({
     url: "/shells/base",
     size: 1,
@@ -265,7 +281,7 @@ beforeEach(() => {
 
   fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
-    if (url === "/shell.apk") {
+    if (url === "/shells/test/shell.apk") {
       return new Response(new Uint8Array([1, 2, 3]));
     }
     if (url.startsWith("/api/favicon")) {
@@ -417,7 +433,7 @@ describe("startup", () => {
 
   it("does not download build data until a build is requested", async () => {
     await boot();
-    expect(fetchMock).not.toHaveBeenCalledWith("/shell.apk");
+    expect(fetchMock).not.toHaveBeenCalledWith("/shells/test/shell.apk");
     expect(mocks.loadManifest).not.toHaveBeenCalled();
     expect(mocks.fetchBase).not.toHaveBeenCalled();
   });
@@ -902,7 +918,7 @@ describe("Android build", () => {
     submit();
     await flush();
     const templateCalls = fetchMock.mock.calls.filter(
-      ([input]) => String(input) === "/shell.apk",
+      ([input]) => String(input) === "/shells/test/shell.apk",
     );
     expect(templateCalls).toHaveLength(1);
   });
@@ -939,6 +955,40 @@ describe("Android build", () => {
     submit();
     await flush();
     expect(downloaded).toBe("app-1.apk");
+  });
+
+  it("reports a manifest without an Android template", async () => {
+    mocks.loadIdentity.mockResolvedValue(mocks.identity());
+    mocks.loadManifest.mockResolvedValueOnce({ version: "1", artifacts: {} } as never);
+    await boot({
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36",
+      platform: "Linux armv8l",
+    });
+    typeUrl("https://example.com");
+    await flush();
+    submit();
+    await flush();
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "The Android shell template could not be loaded.",
+    );
+  });
+
+  it("reports a shell catalog that cannot be loaded", async () => {
+    mocks.loadIdentity.mockResolvedValue(mocks.identity());
+    mocks.loadManifest.mockRejectedValueOnce(new Error("catalog failed"));
+    await boot({
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36",
+      platform: "Linux armv8l",
+    });
+    typeUrl("https://example.com");
+    await flush();
+    submit();
+    await flush();
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "The Android shell template could not be loaded.",
+    );
   });
 
   it("reports a missing template and a build error", async () => {

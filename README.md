@@ -93,7 +93,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 615 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
+- **Web:** 619 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
 - **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker, Flatpak OCI patcher and release workflow are implemented. The live builder is on release v1.3; the Windows installer has been validated on Windows. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers.
 
@@ -123,7 +123,7 @@ cargo test -p url2app-shell-core -p url2app-installer-helper
 cargo check -p url2app-shell
 ```
 
-`web/public/shell.apk` is a build artifact, not a checked-in file. CI exports it from the Android build and passes it to the web job; locally run `android/tools/export-template.sh` before `pnpm test:coverage` or `pnpm build`. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
+`web/public/shell.apk` is a generated local test fixture, not a checked-in file; run `android/tools/export-template.sh` before `pnpm test:coverage` or `pnpm build`. The release stages the exported template into `web/public/shells/<sha>/shell.apk` and records it as `android` in `shells.json`; the client loads that URL instead of the site root. `pnpm deploy` needs a Cloudflare login and deploys the Worker and static assets.
 
 The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$ANDROID_HOME` (or via `AAPT2`, `APKSIGNER`, `ZIPALIGN`) and skip when they are absent. CI installs them.
 
@@ -134,8 +134,9 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
 | `desktop/` | Tauri shell, core, installer helper, NSIS scripts, base-packaging tools and tests. |
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
-| `web/public/shell.apk` | Generated unsigned Android template (ignored by Git; exported locally or by CI). |
-| `web/public/shells/` | Generated desktop shell bases and manifest (ignored by Git; produced by CI). |
+| `web/public/shell.apk` | Generated local Android test fixture (ignored by Git). The release publishes the staged copy under `web/public/shells/<sha>/`. |
+| `web/public/shells/` | Generated desktop shell bases and the Android template (ignored by Git; produced by CI). |
+| `web/public/shells.json` | Generated shell manifest, including the Android template (ignored by Git; produced by CI). |
 | `web/wasm/` | Rust/WASM AppImage metadata repacker, its vendored backhand dependency and generated browser module. |
 | `desktop/tools/build-flatpak-base.sh` | Builds the per-architecture Flatpak OCI base shipped to the browser. |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |

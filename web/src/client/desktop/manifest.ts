@@ -22,6 +22,7 @@ export type ShellArtifacts = Partial<
 
 export type ShellManifest = {
   version: string;
+  android?: BasePart;
   artifacts: ShellArtifacts;
 };
 
@@ -150,7 +151,11 @@ export function parseManifest(value: unknown): ShellManifest {
     }
     artifacts[artifact] = perArch;
   }
-  return { version: record.version, artifacts };
+  const manifest: ShellManifest = { version: record.version, artifacts };
+  if (record.android !== undefined) {
+    manifest.android = parseFields(record.android);
+  }
+  return manifest;
 }
 
 export async function loadManifest(
