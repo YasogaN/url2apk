@@ -113,8 +113,12 @@ jobs:
         run: cargo install wasm-bindgen-cli --version 0.2.129 --locked
       - name: Test the AppImage repacker
         run: cargo test --manifest-path web/wasm/appimage-repack/Cargo.toml
-      - name: Build the browser module
-        run: ./web/wasm/appimage-repack/build.sh
+      - name: Test the classic Flatpak writer
+        run: cargo test --manifest-path web/wasm/flatpak-bundle/Cargo.toml
+      - name: Build the browser modules
+        run: |
+          ./web/wasm/appimage-repack/build.sh
+          ./web/wasm/flatpak-bundle/build.sh
 
   desktop:
     runs-on: ubuntu-22.04
