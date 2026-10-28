@@ -1,7 +1,7 @@
 # Shared policy for every response. Do not send no-transform: it disables
 # Cloudflare Brotli/gzip.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-6/lDn0xshwwIdFiviT36lhDZQxItdZkQnABbj/b+fZY=' 'sha256-T2FaiJxPMbPplCQ9NvpfutF2hh7PnPH+itTVMMxcrWY=' 'sha256-8lrMcQIDarerf5hQOPQ4FXAuydge4yZHeyBISfuars8=' 'sha256-U+EtjN2h1pHdUkMQtmF1wsO59Q2kVdcFu/XWDMEqHck=' 'sha256-BHPriR7a5BbXhcYLob73XHbEmzA6GoM/cCLzguVJsdU=' 'sha256-JTY9QtRu9eVxwoSI6vb1cLN91O5wfGxqHCj5LhGrI6I='; script-src-attr 'none'; style-src 'self' 'sha256-o4ujq8wbAHuPBtE7EsYgsY74rLK6pOzd9l2qyYddJAw='; style-src-attr 'none'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()

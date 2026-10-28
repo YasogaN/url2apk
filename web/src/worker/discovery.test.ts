@@ -67,6 +67,17 @@ describe("discovery files", () => {
     );
   });
 
+  it("serves a hash-based CSP", () => {
+    const headers = read("_headers");
+    expect(headers).toContain("'wasm-unsafe-eval'");
+    expect(headers).toContain("script-src-attr 'none'");
+    expect(headers).toContain("style-src-attr 'none'");
+    expect(headers).not.toContain("'unsafe-inline'");
+    expect(headers).not.toContain("'unsafe-eval'");
+    expect(headers).toMatch(/script-src[^;]*'sha256-/);
+    expect(headers).toMatch(/style-src[^;]*'sha256-/);
+  });
+
   it("caches hashed build output immutably", () => {
     const headers = read("_headers");
     expect(headers).toContain("/assets/*");
