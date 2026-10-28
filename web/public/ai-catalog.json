@@ -34,8 +34,8 @@
         "wrap a website as a Windows or Linux desktop app",
         "make a local app from a URL without a cloud build"
       ],
-      "version": "1.4.0",
-      "updatedAt": "2026-10-27T00:00:00Z",
+      "version": "1.4.1",
+      "updatedAt": "2026-10-28T00:00:00Z",
       "metadata": {
         "license": "Apache-2.0",
         "source": "https://github.com/YasogaN/url2app",
