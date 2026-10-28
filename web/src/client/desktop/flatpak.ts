@@ -3,6 +3,10 @@ import { bufferSource } from "../apk/bytes";
 import { flatpakAppId } from "../domain";
 import { packageBase, serializeConfig, type DesktopArch, type DesktopConfig } from "./config";
 import { createTar, parseTar, type FlatpakTarEntry } from "./flatpak-tar";
+import {
+  loadFlatpakBundleWriter,
+  type FlatpakBundleWriter,
+} from "./flatpak-bundle";
 import { encodeVariant } from "./gvariant";
 
 const PNG_MAGIC = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const;
@@ -12,6 +16,14 @@ const decoder = new TextDecoder();
 export type FlatpakBundle = {
   bytes: Uint8Array;
   filename: string;
+};
+
+export type FlatpakFormat = "oci" | "bundle";
+
+export type FlatpakBuildOptions = {
+  format?: FlatpakFormat;
+  loadWriter?: () => Promise<FlatpakBundleWriter>;
+  now?: () => number;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -103,6 +115,7 @@ export async function buildFlatpak(
   icon: Uint8Array,
   base: Uint8Array,
   arch: DesktopArch,
+  options: FlatpakBuildOptions = {},
 ): Promise<FlatpakBundle> {
   if (base.length === 0) {
     throw new Error("The Flatpak base is empty.");
@@ -212,6 +225,17 @@ export async function buildFlatpak(
   replaceFile(updatedMap, "files/bin/config.json", serializeConfig(config));
   replaceFile(updatedMap, "files/bin/icon.png", icon);
   const newLayerTar = createTar(Array.from(updatedMap.values()));
+  if (options.format === "bundle") {
+    const writer = await (options.loadWriter ?? loadFlatpakBundleWriter)();
+    return {
+      bytes: writer.build_flatpak(
+        newLayerTar,
+        ref,
+        Math.floor((options.now ?? Date.now)() / 1000),
+      ),
+      filename: `${packageBase(config)}-${arch}.flatpak`,
+    };
+  }
   const newLayerGz = gzipSync(newLayerTar, { level: 9, mtime: 0 });
   const layerDigest = await sha256(newLayerGz);
   const diffId = await sha256(newLayerTar);

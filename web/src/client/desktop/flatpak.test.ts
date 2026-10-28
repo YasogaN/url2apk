@@ -1,11 +1,12 @@
 import { gunzipSync } from "fflate";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { fixturePng } from "../../../test/helpers/binaries";
 import { bufferSource } from "../apk/bytes";
 import { flatpakBase } from "../../../test/helpers/flatpak";
 import { flatpakAppId } from "../domain";
 import { serializeConfig, type DesktopConfig } from "./config";
 import { buildFlatpak } from "./flatpak";
+import type { FlatpakBundleWriter } from "./flatpak-bundle";
 import { createTar, parseTar } from "./flatpak-tar";
 import { encodeVariant } from "./gvariant";
 
@@ -19,6 +20,15 @@ const config: DesktopConfig = {
 };
 const id = flatpakAppId(new URL(config.url));
 const ref = `app/${id}/x86_64/master`;
+
+const flatpakWriter = vi.hoisted(() => ({
+  default: vi.fn(async () => undefined),
+  build_flatpak: vi.fn(() => new Uint8Array([9])),
+}));
+
+vi.mock("./flatpak-bundle", () => ({
+  loadFlatpakBundleWriter: vi.fn(async () => flatpakWriter),
+}));
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -130,6 +140,61 @@ describe("buildFlatpak", () => {
     expect(layer.get("files/bin/url2app-shell")).toEqual(
       Uint8Array.from([0x7f, 0x45, 0x4c, 0x46]),
     );
+  });
+
+  it("builds a classic .flatpak bundle through the writer", async () => {
+    const base = await flatpakBase();
+    const writer = {
+      default: vi.fn(async () => undefined),
+      build_flatpak: vi.fn(() => new Uint8Array([7, 8])),
+    } as unknown as FlatpakBundleWriter & {
+      build_flatpak: ReturnType<typeof vi.fn>;
+    };
+    const bundle = await buildFlatpak(
+      config,
+      base.icon,
+      base.bytes,
+      "x64",
+      {
+        format: "bundle",
+        loadWriter: async () => writer,
+        now: () => 1_234_000,
+      },
+    );
+    expect(bundle.filename).toBe("example-6789ab-x64.flatpak");
+    expect(bundle.bytes).toEqual(new Uint8Array([7, 8]));
+    expect(writer.build_flatpak).toHaveBeenCalledOnce();
+    const [tar, refName, timestamp] = writer.build_flatpak.mock.calls[0]!;
+    expect(tar).toBeInstanceOf(Uint8Array);
+    expect(refName).toBe("app/app.com.example/x86_64/master");
+    expect(timestamp).toBe(1234);
+    const layer = files(parseTar(tar as Uint8Array));
+    expect(text(layer.get("metadata")!)).toContain("name=app.com.example");
+  });
+
+  it("uses the default Flatpak writer and clock", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_234_000);
+    try {
+      const base = await flatpakBase();
+      flatpakWriter.build_flatpak.mockClear();
+      const bundle = await buildFlatpak(
+        config,
+        base.icon,
+        base.bytes,
+        "x64",
+        { format: "bundle" },
+      );
+      expect(bundle.filename).toBe("example-6789ab-x64.flatpak");
+      expect(bundle.bytes).toEqual(new Uint8Array([9]));
+      expect(flatpakWriter.build_flatpak).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
+        "app/app.com.example/x86_64/master",
+        1234,
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("rejects empty input and non-PNG icons", async () => {
