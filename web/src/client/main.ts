@@ -14,6 +14,7 @@ import {
   type PrimaryTarget,
 } from "./desktop/platform";
 import {
+  flatpakAppId,
   formatVersionCode,
   initials,
   normalizeUrl,
@@ -176,9 +177,6 @@ function renderTargetUi(): void {
   }
   keyRow.hidden = desktop;
   macNote.hidden = host !== "mac";
-  targetNote.textContent = desktop
-    ? "The prebuilt shell downloads once and the package is assembled here."
-    : "Android builds use a local signing key. Desktop builds are unsigned.";
   buildButton.textContent =
     target === "windows"
       ? "Generate Windows app"
@@ -203,7 +201,20 @@ function renderTargetUi(): void {
     artifactSelect.value = artifact;
     archSelect.value = arch;
   }
+  updateTargetNote();
   void syncIdentity();
+}
+
+function updateTargetNote(): void {
+  if (!isDesktop()) {
+    targetNote.textContent =
+      "Android builds use a local signing key. Desktop builds are unsigned.";
+    return;
+  }
+  targetNote.textContent =
+    artifact === "linux-flatpak"
+      ? "Download the OCI archive, then install it with: flatpak install --user --image oci-archive:<file>. Requires Flatpak 1.18+ and the GNOME 50 runtime."
+      : "The prebuilt shell downloads once and the package is assembled here.";
 }
 
 function previewPackageValue(url: URL | null): string {
@@ -214,11 +225,18 @@ function previewPackageValue(url: URL | null): string {
     return packageName(url);
   }
   const result = buildDesktopConfig({ url: url.href, name: currentName() });
-  return result.ok ? result.config.id : "—";
+  if (!result.ok) {
+    return "—";
+  }
+  return artifact === "linux-flatpak" ? flatpakAppId(url) : result.config.id;
 }
 
 function updatePackagePreview(): void {
-  packageLabel.textContent = isDesktop() ? "App id" : "Package";
+  packageLabel.textContent = isDesktop()
+    ? artifact === "linux-flatpak"
+      ? "Flatpak ID"
+      : "App id"
+    : "Package";
   const value = previewPackageValue(currentUrl);
   for (const element of packageValues) {
     element.textContent = value;
@@ -602,6 +620,7 @@ targetSelect.addEventListener("change", () => {
 
 artifactSelect.addEventListener("change", () => {
   artifact = artifactSelect.value as DesktopArtifact;
+  updateTargetNote();
   void syncIdentity();
 });
 

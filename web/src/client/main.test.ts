@@ -489,9 +489,29 @@ describe("form", () => {
     expect(element<HTMLButtonElement>("[data-build]").disabled).toBe(true);
   });
 
-  it("shows the desktop app id for a valid URL", async () => {
+  it("shows the Flatpak app id for the default Linux target", async () => {
     await boot();
     typeUrl("https://example.com");
+    await flush();
+    expect(element<HTMLElement>("[data-package-label]").textContent).toBe(
+      "Flatpak ID",
+    );
+    expect(element<HTMLElement>("[data-package]").textContent).toBe(
+      "app.com.example",
+    );
+    expect(element<HTMLElement>("[data-target-note]").textContent).toContain(
+      "flatpak install --user --image oci-archive:<file>",
+    );
+    expect(element<HTMLButtonElement>("[data-build]").disabled).toBe(false);
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "Ready to build.",
+    );
+  });
+
+  it("shows the internal desktop id for non-Flatpak desktop targets", async () => {
+    await boot();
+    typeUrl("https://example.com");
+    selectArtifact("linux-appimage");
     await flush();
     expect(element<HTMLElement>("[data-package-label]").textContent).toBe(
       "App id",
@@ -499,9 +519,8 @@ describe("form", () => {
     expect(element<HTMLElement>("[data-package]").textContent).toMatch(
       /^napp-[0-9a-f]{12}$/,
     );
-    expect(element<HTMLButtonElement>("[data-build]").disabled).toBe(false);
-    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
-      "Ready to build.",
+    expect(element<HTMLElement>("[data-target-note]").textContent).toContain(
+      "prebuilt shell downloads",
     );
   });
 
