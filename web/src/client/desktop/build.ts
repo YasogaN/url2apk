@@ -47,6 +47,8 @@ export async function buildDesktopArtifact(
       return { bytes: bundle.bytes, filename: bundle.filename };
     }
     case "linux-flatpak":
-      return buildFlatpak(config, icon, base, arch);
+      return buildFlatpak(config, icon, base, arch, { format: "bundle" });
+    case "linux-flatpak-oci":
+      return buildFlatpak(config, icon, base, arch, { format: "oci" });
   }
 }

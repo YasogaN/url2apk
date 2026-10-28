@@ -17,7 +17,8 @@ export type DesktopArtifact =
   | "windows-portable"
   | "linux-tar"
   | "linux-appimage"
-  | "linux-flatpak";
+  | "linux-flatpak"
+  | "linux-flatpak-oci";
 
 export type DesktopConfig = {
   schema: typeof DESKTOP_CONFIG_SCHEMA;

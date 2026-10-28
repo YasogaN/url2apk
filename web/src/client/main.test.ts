@@ -358,7 +358,7 @@ describe("startup", () => {
     expect(element<HTMLElement>("[data-desktop-only]").hidden).toBe(false);
     expect(element<HTMLElement>("[data-android-only]").hidden).toBe(true);
     expect(element<HTMLElement>("[data-key-row]").hidden).toBe(true);
-    expect(element<HTMLSelectElement>("#artifact").options).toHaveLength(3);
+    expect(element<HTMLSelectElement>("#artifact").options).toHaveLength(4);
     expect(element<HTMLSelectElement>("#artifact").value).toBe(
       "linux-flatpak",
     );
@@ -500,7 +500,7 @@ describe("form", () => {
       "app.com.example",
     );
     expect(element<HTMLElement>("[data-target-note]").textContent).toContain(
-      "flatpak install --user --image oci-archive:<file>",
+      "flatpak install --user <file>",
     );
     expect(element<HTMLButtonElement>("[data-build]").disabled).toBe(false);
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
@@ -1067,6 +1067,25 @@ describe("desktop build", () => {
     expect(mocks.repackAppImage).not.toHaveBeenCalled();
     expect(mocks.buildDesktopArtifact).toHaveBeenCalledWith(
       expect.objectContaining({ artifact: "linux-flatpak" }),
+    );
+    expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
+      "app.zip downloaded. Install with: flatpak install --user app.zip",
+    );
+  });
+
+  it("offers the Flatpak OCI archive with its install command", async () => {
+    await prepareDesktop();
+    selectArtifact("linux-flatpak-oci");
+    await flush();
+    expect(element<HTMLElement>("[data-target-note]").textContent).toContain(
+      "flatpak install --user --image oci-archive:<file>",
+    );
+    submit();
+    await flush();
+    expect(mocks.findBase).toHaveBeenCalledWith(
+      expect.anything(),
+      "linux-flatpak",
+      "x64",
     );
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
       "app.zip downloaded. Install with: flatpak install --user --image oci-archive:app.zip",

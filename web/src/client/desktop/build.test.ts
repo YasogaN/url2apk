@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   fixturePe,
   fixturePng,
@@ -19,6 +19,15 @@ const config: DesktopConfig = {
   height: 780,
 };
 const icon = fixturePng(64, 64);
+
+const flatpakWriter = vi.hoisted(() => ({
+  default: vi.fn(async () => undefined),
+  build_flatpak: vi.fn(() => new Uint8Array([9])),
+}));
+
+vi.mock("./flatpak-bundle", () => ({
+  loadFlatpakBundleWriter: vi.fn(async () => flatpakWriter),
+}));
 
 describe("buildDesktopArtifact", () => {
   it("builds a portable Windows zip with patched PE metadata", async () => {
@@ -66,12 +75,25 @@ describe("buildDesktopArtifact", () => {
     expect(Array.from(result.bytes.slice(0, 2))).toEqual([0x1f, 0x8b]);
   });
 
-  it("builds a per-site Flatpak bundle", async () => {
+  it("builds a classic Flatpak bundle", async () => {
     const base = await flatpakBase();
     const result = await buildDesktopArtifact({
       config,
       icon: base.icon,
       artifact: "linux-flatpak",
+      arch: "x64",
+      base: base.bytes,
+    });
+    expect(result.filename).toBe("example-6789ab-x64.flatpak");
+    expect(result.bytes).toEqual(new Uint8Array([9]));
+  });
+
+  it("builds a per-site Flatpak OCI archive", async () => {
+    const base = await flatpakBase();
+    const result = await buildDesktopArtifact({
+      config,
+      icon: base.icon,
+      artifact: "linux-flatpak-oci",
       arch: "x64",
       base: base.bytes,
     });

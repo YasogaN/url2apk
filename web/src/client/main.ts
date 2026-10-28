@@ -125,7 +125,8 @@ const LINUX_ARTIFACTS: ReadonlyArray<{
   value: DesktopArtifact;
   label: string;
 }> = [
-  { value: "linux-flatpak", label: "Flatpak · OCI archive" },
+  { value: "linux-flatpak", label: "Flatpak · local bundle" },
+  { value: "linux-flatpak-oci", label: "Flatpak · OCI archive" },
   { value: "linux-appimage", label: "AppImage · system WebKit" },
   { value: "linux-tar", label: "tar.gz" },
 ];
@@ -213,8 +214,10 @@ function updateTargetNote(): void {
   }
   targetNote.textContent =
     artifact === "linux-flatpak"
-      ? "Download the OCI archive, then install it with: flatpak install --user --image oci-archive:<file>. Requires Flatpak 1.18+ and the GNOME 50 runtime."
-      : "The prebuilt shell downloads once and the package is assembled here.";
+      ? "Download the .flatpak bundle, then install it with: flatpak install --user <file>. It uses the shared GNOME runtime."
+      : artifact === "linux-flatpak-oci"
+        ? "Download the OCI archive, then install it with: flatpak install --user --image oci-archive:<file>. Requires Flatpak 1.18+ and the GNOME 50 runtime."
+        : "The prebuilt shell downloads once and the package is assembled here.";
 }
 
 function previewPackageValue(url: URL | null): string {
@@ -228,12 +231,14 @@ function previewPackageValue(url: URL | null): string {
   if (!result.ok) {
     return "—";
   }
-  return artifact === "linux-flatpak" ? flatpakAppId(url) : result.config.id;
+  return artifact === "linux-flatpak" || artifact === "linux-flatpak-oci"
+    ? flatpakAppId(url)
+    : result.config.id;
 }
 
 function updatePackagePreview(): void {
   packageLabel.textContent = isDesktop()
-    ? artifact === "linux-flatpak"
+    ? artifact === "linux-flatpak" || artifact === "linux-flatpak-oci"
       ? "Flatpak ID"
       : "App id"
     : "Package";
@@ -513,7 +518,11 @@ async function buildDesktop(): Promise<void> {
       buildDesktopArtifact,
       repackAppImage,
     } = await modules;
-    const base = findBase(catalog, selectedArtifact, selectedArch);
+    const baseArtifact =
+      selectedArtifact === "linux-flatpak-oci"
+        ? "linux-flatpak"
+        : selectedArtifact;
+    const base = findBase(catalog, baseArtifact, selectedArch);
     if (needsConfirmation(base)) {
       const proceed = window.confirm(
         `This build downloads a ${formatBytes(base.size)} shell. Continue?`,
@@ -551,8 +560,10 @@ async function buildDesktop(): Promise<void> {
     downloadBytes(result.bytes, result.filename, "application/octet-stream");
     setStatus(
       selectedArtifact === "linux-flatpak"
-        ? `${result.filename} downloaded. Install with: flatpak install --user --image oci-archive:${result.filename}`
-        : `${result.filename} downloaded.`,
+        ? `${result.filename} downloaded. Install with: flatpak install --user ${result.filename}`
+        : selectedArtifact === "linux-flatpak-oci"
+          ? `${result.filename} downloaded. Install with: flatpak install --user --image oci-archive:${result.filename}`
+          : `${result.filename} downloaded.`,
     );
   } catch (error) {
     setStatus(
