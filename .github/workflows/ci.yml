@@ -95,8 +95,12 @@ jobs:
       - name: Check the Lighthouse budgets
         working-directory: web
         run: |
-          npx --yes lighthouse@12 http://127.0.0.1:8787/ --output=json --output-path=/tmp/lighthouse.json --chrome-flags="--headless --no-sandbox --disable-gpu" --quiet
-          node tools/check-lighthouse.mjs /tmp/lighthouse.json
+          curl -fsS --retry 5 --retry-delay 1 http://127.0.0.1:8787/ >/dev/null
+          npx --yes lighthouse@12 http://127.0.0.1:8787/ --output=json --output-path=/tmp/lighthouse-warmup.json --chrome-flags="--headless --no-sandbox --disable-gpu --disable-dev-shm-usage" --quiet || true
+          for run in 1 2 3; do
+            npx --yes lighthouse@12 http://127.0.0.1:8787/ --output=json --output-path="/tmp/lighthouse-$run.json" --chrome-flags="--headless --no-sandbox --disable-gpu --disable-dev-shm-usage" --quiet || echo "Lighthouse run $run failed."
+          done
+          node tools/check-lighthouse.mjs /tmp/lighthouse-1.json /tmp/lighthouse-2.json /tmp/lighthouse-3.json
 
   wasm:
     runs-on: ubuntu-latest
