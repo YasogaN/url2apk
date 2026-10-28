@@ -12,8 +12,6 @@ const decoder = new TextDecoder();
 export type FlatpakBundle = {
   bytes: Uint8Array;
   filename: string;
-  runtime: string;
-  id: string;
 };
 
 type JsonRecord = Record<string, unknown>;
@@ -43,17 +41,6 @@ function base64(bytes: Uint8Array): string {
     binary += String.fromCharCode(byte);
   }
   return btoa(binary);
-}
-
-function scriptBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunk = 0x8000;
-  for (let offset = 0; offset < bytes.length; offset += chunk) {
-    binary += String.fromCharCode(
-      ...Array.from(bytes.subarray(offset, offset + chunk)),
-    );
-  }
-  return btoa(binary).replace(/(.{76})/g, "$1\n");
 }
 
 async function sha256(bytes: Uint8Array): Promise<string> {
@@ -203,10 +190,6 @@ export async function buildFlatpak(
   if (baseName !== baseId) {
     throw new Error("The Flatpak app name does not match the image reference.");
   }
-  const runtime = /^runtime=(.+)$/m.exec(metadata)?.[1]?.trim();
-  if (runtime === undefined || runtime === "") {
-    throw new Error("The Flatpak runtime is missing.");
-  }
 
   const id = flatpakAppId(new URL(config.url));
   const ref = `app/${id}/${refArch}/${branch}`;
@@ -313,69 +296,5 @@ export async function buildFlatpak(
   return {
     bytes: output,
     filename: `${packageBase(config)}-${arch}-flatpak.tar`,
-    runtime,
-    id,
-  };
-}
-
-function shellInstaller(
-  tar: Uint8Array,
-  runtime: string,
-  id: string,
-  name: string,
-): string {
-  return `#!/bin/sh
-set -eu
-app_name="${name}"
-runtime="${runtime}"
-app_id="${id}"
-
-if ! command -v flatpak >/dev/null 2>&1; then
-  echo "Flatpak is required. Install it from https://flatpak.org/setup/ and run this file again." >&2
-  exit 1
-fi
-
-flatpak_version="$(flatpak --version | awk '{print $2}')"
-major="\${flatpak_version%%.*}"
-rest="\${flatpak_version#*.}"
-minor="\${rest%%.*}"
-if [ "\${major:-0}" -lt 1 ] || { [ "\${major:-0}" -eq 1 ] && [ "\${minor:-0}" -lt 18 ]; }; then
-  echo "Flatpak 1.18 or newer is required; found \${flatpak_version}." >&2
-  exit 1
-fi
-
-if ! flatpak info "\${runtime}" >/dev/null 2>&1; then
-  echo "Installing the \${runtime} runtime from Flathub..."
-  if ! flatpak install --user -y flathub "\${runtime}"; then
-    echo "Trying a system-wide runtime install..."
-    if ! flatpak install -y flathub "\${runtime}"; then
-      echo "Could not install \${runtime}. Install it from Flathub and run this installer again." >&2
-      exit 1
-    fi
-  fi
-fi
-
-tmp="$(mktemp -d)"
-trap 'rm -rf "\${tmp}"' EXIT HUP INT TERM
-base64 -d > "\${tmp}/app.tar" <<'URL2APP'
-${scriptBase64(tar)}
-URL2APP
-flatpak install --user -y --image "oci-archive:\${tmp}/app.tar"
-printf 'Installed %s. Launch it from your app menu or run: flatpak run %s\n' "\${app_name}" "\${app_id}"
-`;
-}
-
-export async function buildFlatpakInstaller(
-  config: DesktopConfig,
-  icon: Uint8Array,
-  base: Uint8Array,
-  arch: DesktopArch,
-): Promise<FlatpakBundle> {
-  const bundle = await buildFlatpak(config, icon, base, arch);
-  return {
-    bytes: encoder.encode(shellInstaller(bundle.bytes, bundle.runtime, bundle.id, config.name)),
-    filename: `${packageBase(config)}-${arch}-flatpak.sh`,
-    runtime: bundle.runtime,
-    id: bundle.id,
   };
 }

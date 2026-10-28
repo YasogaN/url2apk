@@ -75,8 +75,8 @@ describe("buildDesktopArtifact", () => {
       arch: "x64",
       base: base.bytes,
     });
-    expect(result.filename).toBe("example-6789ab-x64-flatpak.sh");
-    expect(new TextDecoder().decode(result.bytes.slice(0, 2))).toBe("#!");
+    expect(result.filename).toBe("example-6789ab-x64-flatpak.tar");
+    expect(result.bytes.length).toBeGreaterThan(0);
   });
 
   it("builds the system-WebKit AppImage", async () => {

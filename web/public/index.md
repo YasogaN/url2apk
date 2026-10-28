@@ -8,7 +8,7 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local key and a locally signed APK.
 - **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
-- **Linux:** a Flatpak, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak shares the GNOME runtime, so WebKitGTK security updates come with the runtime. Its installer checks Flatpak and the runtime, then installs the per-site archive.
+- **Linux:** a Flatpak, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak shares the GNOME runtime, so WebKitGTK security updates come with the runtime.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -19,7 +19,7 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 - No App Links or domain capture; links to the site still open in the default browser.
 - DRM L1 and passkeys are limited, and some sites block WebView.
 - Windows builds are unsigned and will show SmartScreen warnings. They do not update themselves.
-- The Flatpak installer needs Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks.
+- Flatpak bundles need Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks.
 - macOS is not supported yet.
 
 ## How it compares

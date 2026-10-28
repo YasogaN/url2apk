@@ -5,7 +5,7 @@ import { bufferSource } from "../apk/bytes";
 import { flatpakBase } from "../../../test/helpers/flatpak";
 import { flatpakAppId } from "../domain";
 import { serializeConfig, type DesktopConfig } from "./config";
-import { buildFlatpak, buildFlatpakInstaller } from "./flatpak";
+import { buildFlatpak } from "./flatpak";
 import { createTar, parseTar } from "./flatpak-tar";
 import { encodeVariant } from "./gvariant";
 
@@ -132,29 +132,6 @@ describe("buildFlatpak", () => {
     );
   });
 
-  it("wraps the OCI archive in a self-installing script", async () => {
-    const base = await flatpakBase();
-    const bundle = await buildFlatpak(config, base.icon, base.bytes, "x64");
-    const installer = await buildFlatpakInstaller(
-      config,
-      base.icon,
-      base.bytes,
-      "x64",
-    );
-    expect(installer.filename).toBe("example-6789ab-x64-flatpak.sh");
-    const script = text(installer.bytes);
-    expect(script.startsWith("#!/bin/sh\n")).toBe(true);
-    expect(script).toContain('app_name="Example"');
-    expect(script).toContain("flatpak --version");
-    expect(script).toContain("org.gnome.Platform/x86_64/50");
-    expect(script).toContain("flatpak install --user -y --image");
-    const embedded = /<<'URL2APP'\n([\s\S]*?)\nURL2APP/.exec(script)?.[1];
-    expect(embedded).toBeDefined();
-    expect(Buffer.from(embedded!.replaceAll("\n", ""), "base64")).toEqual(
-      Buffer.from(bundle.bytes),
-    );
-  });
-
   it("rejects empty input and non-PNG icons", async () => {
     const base = await flatpakBase();
     await expect(buildFlatpak(config, base.icon, new Uint8Array(), "x64")).rejects.toThrow(
@@ -193,14 +170,6 @@ describe("buildFlatpak", () => {
       "a mismatched app name",
       { metadata: "[Application]\nname=wrong\n" },
       "does not match",
-    ],
-    [
-      "a missing runtime",
-      {
-        metadata:
-          "[Application]\nname=dev.yasogan.url2app.base\ncommand=url2app-shell\n",
-      },
-      "runtime is missing",
     ],
     [
       "missing labels",

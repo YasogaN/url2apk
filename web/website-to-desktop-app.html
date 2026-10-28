@@ -76,7 +76,7 @@
         <ul>
           <li><strong>Windows:</strong> a per-app <code>Setup.exe</code> with a current-user or all-users install, and a portable <code>.zip</code>.</li>
           <li><strong>Linux:</strong> a Flatpak, a system-WebKit AppImage and a <code>.tar.gz</code>, with x86_64 and aarch64 builds.</li>
-          <li><strong>Flatpak first:</strong> the shared GNOME runtime supplies WebKitGTK, so security updates do not require rebuilding each generated app. The builder downloads a self-installing script that checks Flatpak and the runtime before installing the per-site archive.</li>
+          <li><strong>Flatpak first:</strong> the shared GNOME runtime supplies WebKitGTK, so security updates do not require rebuilding each generated app.</li>
           <li><strong>Isolation:</strong> each app gets its own window title, shortcut, icon and WebView profile.</li>
         </ul>
 
@@ -102,14 +102,14 @@
           <li>Open the <a href="/#builder">builder</a> and choose Windows or Linux.</li>
           <li>Pick the architecture and package type.</li>
           <li>Generate the package. The shell is downloaded on demand.</li>
-          <li>On Windows, run Setup and clear the SmartScreen warning. On Linux, run the downloaded Flatpak installer (<code>chmod +x</code> then <code>./&lt;file&gt;</code>); it checks Flatpak and the GNOME runtime, then installs the per-site archive. Alternatively, <code>chmod +x</code> the AppImage or extract the tarball.</li>
+          <li>On Windows, run Setup and clear the SmartScreen warning. On Linux, install the Flatpak OCI archive with <code>flatpak install --user --image oci-archive:&lt;file&gt;</code>, or <code>chmod +x</code> the AppImage or extract the tarball.</li>
         </ol>
 
         <h2>What it is not</h2>
         <ul>
           <li>Desktop packages are unsigned and will trigger SmartScreen on Windows.</li>
           <li>There is no auto-update for the generated shell. Regenerating the app is the update path; the Flatpak runtime updates WebKitGTK independently.</li>
-          <li>The Flatpak installer needs Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
+          <li>Flatpak needs Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
           <li>macOS is not supported yet.</li>
           <li>The app loads the live URL and has no offline copy.</li>
         </ul>
