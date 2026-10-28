@@ -1,0 +1,15 @@
+[package]
+name = "url2app-flatpak-bundle"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+base64 = "0.22"
+ostrya-core = "0.5.0"
+ostrya-gvariant = "0.5.0"
+tar = "0.4"
+wasm-bindgen = "=0.2.129"

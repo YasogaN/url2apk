@@ -49,9 +49,12 @@ This project is Apache-2.0. It depends on the following projects, whose licences
 | @tauri-apps/cli | Apache-2.0 OR MIT |
 | jsdom | MIT |
 | backhand (vendored for WASM) | MIT OR Apache-2.0 |
+| ostrya-core, ostrya-gvariant (OSTree/GVariant for the WASM writer) | MIT |
+| tar | MIT OR Apache-2.0 |
+| base64 | MIT OR Apache-2.0 |
 | wasm-bindgen | MIT OR Apache-2.0 |
 
-The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The Flatpak uses the WebKitGTK and GTK libraries from the GNOME runtime; the generated bundle contains only the shell and its config.
+The tarball and the system-WebKit AppImage use the host WebKitGTK/GTK. The Flatpak uses the WebKitGTK and GTK libraries from the GNOME runtime; the generated bundle contains only the shell and its config. The classic .flatpak is assembled by the Rust/WASM OSTree writer, which uses ostrya-core and ostrya-gvariant.
 
 ## Standards and specifications
 
