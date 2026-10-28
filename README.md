@@ -70,7 +70,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local error/retry screen and safe back navigation. Your key, your signature, your package.
 - **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile. The installer takes its title from the generated app name and installs under `<app-name>-<short id>` instead of an opaque internal ID.
-- **Linux:** a Flatpak OCI archive, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak is the recommended target: it uses the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime instead of a per-app rebuild. The builder downloads the OCI archive and the target note shows the exact `flatpak install --user --image` command. The AppImage and tarball use the host WebKitGTK.
+- **Linux:** a classic Flatpak `.flatpak` bundle, a Flatpak OCI archive, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The classic `.flatpak` is a local bundle built by a small Rust/WASM OSTree writer in the tab; the OCI archive is the fallback for Flatpak 1.18+. Both use the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime instead of a per-app rebuild. The AppImage and tarball use the host WebKitGTK.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -81,7 +81,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 - No App Links or domain capture; links to the site still open in your default browser.
 - DRM L1 and passkeys are limited, and some sites block WebView.
 - Windows builds are unsigned and will show SmartScreen warnings. They do not update themselves.
-- Flatpak OCI archives require Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks. Downloads need the executable bit.
+- The classic Flatpak needs the GNOME 50 runtime and a Flatpak that supports local bundles. The Flatpak OCI archive needs Flatpak 1.18+ for `oci-archive:` installs. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks. Downloads need the executable bit.
 - macOS is not supported yet. The current builder will show a contribution note instead of a macOS download.
 
 ## How it works
@@ -89,19 +89,19 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
 2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json` (including the window size), or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
 3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, rewrites the Flatpak OCI archive, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
-4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The Flatpak base is a small OCI archive containing the shell; the browser rewrites it into a per-site OCI bundle with a URL-derived app ID, desktop entry, icon and config, and recomputes every OCI digest. It also re-encodes the Flatpak commit metadata with a small GVariant encoder. AppImage bases use gzip squashfs and a small Rust/WASM repacker replaces the embedded desktop entry and icon before the config trailer is appended. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
+4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The Flatpak base is a small OCI archive containing the shell. The browser rewrites it into a per-site OCI bundle with a URL-derived app ID, desktop entry, icon and config, and recomputes every OCI digest. For the classic `.flatpak` it passes the patched app tree to a Rust/WASM OSTree writer that builds the file, dirtree, dirmeta, commit and empty-base static delta, then wraps them in the Flatpak bundle metadata. A small GVariant encoder handles the OCI commit labels. AppImage bases use gzip squashfs and a small Rust/WASM repacker replaces the embedded desktop entry and icon before the config trailer is appended. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
 ## Status
 
 - **Android:** 136 unit tests, lint clean, 100% line coverage gate.
-- **Web:** 620 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
-- **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker, Flatpak OCI patcher and release workflow are implemented. The live builder is on release v1.5.1; the Windows installer has been validated on Windows. macOS is deferred.
+- **Web:** 624 tests; all `src/**` is under a 100% statements/branches/functions/lines gate. Lighthouse CI enforces budgets on the homepage.
+- **Desktop:** the Windows and Linux shells, browser packaging, installer, AppImage metadata repacker, classic Flatpak OSTree writer, Flatpak OCI patcher and release workflow are implemented. The live builder is on release v1.5.1; the Windows installer has been validated on Windows. macOS is deferred.
 - **Live:** [url2app.yasogan.dev](https://url2app.yasogan.dev) on Cloudflare Workers.
 
 ## Self-host
 
-Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS. Rebuilding the optional AppImage metadata WASM module needs the `wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129; the generated module is checked in for normal web builds. Installing a generated Flatpak needs Flatpak 1.18+ and the GNOME 50 runtime from Flathub.
+Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS. Rebuilding the optional AppImage metadata WASM module needs the `wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129; the generated module is checked in for normal web builds. Installing a generated classic Flatpak needs the GNOME 50 runtime from Flathub; the OCI archive also needs Flatpak 1.18+. The classic `.flatpak` is generated locally by the Rust/WASM writer.
 
 ```sh
 cd web
@@ -139,7 +139,7 @@ The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$A
 | `web/public/shell.apk` | Generated local Android test fixture (ignored by Git). The release publishes the staged copy under `web/public/shells/<sha>/`. |
 | `web/public/shells/` | Generated desktop shell bases and the Android template (ignored by Git; produced by CI). |
 | `web/public/shells.json` | Generated shell manifest, including the Android template (ignored by Git; produced by CI). |
-| `web/wasm/` | Rust/WASM AppImage metadata repacker, its vendored backhand dependency and generated browser module. |
+| `web/wasm/` | Rust/WASM AppImage metadata repacker and classic Flatpak OSTree writer, with their generated browser modules. |
 | `desktop/tools/build-flatpak-base.sh` | Builds the per-architecture Flatpak OCI base shipped to the browser. |
 | `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
@@ -153,13 +153,13 @@ The private key is generated with WebCrypto and imported as non-extractable; it 
 
 Desktop packages are unsigned. They do not use the Android key and do not auto-update. Regenerating the app is the only update path for the shell. The release workflow builds the shell bases, both NSIS installers, the system-WebKit AppImage, the Flatpak OCI base and `shells.json`; it needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets to deploy.
 
-Flatpak WebKit updates come from the shared GNOME runtime. The per-site Flatpak bundle itself only carries the shell and its config, so a runtime update fixes WebKitGTK without rebuilding or redistributing any generated app. Existing generated apps still need to be regenerated for shell changes. The Flatpak bundle is installed with `flatpak install --user --image oci-archive:<file>`; the runtime is supplied by Flathub.
+Flatpak WebKit updates come from the shared GNOME runtime. The per-site Flatpak bundle itself only carries the shell and its config, so a runtime update fixes WebKitGTK without rebuilding or redistributing any generated app. Existing generated apps still need to be regenerated for shell changes. Install the classic `.flatpak` with `flatpak install --user <file>`, or the OCI archive with `flatpak install --user --image oci-archive:<file>`; the runtime is supplied by Flathub.
 
 ## Distribution
 
 These are personal sideloaded builds. Android will warn about unknown apps, Play Protect may flag them, and Google's developer verification is rolling out (30 September 2026 in Brazil, Indonesia, Singapore and Thailand; global in 2027). Unverified sideloads may need ADB or the advanced flow. Do not publish these wrappers to Google Play; they do not meet the minimum-functionality policy.
 
-Windows builds will trigger SmartScreen until they earn reputation; users need the "More info" flow. Linux tarballs preserve the executable bit, while AppImages need `chmod +x` after a browser download. Flatpaks need Flatpak 1.18+ and install from the downloaded OCI archive. macOS is not supported yet.
+Windows builds will trigger SmartScreen until they earn reputation; users need the "More info" flow. Linux tarballs preserve the executable bit, while AppImages need `chmod +x` after a browser download. Classic Flatpaks need the GNOME 50 runtime; the OCI archive needs Flatpak 1.18+. macOS is not supported yet.
 
 ## Privacy
 

@@ -2,7 +2,7 @@
 
 > URL to App is a browser-only, local-first tool that packages an HTTPS website as a small Android WebView APK, an unsigned Windows installer or portable app, or a Linux Flatpak, AppImage or tarball. No account, no cloud build, and no server-side compilation.
 
-URL to App started as an Android WebView packager and later added Windows and Linux targets. It uses a prebuilt shell for each target and patches the URL, app name and icon in the browser tab. Android builds are signed with a non-exportable local key. Generated desktop shells are unsigned and do not auto-update; the Flatpak gets WebKitGTK updates from its shared GNOME runtime. macOS is not supported yet.
+URL to App started as an Android WebView packager and later added Windows and Linux targets. It uses a prebuilt shell for each target and patches the URL, app name and icon in the browser tab. Android builds are signed with a non-exportable local key. Generated desktop shells are unsigned and do not auto-update; the Flatpak gets WebKitGTK updates from its shared GNOME runtime. The classic .flatpak is built in the browser by a Rust/WASM OSTree writer; OCI archives need Flatpak 1.18+. macOS is not supported yet.
 
 ## Start
 
@@ -13,7 +13,7 @@ URL to App started as an Android WebView packager and later added Windows and Li
 
 ## What it does
 
-- [What you get](https://github.com/YasogaN/url2app#what-you-get): Android launcher icon and APK, Windows Setup.exe or portable zip, and Linux Flatpak OCI archive, AppImage or tar.gz.
+- [What you get](https://github.com/YasogaN/url2app#what-you-get): Android launcher icon and APK, Windows Setup.exe or portable zip, and Linux classic Flatpak .flatpak, Flatpak OCI archive, AppImage or tar.gz.
 - [How it works](https://github.com/YasogaN/url2app#how-it-works): Prebuilt shells, data-not-compilation patching, local signing, and CI-built bases.
 - [Limits](https://github.com/YasogaN/url2app#what-it-is-not): No Google sign-in, push, extensions, App Links, offline copy, macOS, or generated-shell auto-updates. The Flatpak runtime still updates WebKitGTK.
 - [Comparison and FAQ](https://url2app.yasogan.dev/#faq): How it differs from PWABuilder, Bubblewrap, Tauri CLI and Electron Forge.

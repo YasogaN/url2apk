@@ -75,20 +75,21 @@
         <h2>What you get</h2>
         <ul>
           <li><strong>Windows:</strong> a per-app <code>Setup.exe</code> with a current-user or all-users install, and a portable <code>.zip</code>.</li>
-          <li><strong>Linux:</strong> a Flatpak OCI archive, a system-WebKit AppImage and a <code>.tar.gz</code>, with x86_64 and aarch64 builds.</li>
-          <li><strong>Flatpak first:</strong> the shared GNOME runtime supplies WebKitGTK, so security updates do not require rebuilding each generated app.</li>
+          <li><strong>Linux:</strong> a classic Flatpak <code>.flatpak</code> bundle, a Flatpak OCI archive, a system-WebKit AppImage and a <code>.tar.gz</code>, with x86_64 and aarch64 builds.</li>
+          <li><strong>Flatpak first:</strong> the shared GNOME runtime supplies WebKitGTK, so security updates do not require rebuilding each generated app. The classic <code>.flatpak</code> is built in the tab by a Rust/WASM OSTree writer; the OCI archive is the Flatpak 1.18+ fallback.</li>
           <li><strong>Isolation:</strong> each app gets its own window title, shortcut, icon and WebView profile.</li>
         </ul>
 
         <h2>How the browser assembles it</h2>
         <p>
           The Windows portable build patches the PE icon and version resources.
-          The installer appends a config payload to the NSIS setup. The Flatpak
-          OCI archive is rewritten in the tab with a URL-derived app ID, desktop
-          entry, icon and sidecar config; every OCI digest is recomputed. The
-          AppImage uses a small Rust/WASM repacker to replace the embedded
-          desktop entry and icon, then appends the same config trailer. The tar
-          and zip are written with the right file modes.
+          The installer appends a config payload to the NSIS setup. The classic
+          <code>.flatpak</code> is assembled by a Rust/WASM OSTree writer; the
+          Flatpak OCI archive is rewritten in the tab with a URL-derived app ID,
+          desktop entry, icon and sidecar config, and every OCI digest is
+          recomputed. The AppImage uses a small Rust/WASM repacker to replace the
+          embedded desktop entry and icon, then appends the same config trailer.
+          The tar and zip are written with the right file modes.
         </p>
         <p>
           The shell binaries are built once in CI and published as versioned
@@ -102,14 +103,14 @@
           <li>Open the <a href="/#builder">builder</a> and choose Windows or Linux.</li>
           <li>Pick the architecture and package type.</li>
           <li>Generate the package. The shell is downloaded on demand.</li>
-          <li>On Windows, run Setup and clear the SmartScreen warning. On Linux, install the Flatpak OCI archive with <code>flatpak install --user --image oci-archive:&lt;file&gt;</code>, or <code>chmod +x</code> the AppImage or extract the tarball.</li>
+          <li>On Windows, run Setup and clear the SmartScreen warning. On Linux, install the classic <code>.flatpak</code> with <code>flatpak install --user &lt;file&gt;</code>, or the OCI archive with <code>flatpak install --user --image oci-archive:&lt;file&gt;</code>. Alternatively, <code>chmod +x</code> the AppImage or extract the tarball.</li>
         </ol>
 
         <h2>What it is not</h2>
         <ul>
           <li>Desktop packages are unsigned and will trigger SmartScreen on Windows.</li>
           <li>There is no auto-update for the generated shell. Regenerating the app is the update path; the Flatpak runtime updates WebKitGTK independently.</li>
-          <li>Flatpak OCI archives need Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
+          <li>The classic Flatpak needs the GNOME 50 runtime and a Flatpak that supports local bundles. OCI archives need Flatpak 1.18+ for <code>oci-archive:</code> installs. The system-WebKit AppImage still needs FUSE; the tarball and <code>--appimage-extract-and-run</code> are the fallbacks.</li>
           <li>macOS is not supported yet.</li>
           <li>The app loads the live URL and has no offline copy.</li>
         </ul>

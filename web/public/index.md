@@ -8,7 +8,7 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 
 - **Android:** a launcher icon, app-drawer entry and its own window. Uploads, downloads, camera, microphone, geolocation and fullscreen video. A local key and a locally signed APK.
 - **Windows:** a per-app `Setup.exe` with per-user or system-wide install, and a portable `.zip`. One app per site, with its own shortcut, window title and isolated WebView2 profile.
-- **Linux:** a Flatpak OCI archive, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The Flatpak shares the GNOME runtime, so WebKitGTK security updates come with the runtime. The builder shows the exact `flatpak install --user --image` command.
+- **Linux:** a classic Flatpak `.flatpak` bundle, a Flatpak OCI archive, a system-WebKit AppImage and a `.tar.gz`, with x86_64 and aarch64 builds. The classic `.flatpak` is built in the tab by a Rust/WASM OSTree writer; the OCI archive is the Flatpak 1.18+ fallback. Both share the GNOME runtime, so WebKitGTK security updates come with the runtime.
 - **Every target:** the URL, name and icon are data. The shell is built once and reused, so no per-site compiler run.
 
 ## What it is not
@@ -19,7 +19,7 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 - No App Links or domain capture; links to the site still open in the default browser.
 - DRM L1 and passkeys are limited, and some sites block WebView.
 - Windows builds are unsigned and will show SmartScreen warnings. They do not update themselves.
-- Flatpak OCI archives need Flatpak 1.18+ and the GNOME 50 runtime. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks.
+- The classic Flatpak needs the GNOME 50 runtime and a Flatpak that supports local bundles. OCI archives need Flatpak 1.18+ for `oci-archive:` installs. The system-WebKit AppImage still needs FUSE; `--appimage-extract-and-run` and the tarball are the fallbacks.
 - macOS is not supported yet.
 
 ## How it compares
