@@ -34,7 +34,7 @@
         "wrap a website as a Windows or Linux desktop app",
         "make a local app from a URL without a cloud build"
       ],
-      "version": "1.6.0",
+      "version": "1.6.1",
       "updatedAt": "2026-10-28T00:00:00Z",
       "metadata": {
         "license": "Apache-2.0",
