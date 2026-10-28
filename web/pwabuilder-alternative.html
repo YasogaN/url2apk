@@ -93,7 +93,7 @@
             </tr>
             <tr>
               <td>Desktop output</td>
-              <td>Windows Setup/portable, Linux AppImage/tarball.</td>
+              <td>Windows Setup/portable, Linux Flatpak/AppImage/tarball.</td>
               <td>Android-focused.</td>
             </tr>
             <tr>
@@ -121,7 +121,7 @@
         <ul>
           <li>You want a local build with no account or upload queue.</li>
           <li>You want a WebView wrapper and a signing key you control in the tab.</li>
-          <li>You also need a Windows or Linux package from the same URL.</li>
+          <li>You also need a Windows or Linux package from the same URL, including a Flatpak.</li>
           <li>You are sideloading a personal app, not submitting to Play.</li>
         </ul>
 
@@ -135,7 +135,8 @@
         <p>
           Compare that with desktop wrappers too: Tauri CLI and Electron Forge
           compile a new binary for every site. URL to App uses a prebuilt shell
-          and treats the URL, name and icon as data.
+          and treats the URL, name, icon and size as data. It started as an
+          Android tool; the Windows and Linux targets reuse the same model.
         </p>
 
         <p>

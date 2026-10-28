@@ -73,7 +73,7 @@
 
         <h2>Why the cloud is optional</h2>
         <p>
-          Most website-to-APK tools upload the URL to a server, build a wrapper
+          Many website-to-APK tools upload the URL to a server, build a wrapper
           there and send back an APK. That works, but it adds an account, a
           queue and a third party that sees your app. URL to App takes a
           different route: it ships a prebuilt WebView shell and patches the
@@ -85,6 +85,11 @@
           <code>assets/config.json</code> and builds the APK. It then generates a
           local RSA-2048 key with WebCrypto and signs the result with APK
           Signature Scheme v2. The private key never leaves the tab.
+        </p>
+        <p>
+          Android was the first target. The same shell-plus-data model later
+          grew Windows and Linux targets, including a Flatpak that shares the
+          GNOME runtime.
         </p>
 
         <h2>What the APK contains</h2>

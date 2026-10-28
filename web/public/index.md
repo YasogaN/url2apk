@@ -24,12 +24,12 @@ URL to App is a local-first tool that packages an HTTPS website as a small Andro
 
 ## How it compares
 
-PWABuilder and Bubblewrap build a Trusted Web Activity and usually need a cloud build or a local toolchain. URL to App patches a prebuilt WebView shell in the browser and signs the APK locally, with no account or server-side build. Desktop wrappers such as Tauri CLI and Electron Forge compile a new binary for every site; URL to App uses a prebuilt shell and treats the URL, name and icon as data.
+URL to App started with Android: a locally signed WebView APK built in the tab, without a cloud build. The same prebuilt-shell model extends to Windows and Linux, including a Flatpak that shares the GNOME runtime. PWABuilder and Bubblewrap still make sense when you need a Trusted Web Activity or a Play Store pipeline. Desktop wrappers such as Tauri CLI and Electron Forge compile a new binary per site; URL to App treats the URL, name, icon and size as data.
 
 ## How it works
 
-1. A prebuilt shell per platform: a Kotlin WebView shell for Android and a Tauri v2 shell for Windows and Linux.
-2. Data, not compilation: fixed template slots or a sidecar `config.json` carry the URL, name and icon.
+1. A prebuilt shell per platform: a Kotlin WebView shell for Android and a Tauri v2 shell for Windows and Linux. The Linux Flatpak uses the shared GNOME runtime.
+2. Data, not compilation: fixed template slots or a sidecar `config.json` carry the URL, name, icon and desktop window size.
 3. The browser patches the shell, renders the icon and signs Android APKs locally.
 4. Shell binaries and installers are built once in CI and fetched on demand.
 

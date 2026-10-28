@@ -4,7 +4,7 @@
 
 **A URL in. An Android, Windows or Linux app out.**
 
-Package an HTTPS site as a small Android WebView APK or an unsigned Windows/Linux desktop app, entirely in your browser. No account, no cloud build.
+Package an HTTPS site as a locally signed Android WebView APK, an unsigned Windows app, or a Linux Flatpak, AppImage or tarball, entirely in your browser. No account, no cloud build.
 
 [![Live](https://img.shields.io/badge/live-url2app.yasogan.dev-8b0000?style=for-the-badge)](https://url2app.yasogan.dev)
 [![CI](https://img.shields.io/github/actions/workflow/status/YasogaN/url2app/ci.yml?branch=main&label=CI&style=for-the-badge)](https://github.com/YasogaN/url2app/actions/workflows/ci.yml)
@@ -48,9 +48,11 @@ Kotlin and Android System WebView on the Android shell side; Rust and Tauri with
 
 ## Why
 
-Firefox on Android can add a site to the home screen, but it is still a browser-badged shortcut. PWAs that install as real apps need a browser that mints WebAPKs or a TWA, which means Chrome, Digital Asset Links and often a cloud build. Desktop wrappers usually make you install a toolchain and compile a new binary for every site.
+Firefox on Android can add a site to the home screen, but it stays a browser-badged shortcut. A real PWA install usually means Chrome, Digital Asset Links and often a cloud build. URL to App started as a local Android answer to that: a prebuilt Kotlin WebView shell, patched and signed in the tab.
 
-URL to App takes a different route: a prebuilt WebView shell, patched in the tab. For Android that means a Kotlin WebView shell and a locally signed APK with your own icon and package. For Windows and Linux it means a URL-agnostic Tauri shell whose URL, name, icon and size are data, never compiled in. No login, no queue, no server-side build.
+The shell-plus-data model generalised, so we took it further. Windows and Linux reuse the same build-once, patch-in-the-tab idea with Tauri shells, and Linux now defaults to a Flatpak on the shared GNOME runtime. Android remains the most complete target.
+
+No login, no queue, no server-side build.
 
 Android, Windows and Linux are live. macOS is not supported yet; contributions are welcome.
 
@@ -85,8 +87,8 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 ## How it works
 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
-2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json`, or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
-3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
+2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json` (including the window size), or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
+3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, rewrites the Flatpak OCI archive, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
 4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The Flatpak base is a small OCI archive containing the shell; the browser rewrites it into a per-site OCI bundle with a URL-derived app ID, desktop entry, icon and config, and recomputes every OCI digest. It also re-encodes the Flatpak commit metadata with a small GVariant encoder. AppImage bases use gzip squashfs and a small Rust/WASM repacker replaces the embedded desktop entry and icon before the config trailer is appended. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
