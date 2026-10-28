@@ -35,7 +35,7 @@ Package an HTTPS site as a locally signed Android WebView APK, an unsigned Windo
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![WebAssembly](https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white)
 
-Kotlin and Android System WebView on the Android shell side; Rust and Tauri with WebView2/WebKitGTK on the desktop side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; Rust/WASM with backhand for per-app AppImage metadata; WebCrypto for the Android key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
+Kotlin and Android System WebView on the Android shell side; Rust and Tauri with WebView2/WebKitGTK on the desktop side; Hono, Vite, Tailwind CSS and Cloudflare Workers on the web side; Rust/WASM with backhand for per-app AppImage metadata and ostrya for classic Flatpak bundles; WebCrypto for the Android key and signature. IBM Plex Mono is self-hosted under the SIL Open Font License.
 
 </div>
 
@@ -88,7 +88,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 1. **A prebuilt shell per platform.** Android uses a Kotlin WebView shell (minSdk 24, targetSdk 36, Android System WebView, no AndroidX). Desktop uses a Tauri v2 shell with a native WebView and no IPC for remote content.
 2. **Data, not compilation.** Android uses fixed template slots for the package, label, version code and icon paths. Desktop uses a sidecar `config.json` (including the window size), or a 64-byte trailer appended to single-file artifacts such as the AppImage and the Windows installer.
-3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, rewrites the Flatpak OCI archive, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
+3. **The browser does the patching.** Android patches the binary manifest, `resources.arsc`, every launcher PNG and `assets/config.json`, then builds a locally signed APK. Desktop patches PE icons/version info for the portable exe, rewrites the Flatpak OCI archive or builds a classic `.flatpak`, appends the config payload for the AppImage/installer, and packs the tar or zip with the right modes.
 4. **Artifacts are built once in CI.** Shell binaries and installers live as versioned static assets with a SHA-256 manifest. The browser fetches the base for the selected target, verifies it, patches it and downloads the result. Nothing is compiled per site. The Flatpak base is a small OCI archive containing the shell. The browser rewrites it into a per-site OCI bundle with a URL-derived app ID, desktop entry, icon and config, and recomputes every OCI digest. For the classic `.flatpak` it passes the patched app tree to a Rust/WASM OSTree writer that builds the file, dirtree, dirmeta, commit and empty-base static delta, then wraps them in the Flatpak bundle metadata. A small GVariant encoder handles the OCI commit labels. AppImage bases use gzip squashfs and a small Rust/WASM repacker replaces the embedded desktop entry and icon before the config trailer is appended. The Android template and desktop bases share the `url2app-shells-v1` CacheStorage cache; the template is refreshed after 24 hours with a stale fallback, and the selected base is only fetched when a build starts.
 5. **A reverse-domain package for Android.** `example.com` → `com.example`, `www.example.com` → `com.example`, `news.ycombinator.com` → `com.ycombinator.news`. A leading `www` is dropped when it is a subdomain.
 
@@ -101,7 +101,7 @@ The first Android build creates an RSA-2048 key, downloads the encrypted backup 
 
 ## Self-host
 
-Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS. Rebuilding the optional AppImage metadata WASM module needs the `wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129; the generated module is checked in for normal web builds. Installing a generated classic Flatpak needs the GNOME 50 runtime from Flathub; the OCI archive also needs Flatpak 1.18+. The classic `.flatpak` is generated locally by the Rust/WASM writer.
+Requirements: JDK 17, Android SDK 36 + build-tools 36.0.0, Node 24 and pnpm 12. Desktop shell builds additionally need Rust and the Tauri prerequisites for the target OS. Rebuilding the optional WASM modules (the AppImage metadata repacker and the classic Flatpak writer) needs the `wasm32-unknown-unknown` target and `wasm-bindgen-cli` 0.2.129; the generated modules are checked in for normal web builds. Installing a generated classic Flatpak needs the GNOME 50 runtime from Flathub; the OCI archive also needs Flatpak 1.18+. The classic `.flatpak` is generated locally by the Rust/WASM writer.
 
 ```sh
 cd web
@@ -129,20 +129,29 @@ cargo check -p url2app-shell
 
 The web APK integration tests find `aapt2`, `zipalign` and `apksigner` under `$ANDROID_HOME` (or via `AAPT2`, `APKSIGNER`, `ZIPALIGN`) and skip when they are absent. CI installs them.
 
+To rebuild the checked-in WASM modules after changing their Rust sources, run `./build.sh` in `web/wasm/appimage-repack` and `web/wasm/flatpak-bundle`.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
+| `.github/workflows/` | CI, WASM module, desktop coverage and tagged-release/deploy workflows. |
 | `android/` | Kotlin WebView shell, Gradle build, tests and the template export script. |
-| `desktop/` | Tauri shell, core, installer helper, NSIS scripts, base-packaging tools and tests. |
+| `desktop/` | Tauri shell, core, installer helper, NSIS scripts, base-packaging tools and tests. `tools/build-flatpak-base.sh` builds the Flatpak OCI base. |
 | `web/` | Cloudflare Vite + Hono app, Tailwind UI, favicon proxy and the browser packaging pipelines. |
+| `web/src/client/` | Browser-side packagers, including the APK, PE, AppImage, Flatpak OCI and classic Flatpak paths. |
+| `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
+| `web/src/client/desktop/` | Windows, AppImage and Flatpak builders, tar/GVariant helpers and the shell manifest client. |
+| `web/src/worker/` | Cloudflare Worker routes, headers and the favicon proxy. |
+| `web/wasm/appimage-repack/` | Rust/WASM AppImage metadata repacker source and build script. |
+| `web/wasm/flatpak-bundle/` | Rust/WASM classic Flatpak OSTree writer, its native validation helper and tests. |
+| `web/wasm/backhand/` | Vendored backhand dependency for the AppImage repacker. |
+| `web/public/wasm/` | Generated browser modules for the AppImage repacker and classic Flatpak writer (checked in). |
 | `web/public/shell.apk` | Generated local Android test fixture (ignored by Git). The release publishes the staged copy under `web/public/shells/<sha>/`. |
 | `web/public/shells/` | Generated desktop shell bases and the Android template (ignored by Git; produced by CI). |
 | `web/public/shells.json` | Generated shell manifest, including the Android template (ignored by Git; produced by CI). |
-| `web/wasm/` | Rust/WASM AppImage metadata repacker and classic Flatpak OSTree writer, with their generated browser modules. |
-| `desktop/tools/build-flatpak-base.sh` | Builds the per-architecture Flatpak OCI base shipped to the browser. |
-| `web/src/client/apk/` | ZIP writer, AXML/ARSC patchers, icon layers, key vault and v2 signer. |
 | `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
+| `web/tools/` | Static-site response checks and the Lighthouse budget checker. |
 | `docs/` | README screenshots and the demo GIF. |
 
 ## Signing and updates

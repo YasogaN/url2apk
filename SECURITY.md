@@ -6,7 +6,7 @@ The live builder at [url2app.yasogan.dev](https://url2app.yasogan.dev) and the l
 
 ## Linux WebKit
 
-The Flatpak target uses the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime. The system-WebKit AppImage and tarball use the host WebKitGTK. Generated apps do not update themselves; regenerate the app to pick up shell changes.
+Both Flatpak outputs use the shared GNOME runtime, so WebKitGTK security updates arrive with the runtime. The system-WebKit AppImage and tarball use the host WebKitGTK. Generated apps do not update themselves; regenerate the app to pick up shell changes.
 
 ## Reporting a vulnerability
 

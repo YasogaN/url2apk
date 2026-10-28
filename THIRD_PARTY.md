@@ -1,6 +1,6 @@
 # Third-party notices
 
-This project is Apache-2.0. It depends on the following projects, whose licences remain their own. The exact versions are pinned in the Gradle build files, `web/pnpm-lock.yaml`, and `desktop/Cargo.lock`.
+This project is Apache-2.0. It depends on the following projects, whose licences remain their own. The exact versions are pinned in the Gradle build files, `web/pnpm-lock.yaml`, `desktop/Cargo.lock`, and each Rust/WASM crate's `Cargo.lock`.
 
 ## Android shell and tests
 
