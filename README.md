@@ -151,7 +151,7 @@ To rebuild the checked-in WASM modules after changing their Rust sources, run `.
 | `web/public/shells/` | Generated desktop shell bases and the Android template (ignored by Git; produced by CI). |
 | `web/public/shells.json` | Generated shell manifest, including the Android template (ignored by Git; produced by CI). |
 | `web/test/helpers/` | Synthetic AXML, PE, ELF, PNG and tar helpers for the packaging tests. |
-| `web/tools/` | Static-site response checks and the Lighthouse budget checker. |
+| `web/tools/` | Static-site response checks, CSP hash verification and the Lighthouse budget checker. |
 | `docs/` | README screenshots and the demo GIF. |
 
 ## Signing and updates
