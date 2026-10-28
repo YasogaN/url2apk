@@ -172,7 +172,7 @@ Windows builds will trigger SmartScreen until they earn reputation; users need t
 
 ## Privacy
 
-No accounts, analytics, telemetry or third-party scripts. HTML responses send `Cache-Control: public, no-transform` so Cloudflare cannot inject its Web Analytics beacon. HTTPS responses send a two-year `Strict-Transport-Security` policy with `includeSubDomains` and `preload`. The package is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects. Desktop builds download their prebuilt shell from this deployment and nothing else.
+No accounts, analytics, telemetry or third-party scripts. HTML responses stay revalidated and compressible; a strict CSP blocks injected analytics and third-party scripts. HTTPS responses send a two-year `Strict-Transport-Security` policy with `includeSubDomains` and `preload`. The package is assembled in the tab. The only third-party request is the optional favicon lookup through this deployment's `/api/favicon` endpoint; it rejects private hosts and revalidates redirects. Desktop builds download their prebuilt shell from this deployment and nothing else.
 
 ## Responsible use
 
