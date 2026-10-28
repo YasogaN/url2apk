@@ -4,7 +4,7 @@ import type {
   DesktopArtifact,
   DesktopConfig,
 } from "./config";
-import { buildFlatpak } from "./flatpak";
+import { buildFlatpakInstaller } from "./flatpak";
 import { buildWindowsInstaller } from "./installer";
 import { buildLinuxBundle } from "./linux";
 import { patchWindowsExe } from "./pe";
@@ -47,6 +47,6 @@ export async function buildDesktopArtifact(
       return { bytes: bundle.bytes, filename: bundle.filename };
     }
     case "linux-flatpak":
-      return buildFlatpak(config, icon, base, arch);
+      return buildFlatpakInstaller(config, icon, base, arch);
   }
 }

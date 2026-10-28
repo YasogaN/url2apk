@@ -213,7 +213,7 @@ function updateTargetNote(): void {
   }
   targetNote.textContent =
     artifact === "linux-flatpak"
-      ? "Download the OCI archive, then install it with: flatpak install --user --image oci-archive:<file>. Requires Flatpak 1.18+ and the GNOME 50 runtime."
+      ? "Download the Flatpak installer, then run it from a terminal with: chmod +x <file> && ./<file>. It checks Flatpak 1.18+ and the GNOME 50 runtime."
       : "The prebuilt shell downloads once and the package is assembled here.";
 }
 
@@ -551,7 +551,7 @@ async function buildDesktop(): Promise<void> {
     downloadBytes(result.bytes, result.filename, "application/octet-stream");
     setStatus(
       selectedArtifact === "linux-flatpak"
-        ? `${result.filename} downloaded. Install with: flatpak install --user --image oci-archive:${result.filename}`
+        ? `${result.filename} downloaded. Run: chmod +x ${result.filename} && ./${result.filename}`
         : `${result.filename} downloaded.`,
     );
   } catch (error) {

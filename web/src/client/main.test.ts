@@ -500,7 +500,7 @@ describe("form", () => {
       "app.com.example",
     );
     expect(element<HTMLElement>("[data-target-note]").textContent).toContain(
-      "flatpak install --user --image oci-archive:<file>",
+      "Download the Flatpak installer",
     );
     expect(element<HTMLButtonElement>("[data-build]").disabled).toBe(false);
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
@@ -1069,7 +1069,7 @@ describe("desktop build", () => {
       expect.objectContaining({ artifact: "linux-flatpak" }),
     );
     expect(element<HTMLElement>("[data-build-status]").textContent).toBe(
-      "app.zip downloaded. Install with: flatpak install --user --image oci-archive:app.zip",
+      "app.zip downloaded. Run: chmod +x app.zip && ./app.zip",
     );
   });
 
